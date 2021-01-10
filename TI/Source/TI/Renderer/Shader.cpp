@@ -75,12 +75,21 @@ void Shader::use()
 	glUseProgram(id);
 }
 
-void Shader::setVector(const std::string& name, glm::vec4 value)
+void Shader::setVector(const std::string& name, const glm::vec4& value)
 {
 	int location = getUniformLocation(name);
 	if (location != -1)
 	{
 		glUniform4fv(location, 1, &value[0]);
+	}
+}
+
+void Shader::setMatrix(const std::string& name, const glm::mat4& value)
+{
+	int location = getUniformLocation(name);
+	if (location != -1)
+	{
+		glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
 	}
 }
 

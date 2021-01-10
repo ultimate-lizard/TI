@@ -97,5 +97,20 @@ void Mesh::finalize()
 		offset += 2 * sizeof(float);
 	}
 
-	// glBindVertexArray(0);
+	glBindVertexArray(0);
+}
+
+const unsigned int Mesh::getVAO() const
+{
+	return vao;
+}
+
+const std::vector<unsigned int>& Mesh::getIndices() const
+{
+	return indices;
+}
+
+const std::vector<glm::vec3>& Mesh::getPositions() const
+{
+	return positions;
 }

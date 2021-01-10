@@ -3,6 +3,8 @@
 #include <memory>
 
 class Renderer;
+class InputHandler;
+class IController;
 
 class Application
 {
@@ -25,4 +27,6 @@ private:
 	struct SDL_Window* sdlWindow;
 
 	std::unique_ptr<Renderer> renderer;
+	std::unique_ptr<InputHandler> inputHandler;
+	std::unique_ptr<IController> playerController;
 };

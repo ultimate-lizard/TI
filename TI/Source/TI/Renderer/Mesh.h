@@ -17,6 +17,10 @@ public:
 
 	void finalize();
 
+	const unsigned int getVAO() const;
+	const std::vector<unsigned int>& getIndices() const;
+	const std::vector<glm::vec3>& getPositions() const;
+
 private:
 	unsigned int vbo;
 	unsigned int vao;

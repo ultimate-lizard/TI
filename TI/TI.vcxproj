@@ -117,6 +117,8 @@
     <ClInclude Include="Source\TI\Renderer\Mesh.h" />
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />
+    <ClInclude Include="Source\TI\Server\Component\Component.h" />
+    <ClInclude Include="Source\TI\Server\Entity.h" />
     <ClInclude Include="Source\TI\Util\Assert.h" />
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />
     <ClInclude Include="Source\TI\Util\File.h" />

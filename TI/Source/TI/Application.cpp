@@ -13,6 +13,8 @@
 #include <TI/Client/InputHandler.h>
 #include <TI/Client/Controller.h>
 #include <TI/Client/Input.h>
+#include <TI/Server/Entity.h>
+#include <TI/Server/Component/Component.h>
 
 // static const char* CONFIG_PATH = "Config.cfg";
 static const char* GAME_TITLE = "TI";
@@ -189,6 +191,7 @@ void Application::start()
 	renderer->setClearColor({ 1.0f, 0.0f, 1.0f, 1.0f });
 
 	// -------------------------------------------------------------------------------
+
 	int startFrame = 0;
 	int endFrame = 0;
 

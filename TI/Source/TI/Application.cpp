@@ -22,6 +22,8 @@ static const char* GAME_TITLE = "TI";
 static const int DEFAULT_WINDOW_WIDTH = 1920;
 static const int DEFAULT_WINDOW_HEIGHT = 1080;
 
+static const float DELTA_MODIFIER = 0.0001f;
+
 Application::Application() :
 	simulating(false),
 	sdlWindow(nullptr)
@@ -186,7 +188,17 @@ void Application::start()
 		1000.0f
 	);
 
-	playerController->possesCamera(&camera);
+	Entity entity;
+	entity.addComponent<TransformComponent>(&entity);
+
+	entity.addComponent<CameraComponent>(&entity);
+	auto cameraComponent = entity.findComponent<CameraComponent>();
+	cameraComponent->setCamera(&camera);
+
+	entity.addComponent<MovementComponent>(&entity);
+
+	// playerController->possesCamera(&camera);
+	playerController->posses(&entity);
 
 	renderer->setClearColor({ 1.0f, 0.0f, 1.0f, 1.0f });
 
@@ -251,7 +263,6 @@ void Application::start()
 					break;
 				}
 				
-
 			case SDL_CONTROLLERAXISMOTION:
 				{
 					// TODO: Move that to config
@@ -290,7 +301,7 @@ void Application::start()
 			}
 		}
 
-		camera.update(endFrame * 0.0001f);
+		entity.tick(endFrame * DELTA_MODIFIER);
 
 		renderer->render(&mesh, &shader, &camera);
 		SDL_GL_SwapWindow(sdlWindow);

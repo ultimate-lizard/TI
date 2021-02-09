@@ -1,20 +1,26 @@
 #pragma once
 
 class InputHandler;
-class Camera;
+class Entity;
+class MovementComponent;
 
 class IController
 {
 public:
 	virtual ~IController() = default;
 
-	virtual void possesCamera(Camera* camera) = 0;
+	virtual void posses(Entity* entity) = 0;
 };
 
 class PlayerController : public IController
 {
 public:
 	PlayerController(InputHandler* inputHandler);
+
+	void posses(Entity* entity) override;
+
+private:
+	void setupInputHandler();
 
 	void handleMovementForward(float value);
 	void handleMovementSideways(float value);
@@ -25,14 +31,9 @@ public:
 	void handleLookVerticalRate(float value);
 	void handleLookHorizontalRate(float value);
 
-	void possesCamera(Camera* camera) override;
-
 	void quitGame();
 
-private:
 	InputHandler* inputHandler;
-
-	Camera* camera;
-
-	void setupInputHandler();
+	Entity* entity;
+	MovementComponent* movementComp;
 };

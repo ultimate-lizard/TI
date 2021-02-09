@@ -6,66 +6,86 @@
 
 #include <TI/Client/InputHandler.h>
 #include <TI/Renderer/Camera.h>
+#include <TI/Server/Entity.h>
 
-// A number to multiply on camera sensivity during controller camera
+// A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
 static const float CONTROLLER_SENSIVITY_ADJUSTER = 100.0f;
 
 PlayerController::PlayerController(InputHandler* inputHandler) :
-	inputHandler(inputHandler)
+	inputHandler(inputHandler),
+	entity(nullptr),
+	movementComp(nullptr)
 {
 	setupInputHandler();
 }
 
 void PlayerController::handleMovementForward(float value)
 {
-	if (camera)
+	if (movementComp)
 	{
-		glm::vec3 velocity = camera->getVelocity();
+		glm::vec3 velocity = movementComp->getVelocity();
 
 		velocity.z = value;
 
-		camera->setVelocity(velocity);
+		movementComp->setVelocity(velocity);
 	}
 }
 
 void PlayerController::handleMovementSideways(float value)
 {
-	if (camera)
+	if (movementComp)
 	{
-		glm::vec3 velocity = camera->getVelocity();
+		glm::vec3 velocity = movementComp->getVelocity();
 
 		velocity.x = value;
 
-		camera->setVelocity(velocity);
+		movementComp->setVelocity(velocity);
 	}
 }
 
 void PlayerController::handleLookVertical(float value)
 {
-	float movement = value * camera->getSensivity();
-	camera->setPitch(camera->getPitch() + movement);
+	if (movementComp)
+	{
+		float movement = value * movementComp->getSensivity();
+		movementComp->setPitch(movementComp->getPitch() + movement);
+	}
 }
 
 void PlayerController::handleLookHorizontal(float value)
 {
-	float movement = value * camera->getSensivity();
-	camera->setYaw(camera->getYaw() + movement);
+	if (movementComp)
+	{
+		float movement = value * movementComp->getSensivity();
+		movementComp->setYaw(movementComp->getYaw() + movement);
+	}
 }
 
 void PlayerController::handleLookVerticalRate(float value)
 {
-	camera->pitchRate = value * camera->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER;
+	if (movementComp)
+	{
+		movementComp->setPitchRate(value * movementComp->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER);
+	}
 }
 
 void PlayerController::handleLookHorizontalRate(float value)
 {
-	camera->yawRate = value * camera->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER;
+	if (movementComp)
+	{
+		movementComp->setYawRate(value * movementComp->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER);
+	}
 }
 
-void PlayerController::possesCamera(Camera* camera)
+
+void PlayerController::posses(Entity* entity)
 {
-	this->camera = camera;
+	this->entity = entity;
+	if (entity)
+	{
+		movementComp = entity->findComponent<MovementComponent>();
+	}
 }
 
 void PlayerController::quitGame()

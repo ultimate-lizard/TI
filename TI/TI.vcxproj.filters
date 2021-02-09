@@ -48,6 +48,9 @@
     <ClCompile Include="Source\TI\Client\Controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\TI\Server\Component\Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\TI\Util\Assert.h">

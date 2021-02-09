@@ -106,6 +106,7 @@
     <ClCompile Include="Source\TI\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\TI\Renderer\Shader.cpp" />
     <ClCompile Include="Source\TI\Renderer\Texture.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
     <ClCompile Include="Source\TI\Util\File.cpp" />
   </ItemGroup>
   <ItemGroup>

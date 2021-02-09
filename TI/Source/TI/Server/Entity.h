@@ -34,6 +34,14 @@ public:
 		return nullptr;
 	}
 
+	void tick(float dt)
+	{
+		for (auto& component : components)
+		{
+			component->tick(dt);
+		}
+	}
+
 private:
 	std::vector<std::unique_ptr<Component>> components;
 };

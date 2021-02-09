@@ -18,28 +18,14 @@ public:
 	void setPosition(const glm::vec3& position);
 	const glm::vec3& getPosition() const;
 
-	void setVelocity(const glm::vec3& velocity);
-	const glm::vec3& getVelocity() const;
-
-	void update(float dt);
-
-	void updateLookVectors();
-
-	// MOVE THIS TO PLAYER ENTITY
-	float getSpeed() const;
-
+	void setForward(const glm::vec3& forward);
 	const glm::vec3& getForward() const;
 
-	void setPitch(float pitch);
-	float getPitch() const;
+	void setUp(const glm::vec3& up);
+	const glm::vec3& getUp() const;
 
-	void setYaw(float yaw);
-	float getYaw() const;
-
-	float getSensivity() const;
-
-	float yawRate;
-	float pitchRate;
+	void setRight(const glm::vec3& right);
+	const glm::vec3& getRight() const;
 
 private:
 	glm::mat4 projection;
@@ -50,14 +36,4 @@ private:
 	glm::vec3 forward;
 	glm::vec3 up;
 	glm::vec3 right;
-
-	// MOVE THESE TO PLAYER ENTITY
-	glm::vec3 velocity;
-	float speed;
-
-	float pitch;
-	float yaw;
-	float sensivity;
-
-
 };

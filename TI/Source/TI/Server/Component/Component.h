@@ -71,6 +71,9 @@ public:
 	void setYaw(float yaw);
 	float getYaw() const;
 
+	void setMovementForward(float value);
+	void setMovementSideways(float value);
+
 private:
 	float yawRate;
 	float pitchRate;
@@ -83,6 +86,9 @@ private:
 	glm::vec3 right;
 
 	float sensivity;
+public:
+	void addHorizontalLook(float value);
+	void addVerticalLook(float value);
 };
 
 class CameraComponent : public Component

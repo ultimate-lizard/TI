@@ -24,11 +24,7 @@ void PlayerController::handleMovementForward(float value)
 {
 	if (movementComp)
 	{
-		glm::vec3 velocity = movementComp->getVelocity();
-
-		velocity.z = value;
-
-		movementComp->setVelocity(velocity);
+		movementComp->setMovementForward(value);
 	}
 }
 
@@ -36,11 +32,7 @@ void PlayerController::handleMovementSideways(float value)
 {
 	if (movementComp)
 	{
-		glm::vec3 velocity = movementComp->getVelocity();
-
-		velocity.x = value;
-
-		movementComp->setVelocity(velocity);
+		movementComp->setMovementSideways(value);
 	}
 }
 
@@ -48,8 +40,7 @@ void PlayerController::handleLookVertical(float value)
 {
 	if (movementComp)
 	{
-		float movement = value * movementComp->getSensivity();
-		movementComp->setPitch(movementComp->getPitch() + movement);
+		movementComp->addVerticalLook(value);
 	}
 }
 
@@ -57,8 +48,7 @@ void PlayerController::handleLookHorizontal(float value)
 {
 	if (movementComp)
 	{
-		float movement = value * movementComp->getSensivity();
-		movementComp->setYaw(movementComp->getYaw() + movement);
+		movementComp->addHorizontalLook(value);
 	}
 }
 
@@ -66,7 +56,7 @@ void PlayerController::handleLookVerticalRate(float value)
 {
 	if (movementComp)
 	{
-		movementComp->setPitchRate(value * movementComp->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComp->setPitchRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
 	}
 }
 
@@ -74,7 +64,7 @@ void PlayerController::handleLookHorizontalRate(float value)
 {
 	if (movementComp)
 	{
-		movementComp->setYawRate(value * movementComp->getSensivity() * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComp->setYawRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
 	}
 }
 

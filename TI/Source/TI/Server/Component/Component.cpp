@@ -96,7 +96,7 @@ float MovementComponent::getSensivity() const
 
 void MovementComponent::setPitchRate(float pitchRate)
 {
-	this->pitchRate = pitchRate;
+	this->pitchRate = pitchRate * sensivity;
 }
 
 float MovementComponent::getPitchRate() const
@@ -106,7 +106,7 @@ float MovementComponent::getPitchRate() const
 
 void MovementComponent::setYawRate(float yawRate)
 {
-	this->yawRate = yawRate;
+	this->yawRate = yawRate * sensivity;
 }
 
 float MovementComponent::getYawRate() const
@@ -164,6 +164,44 @@ float MovementComponent::getYaw() const
 	}
 
 	return 0.0f;
+}
+
+void MovementComponent::setMovementForward(float value)
+{
+	velocity.z = value;
+}
+
+void MovementComponent::setMovementSideways(float value)
+{
+	velocity.x = value;
+}
+
+void MovementComponent::addHorizontalLook(float value)
+{
+	float movement = value * sensivity;
+
+	if (entity)
+	{
+		auto transformComp = entity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			transformComp->setYaw(transformComp->getYaw() + movement);
+		}
+	}
+}
+
+void MovementComponent::addVerticalLook(float value)
+{
+	float movement = value * sensivity;
+
+	if (entity)
+	{
+		auto transformComp = entity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			transformComp->setPitch(transformComp->getPitch() + movement);
+		}
+	}
 }
 
 CameraComponent::CameraComponent(Entity* entity) :

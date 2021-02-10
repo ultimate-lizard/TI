@@ -107,7 +107,9 @@
     <ClCompile Include="Source\TI\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\TI\Renderer\Shader.cpp" />
     <ClCompile Include="Source\TI\Renderer\Texture.cpp" />
-    <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\TransformComponent.cpp" />
     <ClCompile Include="Source\TI\Util\File.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -119,7 +121,10 @@
     <ClInclude Include="Source\TI\Renderer\Mesh.h" />
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />
+    <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
+    <ClInclude Include="Source\TI\Server\Component\MovementComponent.h" />
+    <ClInclude Include="Source\TI\Server\Component\TransformComponent.h" />
     <ClInclude Include="Source\TI\Server\Entity.h" />
     <ClInclude Include="Source\TI\Util\Assert.h" />
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />

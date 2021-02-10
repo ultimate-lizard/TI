@@ -5,6 +5,7 @@
 #include <typeinfo>
 
 #include <TI/Server/Component/Component.h>
+#include <TI/Server/Component/MovementComponent.h>
 
 class Entity
 {

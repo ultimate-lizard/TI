@@ -12,7 +12,8 @@
 #include <TI/Client/Controller.h>
 #include <TI/Client/Input.h>
 #include <TI/Server/Entity.h>
-#include <TI/Server/Component/Component.h>
+#include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/CameraComponent.h>
 
 // static const char* CONFIG_PATH = "Config.cfg";
 static const char* GAME_TITLE = "TI";

@@ -7,6 +7,7 @@
 #include <TI/Client/InputHandler.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Entity.h>
+#include <TI/Server/Component/MovementComponent.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input

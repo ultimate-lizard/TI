@@ -1,6 +1,8 @@
-#include "Component.h"
+#include "MovementComponent.h"
 
 #include <TI/Server/Entity.h>
+#include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Renderer/Camera.h>
 
 MovementComponent::MovementComponent(Entity* entity) :
@@ -9,8 +11,8 @@ MovementComponent::MovementComponent(Entity* entity) :
 	pitchRate(0.0f),
 	speed(10.0f),
 	forward(0.0f, 0.0f, -1.0f),
-	up({0.0f, 1.0f, 0.0f}),
-	right({1.0f, 0.0f, 0.0f}),
+	up({ 0.0f, 1.0f, 0.0f }),
+	right({ 1.0f, 0.0f, 0.0f }),
 	sensivity(20.0f)
 {
 
@@ -202,70 +204,4 @@ void MovementComponent::addVerticalLook(float value)
 			transformComp->setPitch(transformComp->getPitch() + movement);
 		}
 	}
-}
-
-CameraComponent::CameraComponent(Entity* entity) :
-	Component(entity)
-{
-
-}
-
-void CameraComponent::setCamera(std::unique_ptr<Camera> camera)
-{
-	this->camera = std::move(camera);
-}
-
-Camera* CameraComponent::getCamera() const
-{
-	return camera.get();
-}
-
-TransformComponent::TransformComponent(Entity* entity, const glm::vec3& position, const glm::vec3& rotation) :
-	Component(entity),
-	position(position),
-	pitch(rotation.x),
-	yaw(rotation.y),
-	roll(rotation.z)
-{
-
-}
-
-void TransformComponent::setPosition(const glm::vec3& position)
-{
-	this->position = position;
-}
-
-const glm::vec3& TransformComponent::getPosition()
-{
-	return position;
-}
-
-void TransformComponent::setPitch(float pitch)
-{
-	this->pitch = pitch;
-}
-
-float TransformComponent::getPitch() const
-{
-	return pitch;
-}
-
-void TransformComponent::setYaw(float yaw)
-{
-	this->yaw = yaw;
-}
-
-float TransformComponent::getYaw() const
-{
-	return yaw;
-}
-
-void TransformComponent::setRoll(float roll)
-{
-	this->roll = roll;
-}
-
-float TransformComponent::getRoll() const
-{
-	return roll;
 }

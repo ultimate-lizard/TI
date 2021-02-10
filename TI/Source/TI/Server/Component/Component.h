@@ -20,7 +20,7 @@ protected:
 class TransformComponent : public Component
 {
 public:
-	TransformComponent(Entity* entity) : Component(entity) {}
+	TransformComponent(Entity* entity, const glm::vec3& position = {0.0f, 0.0f, 0.0f}) : Component(entity) {}
 
 	const glm::vec3& getPosition()
 	{

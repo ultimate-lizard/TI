@@ -194,10 +194,7 @@ void Application::start()
 
 	entity.addComponent<MovementComponent>(&entity);
 
-	// playerController->possesCamera(&camera);
 	playerController->posses(&entity);
-
-	renderer->setClearColor({ 1.0f, 0.0f, 1.0f, 1.0f });
 
 	// -------------------------------------------------------------------------------
 

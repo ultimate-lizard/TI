@@ -177,8 +177,8 @@ void Application::start()
 	Texture texture("../Textures/container.jpg");
 	texture.bind();
 
-	Camera camera({ 0.0f, 0.0f, 1.0f });
-	camera.setPerspective(
+	auto camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
+	camera->setPerspective(
 		glm::radians(85.0f),
 		static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT),
 		0.01f,
@@ -186,11 +186,11 @@ void Application::start()
 	);
 
 	Entity entity;
-	entity.addComponent<TransformComponent>(&entity);
+	entity.addComponent<TransformComponent>(&entity, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
 
 	entity.addComponent<CameraComponent>(&entity);
 	auto cameraComponent = entity.findComponent<CameraComponent>();
-	cameraComponent->setCamera(&camera);
+	cameraComponent->setCamera(std::move(camera));
 
 	entity.addComponent<MovementComponent>(&entity);
 
@@ -212,7 +212,7 @@ void Application::start()
 
 		entity.tick(endFrame * DELTA_MODIFIER);
 
-		renderer->render(&mesh, &shader, &camera);
+		renderer->render(&mesh, &shader, cameraComponent->getCamera());
 		SDL_GL_SwapWindow(sdlWindow);
 
 		endFrame = SDL_GetTicks() - startFrame;

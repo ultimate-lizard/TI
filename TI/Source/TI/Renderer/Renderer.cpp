@@ -32,6 +32,7 @@ Renderer::~Renderer()
 void Renderer::render(Mesh* mesh, Shader* shader, Camera* camera)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
 	camera->updateView();
 	shader->use();
@@ -61,7 +62,12 @@ void Renderer::render(Mesh* mesh, Shader* shader, Camera* camera)
 	}
 }
 
-void Renderer::setClearColor(glm::vec4 color)
+void Renderer::setClearColor(const glm::vec4& color)
 {
-	glClearColor(color.x, color.y, color.z, color.w);
+	clearColor = color;
+}
+
+const glm::vec4& Renderer::getClearColor() const
+{
+	return clearColor;
 }

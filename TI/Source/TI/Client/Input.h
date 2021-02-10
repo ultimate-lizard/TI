@@ -29,3 +29,24 @@ enum ActionInputType
 	KeyPress,
 	KeyRelease
 };
+
+class Application;
+
+class InputHandler;
+
+class Input
+{
+public:
+	Input(Application* app);
+	void handleInput();
+
+private:
+	void handleMouseMotion(InputHandler* inputHandler);
+	void handleControllerAxisMotion(InputHandler* inputHandler);
+
+	Application* app;
+	SDL_Event event;
+
+	int lastX;
+	int lastY;
+};

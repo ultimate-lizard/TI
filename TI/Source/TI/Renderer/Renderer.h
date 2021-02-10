@@ -15,8 +15,11 @@ public:
 
 	void render(Mesh* mesh, Shader* shader, Camera* camera);
 
-	void setClearColor(glm::vec4 color);
+	void setClearColor(const glm::vec4& color);
+	const glm::vec4& getClearColor() const;
 
 private:
 	SDL_GLContext glContext;
+
+	glm::vec4 clearColor;
 };

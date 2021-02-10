@@ -98,6 +98,7 @@
   <ItemGroup>
     <ClCompile Include="Source\TI\Application.cpp" />
     <ClCompile Include="Source\TI\Client\Controller.cpp" />
+    <ClCompile Include="Source\TI\Client\Input.cpp" />
     <ClCompile Include="Source\TI\Client\InputHandler.cpp" />
     <ClCompile Include="Source\TI\Renderer\Camera.cpp" />
     <ClCompile Include="Source\TI\Renderer\glad.c" />

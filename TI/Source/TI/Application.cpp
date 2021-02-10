@@ -19,9 +19,6 @@
 // static const char* CONFIG_PATH = "Config.cfg";
 static const char* GAME_TITLE = "TI";
 
-static const int DEFAULT_WINDOW_WIDTH = 1920;
-static const int DEFAULT_WINDOW_HEIGHT = 1080;
-
 static const float DELTA_MODIFIER = 0.0001f;
 
 Application::Application() :
@@ -209,97 +206,12 @@ void Application::start()
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
-	
-	int lastX = 0;
-	int lastY = 0;
 
-	SDL_Event event;
 	while (simulating)
 	{
 		startFrame = SDL_GetTicks();
 
-		bool keyDown = false;
-		int key = 0;
-
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-			case SDL_QUIT:
-				simulating = false;
-				break;
-
-			case SDL_CONTROLLERBUTTONDOWN:
-			case SDL_KEYDOWN:
-				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
-				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
-				break;
-
-			case SDL_CONTROLLERBUTTONUP:
-			case SDL_KEYUP:
-				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyRelease);
-				inputHandler->onAxisInput(event.key.keysym.scancode, 0.0f);
-				break;
-
-			case SDL_MOUSEMOTION:
-				{
-					int xPos = event.motion.x;
-					int yPos = event.motion.y;
-
-					float xOffset = static_cast<float>(xPos) - lastX;
-					float yOffset = static_cast<float>(lastY) - yPos;
-
-					lastX = xPos;
-					lastY = yPos;
-
-					xOffset = static_cast<float>(xOffset) / (127 - -127) * 2;
-					yOffset = static_cast<float>(yOffset) / (127 - -127) * 2;
-
-					inputHandler->onAxisInput(Axis::MouseX, static_cast<float>(xOffset));
-					inputHandler->onAxisInput(Axis::MouseY, static_cast<float>(yOffset));
-
-					SDL_WarpMouseInWindow(sdlWindow, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
-
-					break;
-				}
-				
-			case SDL_CONTROLLERAXISMOTION:
-				{
-					// TODO: Move that to config
-					int deadZone = 3000;
-
-					int motion = event.caxis.value;
-					float normalizedMotion = 0.0f;
-
-					if (motion < -deadZone || motion > deadZone)
-					{
-						normalizedMotion = static_cast<float>(motion) / (32767 - -32768) * 2;
-					}
-
-					switch (event.caxis.axis)
-					{
-					case SDL_CONTROLLER_AXIS_LEFTX:
-						inputHandler->onAxisInput(Axis::ControllerLeftStickX, normalizedMotion);
-						break;
-					case SDL_CONTROLLER_AXIS_LEFTY:
-						inputHandler->onAxisInput(Axis::ControllerLeftStickY, normalizedMotion);
-						break;
-					case SDL_CONTROLLER_AXIS_RIGHTX:
-						inputHandler->onAxisInput(Axis::ControllerRightStickX, normalizedMotion);
-						break;
-					case SDL_CONTROLLER_AXIS_RIGHTY:
-						inputHandler->onAxisInput(Axis::ControllerRightStickY, normalizedMotion);
-						break;
-					}
-
-					break;
-				}
-			
-				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
-				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
-				break;
-			}
-		}
+		input->handleInput();
 
 		entity.tick(endFrame * DELTA_MODIFIER);
 
@@ -310,9 +222,27 @@ void Application::start()
 	}
 }
 
+void Application::stop()
+{
+	simulating = false;
+}
+
+InputHandler* const Application::getInputHandler() const
+{
+	return inputHandler.get();
+}
+
+SDL_Window* const Application::getSDLWindow() const
+{
+	return sdlWindow;
+}
+
 void Application::init()
 {
 	renderer = std::make_unique<Renderer>(sdlWindow);
+	renderer->setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+
+	input = std::make_unique<Input>(this);
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(inputHandler.get());
 }

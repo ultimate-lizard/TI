@@ -3,8 +3,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <SDL.h>
-
 #include <TI/Renderer/Renderer.h>
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Shader.h>
@@ -25,7 +23,6 @@ Application::Application() :
 	simulating(false),
 	sdlWindow(nullptr)
 {
-	SDL_SetMainReady();
 	if (SDL_Init(SDL_INIT_EVERYTHING))
 	{
 		// TODO: Handle Error

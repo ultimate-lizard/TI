@@ -21,6 +21,8 @@ public:
 	void setRoll(float roll);
 	float getRoll() const;
 
+	const glm::mat4 getTransform() const;
+
 private:
 	glm::vec3 position;
 

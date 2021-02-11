@@ -29,7 +29,7 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::render(Mesh* mesh, Shader* shader, Camera* camera)
+void Renderer::render(Mesh* mesh, const glm::mat4& transform, Shader* shader, Camera* camera)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
@@ -40,16 +40,13 @@ void Renderer::render(Mesh* mesh, Shader* shader, Camera* camera)
 	const auto& projection = camera->getProjection();
 	const auto& view = camera->getView();
 
-	auto model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-
 	shader->setMatrix("projection", projection);
 	shader->setMatrix("view", view);
-	shader->setMatrix("model", model);
+	shader->setMatrix("model", transform);
 	
 	// 2. Iterate over render commands
 	// 2.1. Set model uniform
-	// 2.2. Render mesh (bind vao, either draw arrays or elemets)
+	// 2.2. Render mesh (bind vao, either draw arrays or elements)
 	glBindVertexArray(mesh->getVAO());
 
 	if (mesh->getIndices().empty())

@@ -13,7 +13,7 @@ public:
 	Renderer(SDL_Window* sdlWindow);
 	~Renderer();
 
-	void render(Mesh* mesh, Shader* shader, Camera* camera);
+	void render(Mesh* mesh, const glm::mat4& transform, Shader* shader, Camera* camera);
 
 	void setClearColor(const glm::vec4& color);
 	const glm::vec4& getClearColor() const;

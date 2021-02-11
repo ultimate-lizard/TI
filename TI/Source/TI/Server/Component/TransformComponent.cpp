@@ -1,5 +1,7 @@
 #include "TransformComponent.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 TransformComponent::TransformComponent(Entity* entity, const glm::vec3& position, const glm::vec3& rotation) :
 	Component(entity),
 	position(position),
@@ -48,4 +50,15 @@ void TransformComponent::setRoll(float roll)
 float TransformComponent::getRoll() const
 {
 	return roll;
+}
+
+const glm::mat4 TransformComponent::getTransform() const
+{
+	glm::mat4 transform(1.0f);
+
+	transform = glm::translate(transform, position);
+	transform = glm::rotate(transform, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+	transform = glm::rotate(transform, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	return transform;
 }

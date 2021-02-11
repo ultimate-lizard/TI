@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <TI/Renderer/Renderer.h>
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Shader.h>
@@ -210,7 +212,11 @@ void Application::start()
 
 		entity.tick(endFrame * DELTA_MODIFIER);
 
-		renderer->render(&mesh, &shader, cameraComponent->getCamera());
+		glm::mat4 meshTransform = glm::mat4(1.0f);
+		meshTransform = glm::translate(meshTransform, { 0.0f, 0.0f, -1.0f });
+		meshTransform = glm::rotate(meshTransform, glm::radians(-45.0f), { 0.0f, 1.0f, 0.0f });
+
+		renderer->render(&mesh, meshTransform, &shader, cameraComponent->getCamera());
 		SDL_GL_SwapWindow(sdlWindow);
 
 		endFrame = SDL_GetTicks() - startFrame;

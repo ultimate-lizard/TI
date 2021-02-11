@@ -1,7 +1,8 @@
 #include "Input.h"
 
 #include <TI/Application.h>
-#include <TI/Client/InputHandler.h>
+#include <TI/Client/Input/InputHandler.h>
+#include <TI/Client/Client.h>
 
 Input::Input(Application* app) :
 	app(app),
@@ -15,42 +16,49 @@ void Input::handleInput()
 {
 	while (SDL_PollEvent(&event))
 	{
-		InputHandler* inputHandler = nullptr;
-		if (app)
-		{
-			inputHandler = app->getInputHandler();
-		}
-
-		if (!inputHandler)
+		if (!app)
 		{
 			return;
 		}
 
-		switch (event.type)
+		InputHandler* inputHandler = nullptr;
+
+		auto localClients = app->getLocalClients();
+		for (auto client : localClients)
 		{
-		case SDL_QUIT:
-			app->stop();
-			break;
+			inputHandler = client->getInputHandler();
 
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_KEYDOWN:
-			inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
-			inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
-			break;
+			if (!inputHandler)
+			{
+				continue;
+			}
 
-		case SDL_CONTROLLERBUTTONUP:
-		case SDL_KEYUP:
-			inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyRelease);
-			inputHandler->onAxisInput(event.key.keysym.scancode, 0.0f);
-			break;
+			switch (event.type)
+			{
+			case SDL_QUIT:
+				app->requestQuit();
+				break;
 
-		case SDL_MOUSEMOTION:
-			handleMouseMotion(inputHandler);
-			break;
+			case SDL_CONTROLLERBUTTONDOWN:
+			case SDL_KEYDOWN:
+				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
+				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
+				break;
 
-		case SDL_CONTROLLERAXISMOTION:
-			handleControllerAxisMotion(inputHandler);
-			break;
+			case SDL_CONTROLLERBUTTONUP:
+			case SDL_KEYUP:
+				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyRelease);
+				inputHandler->onAxisInput(event.key.keysym.scancode, 0.0f);
+				break;
+
+			case SDL_MOUSEMOTION:
+				handleMouseMotion(inputHandler);
+				break;
+
+			case SDL_CONTROLLERAXISMOTION:
+				handleControllerAxisMotion(inputHandler);
+				break;
+			}
 		}
 	}
 }

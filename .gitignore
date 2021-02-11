@@ -3,3 +3,4 @@ TI/Bin
 TI/Temp
 .vs
 *.vcxproj.user
+TI/Config

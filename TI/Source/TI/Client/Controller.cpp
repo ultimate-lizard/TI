@@ -4,7 +4,7 @@
 
 #include <SDL.h>
 
-#include <TI/Client/InputHandler.h>
+#include <TI/Client/Input/InputHandler.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/MovementComponent.h>

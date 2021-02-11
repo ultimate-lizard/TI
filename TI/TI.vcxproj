@@ -97,9 +97,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\TI\Application.cpp" />
+    <ClCompile Include="Source\TI\Client\Client.cpp" />
     <ClCompile Include="Source\TI\Client\Controller.cpp" />
-    <ClCompile Include="Source\TI\Client\Input.cpp" />
-    <ClCompile Include="Source\TI\Client\InputHandler.cpp" />
+    <ClCompile Include="Source\TI\Input.cpp" />
+    <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
     <ClCompile Include="Source\TI\Renderer\Camera.cpp" />
     <ClCompile Include="Source\TI\Renderer\glad.c" />
     <ClCompile Include="Source\Main.cpp" />
@@ -110,13 +111,16 @@
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\TransformComponent.cpp" />
+    <ClCompile Include="Source\TI\Server\Server.cpp" />
     <ClCompile Include="Source\TI\Util\File.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\TI\Application.h" />
+    <ClInclude Include="Source\TI\Client\Client.h" />
+    <ClInclude Include="Source\TI\Client\ClientConnectionRequest.h" />
     <ClInclude Include="Source\TI\Client\Controller.h" />
-    <ClInclude Include="Source\TI\Client\InputHandler.h" />
-    <ClInclude Include="Source\TI\Client\Input.h" />
+    <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
+    <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />
     <ClInclude Include="Source\TI\Renderer\Mesh.h" />
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
@@ -126,6 +130,8 @@
     <ClInclude Include="Source\TI\Server\Component\MovementComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\TransformComponent.h" />
     <ClInclude Include="Source\TI\Server\Entity.h" />
+    <ClInclude Include="Source\TI\Server\Server.h" />
+    <ClInclude Include="Source\TI\Server\ServerConnectionResponse.h" />
     <ClInclude Include="Source\TI\Util\Assert.h" />
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />
     <ClInclude Include="Source\TI\Util\File.h" />

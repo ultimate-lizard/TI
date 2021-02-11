@@ -2,26 +2,6 @@
 
 #include <SDL.h>
 
-InputHandler::InputHandler()
-{
-	axisMappings.emplace(Key::W, AxisMapping({ "ForwardMovementAxis", 1.0f }));
-	axisMappings.emplace(Key::S, AxisMapping({ "ForwardMovementAxis", -1.0f }));
-	axisMappings.emplace(Key::A, AxisMapping({ "SideMovementAxis", -1.0f }));
-	axisMappings.emplace(Key::D, AxisMapping({ "SideMovementAxis", 1.0f }));
-
-	axisMappings.emplace(Axis::ControllerLeftStickX, AxisMapping({ "SideMovementAxis", 1.0f }));
-	axisMappings.emplace(Axis::ControllerLeftStickY, AxisMapping({ "ForwardMovementAxis", -1.0f }));
-
-	axisMappings.emplace(Axis::MouseX, AxisMapping({ "HorizontalLook", 1.0f }));
-	axisMappings.emplace(Axis::MouseY, AxisMapping({ "VerticalLook", 1.0f }));
-
-	axisMappings.emplace(Axis::ControllerRightStickX, AxisMapping({ "HorizontalLookRate", 1.0f }));
-	axisMappings.emplace(Axis::ControllerRightStickY, AxisMapping({ "VerticalLookRate", -1.0f }));
-
-	keyMappings.emplace(Key::ControllerButtonB, "QuitGame");
-	keyMappings.emplace(Key::Escape, "QuitGame");
-}
-
 void InputHandler::onKeyInput(int key, ActionInputType inputType)
 {
 	auto keyIter = keyMappings.find(key);

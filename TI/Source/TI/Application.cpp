@@ -10,12 +10,14 @@
 #include <TI/Renderer/Shader.h>
 #include <TI/Renderer/Texture.h>
 #include <TI/Renderer/Camera.h>
-#include <TI/Client/InputHandler.h>
-#include <TI/Client/Controller.h>
-#include <TI/Client/Input.h>
+#include <TI/Input.h>
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Component/MovementComponent.h>
+#include <TI/Server/Server.h>
+#include <TI/Client/Client.h>
+#include <TI/Client/Controller.h>
 
 // static const char* CONFIG_PATH = "Config.cfg";
 static const char* GAME_TITLE = "TI";
@@ -74,6 +76,7 @@ Application::~Application()
 void Application::start()
 {
 	init();
+	initClients();
 
 	simulating = true;
 
@@ -185,18 +188,17 @@ void Application::start()
 		1000.0f
 	);
 
-	Entity entity;
-	entity.addComponent<TransformComponent>(&entity, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+	// -------------------------------------------------------------------------------
 
-	entity.addComponent<CameraComponent>(&entity);
-	auto cameraComponent = entity.findComponent<CameraComponent>();
+	entity = std::make_unique<Entity>();
+
+	entity->addComponent<TransformComponent>(entity.get(), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+
+	entity->addComponent<CameraComponent>(entity.get());
+	auto cameraComponent = entity->findComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
 
-	entity.addComponent<MovementComponent>(&entity);
-
-	playerController->posses(&entity);
-
-	// -------------------------------------------------------------------------------
+	entity->addComponent<MovementComponent>(entity.get());
 
 	int startFrame = 0;
 	int endFrame = 0;
@@ -204,13 +206,34 @@ void Application::start()
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
 
+	if (clients[0])
+	{
+		clients[0]->connect();
+	}
+
+	auto localClients = getLocalClients();
+	localClients[0]->getController()->posses(entity.get());
+
 	while (simulating)
 	{
 		startFrame = SDL_GetTicks();
+		float dt = endFrame * DELTA_MODIFIER;
 
 		input->handleInput();
 
-		entity.tick(endFrame * DELTA_MODIFIER);
+		entity->tick(dt);
+		if (server)
+		{
+			server->update(dt);
+		}
+
+		for (auto& client : clients)
+		{
+			if (client)
+			{
+				client->update(dt);
+			}
+		}
 
 		glm::mat4 meshTransform = glm::mat4(1.0f);
 		meshTransform = glm::translate(meshTransform, { 0.0f, 0.0f, -1.0f });
@@ -221,21 +244,39 @@ void Application::start()
 
 		endFrame = SDL_GetTicks() - startFrame;
 	}
+
+	uninit();
 }
 
-void Application::stop()
+void Application::requestQuit()
 {
 	simulating = false;
-}
-
-InputHandler* const Application::getInputHandler() const
-{
-	return inputHandler.get();
 }
 
 SDL_Window* const Application::getSDLWindow() const
 {
 	return sdlWindow;
+}
+
+Server* const Application::getCurrentServer() const
+{
+	return server.get();
+}
+
+std::vector<LocalClient*> Application::getLocalClients() const
+{
+	std::vector<LocalClient*> localClients;
+
+	for (auto& client : clients)
+	{
+		auto localClient = dynamic_cast<LocalClient*>(client.get());
+		if (localClient)
+		{
+			localClients.push_back(localClient);
+		}
+	}
+
+	return std::move(localClients);
 }
 
 void Application::init()
@@ -244,6 +285,27 @@ void Application::init()
 	renderer->setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
 	input = std::make_unique<Input>(this);
-	inputHandler = std::make_unique<InputHandler>();
-	playerController = std::make_unique<PlayerController>(inputHandler.get());
+
+	server = std::make_unique<LocalServer>(this);
+}
+
+void Application::initClients()
+{
+	// TODO: Load clients from files
+	// Pass them their configs
+
+	clients.push_back(std::make_unique<LocalClient>(this));
+}
+
+void Application::uninit()
+{
+	for (auto& client : clients)
+	{
+		client->shutdown();
+	}
+
+	if (server)
+	{
+		server->shutdown();
+	}
 }

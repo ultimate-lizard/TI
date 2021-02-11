@@ -116,58 +116,6 @@ float MovementComponent::getYawRate() const
 	return yawRate;
 }
 
-void MovementComponent::setPitch(float pitch)
-{
-	if (entity)
-	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			transformComp->setPitch(pitch);
-		}
-	}
-}
-
-float MovementComponent::getPitch() const
-{
-	if (entity)
-	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			return transformComp->getPitch();
-		}
-	}
-
-	return 0.0f;
-}
-
-void MovementComponent::setYaw(float yaw)
-{
-	if (entity)
-	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			transformComp->setYaw(yaw);
-		}
-	}
-}
-
-float MovementComponent::getYaw() const
-{
-	if (entity)
-	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			return transformComp->getYaw();
-		}
-	}
-
-	return 0.0f;
-}
-
 void MovementComponent::setMovementForward(float value)
 {
 	velocity.z = value;

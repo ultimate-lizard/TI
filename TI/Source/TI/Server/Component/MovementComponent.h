@@ -25,12 +25,6 @@ public:
 	void setYawRate(float yawRate);
 	float getYawRate() const;
 
-	void setPitch(float pitch);
-	float getPitch() const;
-
-	void setYaw(float yaw);
-	float getYaw() const;
-
 	void setMovementForward(float value);
 	void setMovementSideways(float value);
 
@@ -46,6 +40,7 @@ private:
 	glm::vec3 right;
 
 	float sensivity;
+
 public:
 	void addHorizontalLook(float value);
 	void addVerticalLook(float value);

@@ -53,7 +53,10 @@ void MovementComponent::tick(float dt)
 			glm::vec3 position = transformComp->getPosition();
 			position += getVelocity().z * (speed * forward) * dt;
 			position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+
 			transformComp->setPosition(position);
+			transformComp->setPitch(pitch);
+			transformComp->setYaw(yaw);
 
 			CameraComponent* cameraComp = entity->findComponent<CameraComponent>();
 			if (cameraComp)

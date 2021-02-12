@@ -1,13 +1,13 @@
 #include "Client.h"
 
 #include <filesystem>
-#include <fstream>
 
 #include <TI/Client/ClientConnectionRequest.h>
 #include <TI/Server/Server.h>
 #include <TI/Application.h>
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/Controller.h>
+#include <TI/Util/Config.h>
 
 LocalClient::LocalClient(Application* app) :
 	Client(app)
@@ -61,25 +61,30 @@ void LocalClient::loadConfig()
 	}
 
 	std::string configFilePath = configFolderPath + name + CONFIG_EXTENSION;
-	std::ofstream file(configFilePath, std::fstream::app);
+	config.load(configFilePath);
 }
 
 void LocalClient::loadMappings()
 {
-	// TODO: The mappings must be taken from config
-	inputHandler->addAxisMapping(Key::W, AxisMapping({ "ForwardMovementAxis", 1.0f }));
-	inputHandler->addAxisMapping(Key::S, AxisMapping({ "ForwardMovementAxis", -1.0f }));
-	inputHandler->addAxisMapping(Key::A, AxisMapping({ "SideMovementAxis", -1.0f }));
-	inputHandler->addAxisMapping(Key::D, AxisMapping({ "SideMovementAxis", 1.0f }));
-	inputHandler->addAxisMapping(Axis::ControllerLeftStickX, AxisMapping({ "SideMovementAxis", 1.0f }));
-	inputHandler->addAxisMapping(Axis::ControllerLeftStickY, AxisMapping({ "ForwardMovementAxis", -1.0f }));
-	inputHandler->addAxisMapping(Axis::MouseX, AxisMapping({ "HorizontalLook", 1.0f }));
-	inputHandler->addAxisMapping(Axis::MouseY, AxisMapping({ "VerticalLook", 1.0f }));
-	inputHandler->addAxisMapping(Axis::ControllerRightStickX, AxisMapping({ "HorizontalLookRate", 1.0f }));
-	inputHandler->addAxisMapping(Axis::ControllerRightStickY, AxisMapping({ "VerticalLookRate", -1.0f }));
+	auto axisEntries = config.getAxisEntries();
+	for (const auto& entry : axisEntries)
+	{
+		if (entry.axis == Axis::UnknownAxis)
+		{
+			inputHandler->addAxisMapping(entry.key, AxisMapping({ entry.bindingName, entry.scale }));
+		}
+		else
+		{
+			inputHandler->addAxisMapping(entry.axis, AxisMapping({ entry.bindingName, entry.scale }));
+		}
 
-	inputHandler->addKeyMapping(Key::ControllerButtonB, "QuitGame");
-	inputHandler->addKeyMapping(Key::Escape, "QuitGame");
+	}
+
+	auto keyEntries = config.getKeyEntries();
+	for (const auto& entry : keyEntries)
+	{
+		inputHandler->addKeyMapping(entry.key, entry.bindingName);
+	}
 }
 
 void Client::setName(const std::string& name)

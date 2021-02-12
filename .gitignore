@@ -1,6 +1,5 @@
-
 TI/Bin
 TI/Temp
 .vs
-*.vcxproj.user
-TI/Config
+*.vcxproj.*
+TI/Config/Players

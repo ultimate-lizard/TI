@@ -4,6 +4,7 @@
 #include <string>
 
 #include <TI/Server/ServerConnectionResponse.h>
+#include <TI/Util/Config.h>
 
 class Application;
 class InputHandler;
@@ -55,4 +56,6 @@ private:
 
 	std::unique_ptr<InputHandler> inputHandler;
 	std::unique_ptr<IController> playerController;
+
+	Config config;
 };

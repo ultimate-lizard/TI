@@ -6,16 +6,44 @@
 
 enum Key
 {
-	W = SDL_SCANCODE_W,
-	S = SDL_SCANCODE_S,
+	UnknownKey = 0,
 	A = SDL_SCANCODE_A,
-	D = SDL_SCANCODE_D,
+	B,
+	C,
+	D,
+	E,
+	F,
+	G,
+	H,
+	I,
+	J,
+	K,
+	L,
+	M,
+	N,
+	O,
+	P,
+	Q,
+	R,
+	S,
+	T,
+	U,
+	V,
+	W,
+	X,
+	Y,
+	Z,
 	Escape = SDL_SCANCODE_ESCAPE,
-	ControllerButtonB = SDL_CONTROLLER_BUTTON_B
+	ControllerButtonB = SDL_CONTROLLER_BUTTON_B,
+	Right = SDL_SCANCODE_RIGHT,
+	Left,
+	Down,
+	Up,
 };
 
 enum Axis
 {
+	UnknownAxis = 0,
 	MouseX = 513,
 	MouseY,
 	ControllerLeftStickX,
@@ -31,7 +59,6 @@ enum ActionInputType
 };
 
 class Application;
-
 class InputHandler;
 
 class Input

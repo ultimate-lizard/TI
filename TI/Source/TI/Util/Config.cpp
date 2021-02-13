@@ -8,6 +8,8 @@ static const char* CONTROLS_SECTION_NAME = "CONTROLS";
 
 void Config::load(const std::string& path)
 {
+	this->path = path;
+
     if (!std::filesystem::exists(path))
     {
         return;
@@ -20,7 +22,9 @@ void Config::load(const std::string& path)
         return;
     }
 
-    parse(file);
+	parse(file);
+
+	file.close();
 }
 
 const std::vector<KeyEntry>& Config::getKeyEntries() const
@@ -96,6 +100,42 @@ void Config::parseControlsLine(const std::string& line)
 	}
 }
 
+void Config::save()
+{
+	if (pendingSave)
+	{
+		if (!keyEntries.empty() || !axisEntries.empty())
+		{
+			std::ofstream file;
+			file.open(path);
+
+			file << CONTROLS_SECTION_NAME << std::endl;
+
+			for (const auto& entry : keyEntries)
+			{
+				file << "KEY" << " " << entry.bindingName << " " << keyToString(entry.key) << std::endl;
+			}
+
+			for (const auto& entry : axisEntries)
+			{
+				file << "AXIS" << " " << entry.bindingName << " ";
+				if (entry.axis == Axis::UnknownAxis)
+				{
+					file << keyToString(entry.key) << " ";
+				}
+				else
+				{
+					file << axisToString(entry.axis) << " ";
+				}
+
+				file << entry.scale << std::endl;
+			}
+
+			file.close();
+		}
+	}
+}
+
 Key Config::stringToKey(const std::string& string)
 {
 	if (string == "A") return Key::A;
@@ -134,6 +174,44 @@ Key Config::stringToKey(const std::string& string)
 	return Key::UnknownKey;
 }
 
+std::string Config::keyToString(Key key)
+{
+	if (key == Key::A) return "A";
+	if (key == Key::B) return "B";
+	if (key == Key::C) return "C";
+	if (key == Key::D) return "D";
+	if (key == Key::E) return "E";
+	if (key == Key::F) return "F";
+	if (key == Key::G) return "G";
+	if (key == Key::H) return "H";
+	if (key == Key::I) return "I";
+	if (key == Key::J) return "J";
+	if (key == Key::K) return "K";
+	if (key == Key::L) return "L";
+	if (key == Key::M) return "M";
+	if (key == Key::N) return "N";
+	if (key == Key::O) return "O";
+	if (key == Key::P) return "P";
+	if (key == Key::Q) return "Q";
+	if (key == Key::R) return "R";
+	if (key == Key::S) return "S";
+	if (key == Key::T) return "T";
+	if (key == Key::U) return "U";
+	if (key == Key::V) return "V";
+	if (key == Key::W) return "W";
+	if (key == Key::X) return "X";
+	if (key == Key::Y) return "Y";
+	if (key == Key::Z) return "Z";
+	if (key == Key::Escape) return "Escape";
+	if (key == Key::ControllerButtonB) return "ControllerButtonB";
+	if (key == Key::Right) return "Right";
+	if (key == Key::Left) return "Left";
+	if (key == Key::Down) return "Down";
+	if (key == Key::Up) return "Up";
+
+	return "UnknownKey";
+}
+
 Axis Config::stringToAxis(const std::string& string)
 {
 	if (string == "MouseX") return Axis::MouseX;
@@ -143,4 +221,16 @@ Axis Config::stringToAxis(const std::string& string)
 	if (string == "ControllerRightStickX") return Axis::ControllerRightStickX;
 	if (string == "ControllerRightStickY") return Axis::ControllerRightStickY;
 	return Axis::UnknownAxis;
+}
+
+std::string Config::axisToString(Axis axis)
+{
+	if (axis == Axis::MouseX) return "MouseX";
+	if (axis == Axis::MouseY) return "MouseY";
+	if (axis == Axis::ControllerLeftStickX) return "ControllerLeftStickX";
+	if (axis == Axis::ControllerLeftStickY) return "ControllerLeftStickY";
+	if (axis == Axis::ControllerRightStickX) return "ControllerRightStickX";
+	if (axis == Axis::ControllerRightStickY) return "ControllerRightStickY";
+
+	return "UnknownAxis";
 }

@@ -8,15 +8,18 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/MovementComponent.h>
+#include <TI/Client/Client.h>
+#include <TI/Application.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
 static const float CONTROLLER_SENSIVITY_ADJUSTER = 100.0f;
 
-PlayerController::PlayerController(InputHandler* inputHandler) :
+PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 	inputHandler(inputHandler),
 	entity(nullptr),
-	movementComp(nullptr)
+	movementComp(nullptr),
+	client(client)
 {
 	setupInputHandler();
 }
@@ -81,7 +84,11 @@ void PlayerController::posses(Entity* entity)
 
 void PlayerController::quitGame()
 {
-	exit(0);
+	auto app = client->getApplication();
+	if (app)
+	{
+		app->requestQuit();
+	}
 }
 
 void PlayerController::setupInputHandler()

@@ -30,6 +30,8 @@ public:
 
 	virtual void shutdown() {}
 
+	Application* const getApplication() const;
+
 protected:
 	Application* app;
 
@@ -49,6 +51,8 @@ public:
 
 	InputHandler* const getInputHandler() const;
 	IController* const getController() const;
+
+	void shutdown() override;
 
 private:
 	void loadConfig();

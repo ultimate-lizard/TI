@@ -13,7 +13,7 @@ LocalClient::LocalClient(Application* app) :
 	Client(app)
 {
 	inputHandler = std::make_unique<InputHandler>();
-	playerController = std::make_unique<PlayerController>(inputHandler.get());
+	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
 
 	playerController->posses(app->entity.get());
 
@@ -52,15 +52,25 @@ IController* const LocalClient::getController() const
 	return playerController.get();
 }
 
+void LocalClient::shutdown()
+{
+	config.save();
+}
+
 void LocalClient::loadConfig()
 {
 	std::string configFolderPath = CONFIG_FOLDER + std::string("Players/");
+	std::string configFilePath = configFolderPath + name + CONFIG_EXTENSION;
 	if (!std::filesystem::exists(configFolderPath))
 	{
 		std::filesystem::create_directories(configFolderPath);
 	}
 
-	std::string configFilePath = configFolderPath + name + CONFIG_EXTENSION;
+	if (!std::filesystem::exists(configFilePath))
+	{
+		std::filesystem::copy_file(CONFIG_FOLDER + std::string("Default.cfg"), configFilePath);
+	}
+
 	config.load(configFilePath);
 }
 
@@ -77,7 +87,6 @@ void LocalClient::loadMappings()
 		{
 			inputHandler->addAxisMapping(entry.axis, AxisMapping({ entry.bindingName, entry.scale }));
 		}
-
 	}
 
 	auto keyEntries = config.getKeyEntries();
@@ -100,4 +109,9 @@ const std::string& Client::getName() const
 int Client::getId() const
 {
 	return id;
+}
+
+Application* const Client::getApplication() const
+{
+	return app;
 }

@@ -3,6 +3,7 @@
 class InputHandler;
 class Entity;
 class MovementComponent;
+class Client;
 
 class IController
 {
@@ -15,7 +16,7 @@ public:
 class PlayerController : public IController
 {
 public:
-	PlayerController(InputHandler* inputHandler);
+	PlayerController(Client* client, InputHandler* inputHandler);
 
 	void posses(Entity* entity) override;
 
@@ -36,4 +37,5 @@ private:
 	InputHandler* inputHandler;
 	Entity* entity;
 	MovementComponent* movementComp;
+	Client* client;
 };

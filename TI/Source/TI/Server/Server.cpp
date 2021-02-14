@@ -20,7 +20,7 @@ LocalServer::LocalServer(Application* app) :
 
 void LocalServer::update(float dt)
 {
-	for (auto& entityPair : entities)
+	for (auto& entityPair : spawnedEntities)
 	{
 		entityPair.second->tick(dt);
 	}
@@ -38,11 +38,11 @@ void LocalServer::connectClient(ClientConnectionRequest request)
 
 void LocalServer::createCubes()
 {
-	entities.emplace("cube", std::make_unique<Entity>());
-	entities.emplace("cube2", std::make_unique<Entity>());
+	spawnedEntities.emplace("cube", std::make_unique<Entity>());
+	spawnedEntities.emplace("cube2", std::make_unique<Entity>());
 
-	auto& cubeEntity = entities.at("cube");
-	auto& cube2Entity = entities.at("cube2");
+	auto& cubeEntity = spawnedEntities.at("cube");
+	auto& cube2Entity = spawnedEntities.at("cube2");
 
 	// Cube 1
 	cubeEntity->addComponent<TransformComponent>(cubeEntity.get(), glm::vec3(0.0f, 0.0f, -1.0f));
@@ -57,7 +57,7 @@ void LocalServer::createCubes()
 	}
 
 	// Cube 2
-	cube2Entity->addComponent<TransformComponent>(cube2Entity.get(), glm::vec3(-1.0f, 0.0f, -1.0f));
+	cube2Entity->addComponent<TransformComponent>(cube2Entity.get(), glm::vec3(-2.0f, 0.0f, -1.0f));
 	if (app)
 	{
 		cube2Entity->addComponent<MeshComponent>(cube2Entity.get(), app->getModelManager());
@@ -71,9 +71,9 @@ void LocalServer::createCubes()
 
 void LocalServer::createPlayerEntity(const std::string& name)
 {
-	entities.emplace(name, std::make_unique<Entity>());
+	spawnedEntities.emplace(name, std::make_unique<Entity>());
 
-	auto& playerEntity = entities.at(name);
+	auto& playerEntity = spawnedEntities.at(name);
 	playerEntity->addComponent<TransformComponent>(playerEntity.get(), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
 	playerEntity->addComponent<MovementComponent>(playerEntity.get());
 
@@ -100,7 +100,7 @@ void LocalServer::possesEntity(const std::string& entityName, const std::string&
 		1000.0f
 	);
 
-	auto& playerEntity = entities.at(entityName);
+	auto& playerEntity = spawnedEntities.at(entityName);
 
 	playerEntity->addComponent<CameraComponent>(playerEntity.get());
 
@@ -125,8 +125,8 @@ void LocalServer::possesEntity(const std::string& entityName, const std::string&
 
 Entity* const Server::findEntity(const std::string& name)
 {
-	auto iter = entities.find(name);
-	if (iter != entities.end())
+	auto iter = spawnedEntities.find(name);
+	if (iter != spawnedEntities.end())
 	{
 		return iter->second.get();
 	}
@@ -136,5 +136,5 @@ Entity* const Server::findEntity(const std::string& name)
 
 const std::map<std::string, std::unique_ptr<Entity>>& Server::getEntities() const
 {
-	return entities;
+	return spawnedEntities;
 }

@@ -5,11 +5,11 @@
 
 #include <TI/Server/ServerConnectionResponse.h>
 #include <TI/Util/Config.h>
+#include <TI/Server/Entity.h>
 
 class Application;
 class InputHandler;
 class IController;
-class Entity;
 
 static const char* DEFAULT_PLAYER_NAME = "Player";
 

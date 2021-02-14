@@ -1,19 +1,11 @@
 #include "Application.h"
 
 #include <stdexcept>
-#include <iostream>
-
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <TI/Renderer/Renderer.h>
-#include <TI/Renderer/Mesh.h>
-#include <TI/Renderer/Shader.h>
-#include <TI/Renderer/Texture.h>
-#include <TI/Renderer/Camera.h>
 #include <TI/Input.h>
 #include <TI/Server/Server.h>
 #include <TI/Client/Client.h>
-#include <TI/Client/Controller.h>
 #include <TI/ModelManager.h>
 
 static const char* GAME_TITLE = "TI";
@@ -76,14 +68,6 @@ void Application::start()
 
 	simulating = true;
 
-	auto camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
-	camera->setPerspective(
-		glm::radians(85.0f),
-		static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT),
-		0.01f,
-		1000.0f
-	);
-
 	int startFrame = 0;
 	int endFrame = 0;
 
@@ -95,20 +79,12 @@ void Application::start()
 		clients[0]->connect();
 	}
 
-	// auto localClients = getLocalClients();
-	// localClients[0]->getController()->posses(playerEntity.get());
-
 	while (simulating)
 	{
 		startFrame = SDL_GetTicks();
 		float dt = endFrame * DELTA_MODIFIER;
 
 		input->handleInput();
-
-		//for (auto& entity : entities)
-		//{
-		//	entity.second->tick(dt);
-		//}
 
 		if (server)
 		{
@@ -188,9 +164,6 @@ void Application::init()
 
 void Application::initClients()
 {
-	// TODO: Load clients from files
-	// Pass them their configs
-
 	clients.push_back(std::make_unique<LocalClient>(this));
 }
 

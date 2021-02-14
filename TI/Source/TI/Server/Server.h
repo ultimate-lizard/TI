@@ -28,7 +28,8 @@ protected:
 	Application* app;
 
 	std::map<std::string, Client*> connectedClients;
-	std::map<std::string, std::unique_ptr<Entity>> entities;
+	std::map<std::string, std::unique_ptr<Entity>> spawnedEntities;
+	std::map<std::string, std::unique_ptr<Entity>> entityTemplates;
 };
 
 class LocalServer : public Server

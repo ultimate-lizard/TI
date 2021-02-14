@@ -11,15 +11,11 @@
 #include <TI/Renderer/Texture.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Input.h>
-#include <TI/Server/Entity.h>
-#include <TI/Server/Component/TransformComponent.h>
-#include <TI/Server/Component/CameraComponent.h>
-#include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Server.h>
 #include <TI/Client/Client.h>
 #include <TI/Client/Controller.h>
+#include <TI/ModelManager.h>
 
-// static const char* CONFIG_PATH = "Config.cfg";
 static const char* GAME_TITLE = "TI";
 
 static const float DELTA_MODIFIER = 0.0001f;
@@ -80,106 +76,6 @@ void Application::start()
 
 	simulating = true;
 
-	// Temp OpenGL -------------------------------------------------------------------
-
-	Mesh mesh;
-
-	mesh.setPositions({
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f,  0.5f, -0.5f),
-		glm::vec3(0.5f,  0.5f, -0.5f),
-		glm::vec3(-0.5f,  0.5f, -0.5f),
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-
-		glm::vec3(-0.5f, -0.5f,  0.5f),
-		glm::vec3(0.5f, -0.5f,  0.5f),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f, -0.5f,  0.5f),
-
-		glm::vec3(-0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f, -0.5f),
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-		glm::vec3(-0.5f, -0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f,  0.5f),
-
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(0.5f,  0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f,  0.5f),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f, -0.5f),
-		glm::vec3(0.5f, -0.5f,  0.5f),
-		glm::vec3(0.5f, -0.5f,  0.5f),
-		glm::vec3(-0.5f, -0.5f,  0.5f),
-		glm::vec3(-0.5f, -0.5f, -0.5f),
-
-		glm::vec3(-0.5f,  0.5f, -0.5f),
-		glm::vec3(0.5f,  0.5f, -0.5f),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f, -0.5f),
-	});
-
-	mesh.setUVs({
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 0.0f),
-
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 0.0f),
-
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(0.0f, 1.0f),
-
-		glm::vec2(0.0f, 1.0f),
-		glm::vec2(1.0f, 1.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(1.0f, 0.0f),
-		glm::vec2(0.0f, 0.0f),
-		glm::vec2(0.0f, 1.0f)
-	});
-
-	mesh.finalize();
-
-	Shader shader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	shader.setVector("triangleColor", glm::vec4(1.0f, 0.0f, 0.0f, 0.0f));
-
-	Texture texture("../Textures/container.jpg");
-	texture.bind();
-
 	auto camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
 	camera->setPerspective(
 		glm::radians(85.0f),
@@ -187,18 +83,6 @@ void Application::start()
 		0.01f,
 		1000.0f
 	);
-
-	// -------------------------------------------------------------------------------
-
-	entity = std::make_unique<Entity>();
-
-	entity->addComponent<TransformComponent>(entity.get(), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-
-	entity->addComponent<CameraComponent>(entity.get());
-	auto cameraComponent = entity->findComponent<CameraComponent>();
-	cameraComponent->setCamera(std::move(camera));
-
-	entity->addComponent<MovementComponent>(entity.get());
 
 	int startFrame = 0;
 	int endFrame = 0;
@@ -211,8 +95,8 @@ void Application::start()
 		clients[0]->connect();
 	}
 
-	auto localClients = getLocalClients();
-	localClients[0]->getController()->posses(entity.get());
+	// auto localClients = getLocalClients();
+	// localClients[0]->getController()->posses(playerEntity.get());
 
 	while (simulating)
 	{
@@ -221,7 +105,11 @@ void Application::start()
 
 		input->handleInput();
 
-		entity->tick(dt);
+		//for (auto& entity : entities)
+		//{
+		//	entity.second->tick(dt);
+		//}
+
 		if (server)
 		{
 			server->update(dt);
@@ -235,11 +123,8 @@ void Application::start()
 			}
 		}
 
-		glm::mat4 meshTransform = glm::mat4(1.0f);
-		meshTransform = glm::translate(meshTransform, { 0.0f, 0.0f, -1.0f });
-		meshTransform = glm::rotate(meshTransform, glm::radians(-45.0f), { 0.0f, 1.0f, 0.0f });
+		renderer->render();
 
-		renderer->render(&mesh, meshTransform, &shader, cameraComponent->getCamera());
 		SDL_GL_SwapWindow(sdlWindow);
 
 		endFrame = SDL_GetTicks() - startFrame;
@@ -279,10 +164,22 @@ std::vector<LocalClient*> Application::getLocalClients() const
 	return std::move(localClients);
 }
 
+Renderer* const Application::getRenderer() const
+{
+	return renderer.get();
+}
+
+ModelManager* const Application::getModelManager() const
+{
+	return modelManager.get();
+}
+
 void Application::init()
 {
 	renderer = std::make_unique<Renderer>(sdlWindow);
 	renderer->setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+
+	modelManager = std::make_unique<ModelManager>();
 
 	input = std::make_unique<Input>(this);
 

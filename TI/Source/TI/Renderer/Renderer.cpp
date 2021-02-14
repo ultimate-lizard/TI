@@ -8,9 +8,14 @@
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Shader.h>
 #include <TI/Renderer/Camera.h>
+#include <TI/Renderer/Model.h>
+#include <TI/Server/Component/MeshComponent.h>
+#include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Entity.h>
 
 Renderer::Renderer(SDL_Window* SDLWindow) :
-	glContext(nullptr)
+	glContext(nullptr),
+	camera(nullptr)
 {
 	glContext = SDL_GL_CreateContext(SDLWindow);
 
@@ -29,33 +34,63 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::render(Mesh* mesh, const glm::mat4& transform, Shader* shader, Camera* camera)
+void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform)
+{
+	renderCommands.push_front({mesh, material, transform});
+}
+
+void Renderer::pushRender(MeshComponent* meshComponent)
+{
+	auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
+	if (transformComp)
+	{
+		auto model = meshComponent->getModel();
+		auto mesh = model->getMesh();
+		auto material = model->getMaterial();
+		auto transform = transformComp->getTransform();
+
+		pushRender(mesh, material, transform);
+	}
+}
+
+void Renderer::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
-	camera->updateView();
-	shader->use();
+	if (!camera)
+	{
+		return;
+	}
 
 	const auto& projection = camera->getProjection();
 	const auto& view = camera->getView();
 
-	shader->setMatrix("projection", projection);
-	shader->setMatrix("view", view);
-	shader->setMatrix("model", transform);
-	
-	// 2. Iterate over render commands
-	// 2.1. Set model uniform
-	// 2.2. Render mesh (bind vao, either draw arrays or elements)
-	glBindVertexArray(mesh->getVAO());
+	while (!renderCommands.empty())
+	{
+		auto command = renderCommands.back();
+		renderCommands.pop_back();
 
-	if (mesh->getIndices().empty())
-	{
-		glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mesh->getPositions().size()));
-	}
-	else
-	{
-		glDrawElements(GL_TRIANGLES, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+		command.material->getTexture()->bind();
+
+		auto shader = command.material->getShader();
+		shader->use();
+
+		shader->setMatrix("projection", projection);
+		shader->setMatrix("view", view);
+		shader->setMatrix("model", command.transform);
+
+		auto mesh = command.mesh;
+
+		glBindVertexArray(command.mesh->getVAO());
+		if (mesh->getIndices().empty())
+		{
+			glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mesh->getPositions().size()));
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+		}
 	}
 }
 
@@ -67,4 +102,9 @@ void Renderer::setClearColor(const glm::vec4& color)
 const glm::vec4& Renderer::getClearColor() const
 {
 	return clearColor;
+}
+
+void Renderer::setCamera(Camera* camera)
+{
+	this->camera = camera;
 }

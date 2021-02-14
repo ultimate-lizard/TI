@@ -1,16 +1,20 @@
 #pragma once
 
+#include <TI/Server/Entity.h>
+
 class InputHandler;
-class Entity;
 class MovementComponent;
 class Client;
 
 class IController
 {
 public:
+	IController() : entity(nullptr) {}
 	virtual ~IController() = default;
 
 	virtual void posses(Entity* entity) = 0;
+
+	Entity* entity;
 };
 
 class PlayerController : public IController
@@ -35,7 +39,6 @@ private:
 	void quitGame();
 
 	InputHandler* inputHandler;
-	Entity* entity;
 	MovementComponent* movementComp;
 	Client* client;
 };

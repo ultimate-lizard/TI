@@ -6,7 +6,6 @@
 
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Renderer/Camera.h>
-#include <TI/Server/Entity.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Client/Client.h>
 #include <TI/Application.h>
@@ -17,7 +16,7 @@ static const float CONTROLLER_SENSIVITY_ADJUSTER = 100.0f;
 
 PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 	inputHandler(inputHandler),
-	entity(nullptr),
+	// entity(nullptr),
 	movementComp(nullptr),
 	client(client)
 {

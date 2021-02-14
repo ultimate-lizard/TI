@@ -10,6 +10,8 @@ public:
 
 	virtual void tick(float dt) {}
 
+	inline Entity* getEntity() { return entity; }
+
 protected:
 	Entity* entity;
 };

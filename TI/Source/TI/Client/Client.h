@@ -9,13 +9,14 @@
 class Application;
 class InputHandler;
 class IController;
+class Entity;
 
 static const char* DEFAULT_PLAYER_NAME = "Player";
 
 class Client
 {
 public:
-	Client(Application* app) : app(app), id(0) {}
+	Client(Application* app) : app(app), id(0), possessedEntity(nullptr) {}
 	virtual ~Client() = default;
 
 	virtual void update(float dt) {};
@@ -32,11 +33,15 @@ public:
 
 	Application* const getApplication() const;
 
+	virtual void possesEntity(Entity* entity);
+
 protected:
 	Application* app;
 
 	std::string name;
 	int id;
+
+	Entity* possessedEntity;
 };
 
 class LocalClient : public Client
@@ -44,10 +49,12 @@ class LocalClient : public Client
 public:
 	LocalClient(Application* app);
 
+	void update(float dt) override;
+
 	void connect() override;
 	void receiveServerConnectionResponse(ServerConnectionResponse response) override;
 
-	void update(float dt) override;
+	void possesEntity(Entity* entity) override;
 
 	InputHandler* const getInputHandler() const;
 	IController* const getController() const;

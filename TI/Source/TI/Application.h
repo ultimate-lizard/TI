@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <vector>
+#include <map>
+#include <string>
 
 // TODO: Move this to Window class
 static const int DEFAULT_WINDOW_WIDTH = 800;
@@ -16,6 +18,7 @@ class Server;
 class Client;
 class Entity;
 class LocalClient;
+class ModelManager;
 
 struct SDL_Window;
 
@@ -36,7 +39,8 @@ public:
 	Server* const getCurrentServer() const;
 	std::vector<LocalClient*> getLocalClients() const;
 
-	std::unique_ptr<Entity> entity;
+	Renderer* const getRenderer() const;
+	ModelManager* const getModelManager() const;
 
 private:
 	void init();
@@ -49,6 +53,7 @@ private:
 	SDL_Window* sdlWindow;
 
 	std::unique_ptr<Renderer> renderer;
+	std::unique_ptr<ModelManager> modelManager;
 
 	std::unique_ptr<Input> input;
 

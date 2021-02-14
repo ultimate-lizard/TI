@@ -13,7 +13,7 @@ public:
 	void updateView();
 
 	const glm::mat4& getProjection() const;
-	const glm::mat4& getView() const;
+	const glm::mat4& getView();
 
 	void setPosition(const glm::vec3& position);
 	const glm::vec3& getPosition() const;

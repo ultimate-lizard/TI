@@ -8,6 +8,9 @@
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/Controller.h>
 #include <TI/Util/Config.h>
+#include <TI/Server/Component/MeshComponent.h>
+#include <TI/Server/Entity.h>
+#include <TI/Renderer/Renderer.h>
 
 LocalClient::LocalClient(Application* app) :
 	Client(app)
@@ -15,7 +18,12 @@ LocalClient::LocalClient(Application* app) :
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
 
-	playerController->posses(app->entity.get());
+	//if (app)
+	//{
+	//	auto& playerEntity = app->entities.at("player");
+	//	playerController->posses(playerEntity.get());
+	//}
+	
 
 	name = DEFAULT_PLAYER_NAME;
 
@@ -37,9 +45,37 @@ void LocalClient::receiveServerConnectionResponse(ServerConnectionResponse respo
 	id = response.id;
 }
 
+void LocalClient::possesEntity(Entity* entity)
+{
+	Client::possesEntity(entity);
+
+	playerController->posses(entity);
+}
+
 void LocalClient::update(float dt)
 {
-	
+	// Render
+	if (app)
+	{
+		Renderer* const renderer = app->getRenderer();
+		if (renderer)
+		{
+			auto server = app->getCurrentServer();
+			if (server)
+			{
+				for (auto& entityPair : server->getEntities())
+				{
+					auto& entity = entityPair.second;
+
+					auto meshComp = entity->findComponent<MeshComponent>();
+					if (meshComp)
+					{
+						renderer->pushRender(meshComp);
+					}
+				}
+			}
+		}
+	}
 }
 
 InputHandler* const LocalClient::getInputHandler() const
@@ -114,4 +150,9 @@ int Client::getId() const
 Application* const Client::getApplication() const
 {
 	return app;
+}
+
+void Client::possesEntity(Entity* entity)
+{
+	possessedEntity = entity;
 }

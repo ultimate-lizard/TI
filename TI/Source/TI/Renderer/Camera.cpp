@@ -26,8 +26,10 @@ const glm::mat4& Camera::getProjection() const
 	return projection;
 }
 
-const glm::mat4& Camera::getView() const
+const glm::mat4& Camera::getView()
 {
+	updateView();
+
 	return view;
 }
 

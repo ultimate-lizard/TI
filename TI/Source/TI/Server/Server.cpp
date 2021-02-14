@@ -77,15 +77,15 @@ void LocalServer::createPlayerEntity(const std::string& name)
 	playerEntity->addComponent<TransformComponent>(playerEntity.get(), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
 	playerEntity->addComponent<MovementComponent>(playerEntity.get());
 
-	if (app)
-	{
-		playerEntity->addComponent<MeshComponent>(playerEntity.get(), app->getModelManager());
-	}
-	auto playerMesh = playerEntity->findComponent<MeshComponent>();
-	if (playerMesh)
-	{
-		playerMesh->loadModel("cube");
-	}
+	//if (app)
+	//{
+	//	playerEntity->addComponent<MeshComponent>(playerEntity.get(), app->getModelManager());
+	//}
+	//auto playerMesh = playerEntity->findComponent<MeshComponent>();
+	//if (playerMesh)
+	//{
+	//	playerMesh->loadModel("cube");
+	//}
 
 	possesEntity(name, name);
 }

@@ -33,11 +33,11 @@ void MovementComponent::tick(float dt)
 
 			if (pitch > 89.0f)
 			{
-				transformComp->setPitch(89.0f);
+				pitch = 89.0f;
 			}
 			if (pitch < -89.0f)
 			{
-				transformComp->setPitch(-89.0f);
+				pitch = -89.0f;
 			}
 
 			glm::vec3 newForward;

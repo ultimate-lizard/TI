@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <typeinfo>
+#include <string>
 
 #include <TI/Server/Component/Component.h>
 
@@ -10,7 +11,7 @@ class Entity
 {
 public:
 	template <class AddedComponent, typename ... Args>
-	void addComponent(Args&& ... args)
+	inline void addComponent(Args&& ... args)
 	{
 		if (!findComponent<AddedComponent>())
 		{
@@ -21,7 +22,7 @@ public:
 	}
 
 	template <class SearchedComponent>
-	SearchedComponent* findComponent()
+	inline SearchedComponent* findComponent()
 	{
 		for (auto& component : components)
 		{
@@ -35,7 +36,7 @@ public:
 		return nullptr;
 	}
 
-	void tick(float dt)
+	inline void tick(float dt)
 	{
 		for (auto& component : components)
 		{
@@ -43,6 +44,17 @@ public:
 		}
 	}
 
+	inline void setName(const std::string& name)
+	{
+		this->name = name;
+	}
+
+	inline std::string getName() const
+	{
+		return name;
+	}
+
 private:
 	std::vector<std::unique_ptr<Component>> components;
+	std::string name;
 };

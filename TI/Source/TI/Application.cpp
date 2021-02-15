@@ -74,9 +74,9 @@ void Application::start()
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
 
-	if (clients[0])
+	for (auto& client : clients)
 	{
-		clients[0]->connect();
+		client->connect();
 	}
 
 	while (simulating)
@@ -165,6 +165,11 @@ void Application::init()
 void Application::initClients()
 {
 	clients.push_back(std::make_unique<LocalClient>(this));
+
+	//auto player2 = std::make_unique<LocalClient>(this, "Player2");
+	//player2->setViewportId(1);
+
+	//clients.push_back(std::move(player2));
 }
 
 void Application::uninit()

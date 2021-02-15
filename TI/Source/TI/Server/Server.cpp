@@ -34,6 +34,7 @@ void LocalServer::connectClient(ClientConnectionRequest request)
 	request.client->receiveServerConnectionResponse({ ++clientId });
 	connectedClients.emplace(request.client->getName(), request.client);
 	createPlayerEntity(request.client->getName());
+	possesEntity(request.client->getName(), request.client);
 }
 
 void LocalServer::initEntityTemplates()
@@ -79,53 +80,47 @@ void LocalServer::createPlayerEntity(const std::string& name)
 	spawnedEntities.emplace(name, std::make_unique<Entity>());
 
 	auto& playerEntity = spawnedEntities.at(name);
-	playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+	playerEntity->setName(name);
 	playerEntity->addComponent<MovementComponent>();
 
-	//if (app)
-	//{
-	//	playerEntity->addComponent<MeshComponent>(playerEntity.get(), app->getModelManager());
-	//}
-	//auto playerMesh = playerEntity->findComponent<MeshComponent>();
-	//if (playerMesh)
-	//{
-	//	playerMesh->loadModel("cube");
-	//}
+	playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+	auto transformComp = playerEntity->findComponent<TransformComponent>();
+	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
 
-	possesEntity(name, name);
+	playerEntity->addComponent<MeshComponent>(app->getModelManager());
+	auto meshComp = playerEntity->findComponent<MeshComponent>();
+	meshComp->loadModel("cube");
 }
 
-void LocalServer::possesEntity(const std::string& entityName, const std::string& clientName)
+void LocalServer::possesEntity(const std::string& entityName, Client* client)
 {
-	auto camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f));
-	camera->setPerspective(
-		glm::radians(85.0f),
-		static_cast<float>(DEFAULT_WINDOW_WIDTH) / static_cast<float>(DEFAULT_WINDOW_HEIGHT),
-		0.01f,
-		1000.0f
-	);
+	if (!client)
+	{
+		return;
+	}
 
 	auto& playerEntity = spawnedEntities.at(entityName);
-
-	playerEntity->addComponent<CameraComponent>();
-
-	auto cameraComponent = playerEntity->findComponent<CameraComponent>();
-	cameraComponent->setCamera(std::move(camera));
 
 	if (app)
 	{
 		auto renderer = app->getRenderer();
 		if (renderer)
 		{
-			renderer->setCamera(cameraComponent->getCamera());
+			// If the client is a human, add a camera to its entity
+			auto localClient = dynamic_cast<LocalClient*>(client);
+			if (localClient)
+			{
+				auto camera = std::make_unique<Camera>();
+
+				playerEntity->addComponent<CameraComponent>();
+
+				auto cameraComponent = playerEntity->findComponent<CameraComponent>();
+				cameraComponent->setCamera(std::move(camera));
+			}
 		}
 	}
 
-	auto client = connectedClients.find(clientName);
-	if (client != connectedClients.end())
-	{
-		client->second->possesEntity(playerEntity.get());
-	}
+	client->possesEntity(playerEntity.get());
 }
 
 Entity* const Server::findEntity(const std::string& name)

@@ -1,32 +1,32 @@
 #pragma once
 
-#include <SDL.h>
 #include <list>
+#include <map>
 
 #include <glm/glm.hpp>
+#include <SDL.h>
 
-class Mesh;
+#include <TI/Renderer/FrameBuffer.h>
+#include <TI/Renderer/Mesh.h>
+#include <TI/Renderer/Shader.h>
+#include <TI/Renderer/Viewport.h>
+
 class Shader;
 class Camera;
 class Model;
 class Material;
 class MeshComponent;
 
+#include <TI/Renderer/RenderCommand.h>
+
 class Renderer
 {
-	struct RenderCommand
-	{
-		Mesh* mesh;
-		Material* material;
-		glm::mat4 transform;
-	};
-
 public:
 	Renderer(SDL_Window* sdlWindow);
 	~Renderer();
 
-	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform);
-	void pushRender(MeshComponent* meshComponent);
+	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0);
+	void pushRender(MeshComponent* meshComponent, int viewportId = 0);
 
 	void render();
 
@@ -34,6 +34,9 @@ public:
 	const glm::vec4& getClearColor() const;
 
 	void setCamera(Camera* camera);
+	
+	void createViewport(unsigned int id, glm::ivec2 pos = { 0, 0 }, glm::ivec2 size = { 0, 0 });
+	Viewport* getViewport(unsigned int viewportId);
 
 private:
 	SDL_GLContext glContext;
@@ -42,5 +45,10 @@ private:
 
 	Camera* camera;
 
-	std::list<RenderCommand> renderCommands;
+	// Viewport ID, Viewport
+	std::map<int, Viewport> viewportsMap;
+
+	// FrameBuffer framebuffer;
+	// Mesh screenMesh;
+	// Shader screenShader;
 };

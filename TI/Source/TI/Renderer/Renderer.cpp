@@ -4,6 +4,7 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Shader.h>
@@ -27,6 +28,9 @@ Renderer::Renderer(SDL_Window* SDLWindow) :
 
 	setClearColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	glEnable(GL_DEPTH_TEST);
+
+	// TODO: Get window size and pass it into viewport constructor
+	viewportsMap.emplace(0, Viewport({ 0, 0 }, { 800, 600 }));
 }
 
 Renderer::~Renderer()
@@ -34,12 +38,15 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform)
+void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId)
 {
-	renderCommands.push_front({mesh, material, transform});
+	if (auto iter = viewportsMap.find(viewportId); iter != viewportsMap.end())
+	{
+		iter->second.getRenderCommands().push_front({ mesh, material, transform });
+	}
 }
 
-void Renderer::pushRender(MeshComponent* meshComponent)
+void Renderer::pushRender(MeshComponent* meshComponent, int viewportId)
 {
 	auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
 	if (transformComp)
@@ -49,7 +56,7 @@ void Renderer::pushRender(MeshComponent* meshComponent)
 		auto material = model->getMaterial();
 		auto transform = transformComp->getTransform();
 
-		pushRender(mesh, material, transform);
+		pushRender(mesh, material, transform, viewportId);
 	}
 }
 
@@ -58,38 +65,50 @@ void Renderer::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
-	if (!camera)
+	for (auto& viewportIter : viewportsMap)
 	{
-		return;
-	}
+		auto& viewport = viewportIter.second;
 
-	const auto& projection = camera->getProjection();
-	const auto& view = camera->getView();
+		viewport.bind();
 
-	while (!renderCommands.empty())
-	{
-		auto command = renderCommands.back();
-		renderCommands.pop_back();
+		auto viewportSize = viewport.getSize();
 
-		command.material->getTexture()->bind();
-
-		auto shader = command.material->getShader();
-		shader->use();
-
-		shader->setMatrix("projection", projection);
-		shader->setMatrix("view", view);
-		shader->setMatrix("model", command.transform);
-
-		auto mesh = command.mesh;
-
-		glBindVertexArray(command.mesh->getVAO());
-		if (mesh->getIndices().empty())
+		auto camera = viewport.getCamera();
+		if (!camera)
 		{
-			glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mesh->getPositions().size()));
+			continue;
 		}
-		else
+
+		auto& renderCommands = viewport.getRenderCommands();
+
+		const auto& projection = camera->getProjection();
+		const auto& view = camera->getView();
+
+		while (!renderCommands.empty())
 		{
-			glDrawElements(GL_TRIANGLES, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+			auto command = renderCommands.back();
+			renderCommands.pop_back();
+
+			command.material->getTexture()->bind();
+
+			auto shader = command.material->getShader();
+			shader->use();
+
+			shader->setMatrix("projection", projection);
+			shader->setMatrix("view", view);
+			shader->setMatrix("model", command.transform);
+
+			auto mesh = command.mesh;
+
+			glBindVertexArray(command.mesh->getVAO());
+			if (mesh->getIndices().empty())
+			{
+				glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mesh->getPositions().size()));
+			}
+			else
+			{
+				glDrawElements(GL_TRIANGLES, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+			}
 		}
 	}
 }
@@ -107,4 +126,22 @@ const glm::vec4& Renderer::getClearColor() const
 void Renderer::setCamera(Camera* camera)
 {
 	this->camera = camera;
+}
+
+void Renderer::createViewport(unsigned int id, glm::ivec2 pos /*= { 0, 0 }*/, glm::ivec2 size /*= { 0, 0 }*/)
+{
+	if (auto iter = viewportsMap.find(id); iter == viewportsMap.end())
+	{
+		viewportsMap.emplace(id, Viewport(pos, size));
+	}
+}
+
+Viewport* Renderer::getViewport(unsigned int id)
+{
+	if (auto iter = viewportsMap.find(id); iter != viewportsMap.end())
+	{
+		return &iter->second;
+	}
+
+	return nullptr;
 }

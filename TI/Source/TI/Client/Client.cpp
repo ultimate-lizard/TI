@@ -9,23 +9,18 @@
 #include <TI/Client/Controller.h>
 #include <TI/Util/Config.h>
 #include <TI/Server/Component/MeshComponent.h>
+#include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Entity.h>
 #include <TI/Renderer/Renderer.h>
 
-LocalClient::LocalClient(Application* app) :
-	Client(app)
+LocalClient::LocalClient(Application* app, const std::string& name) :
+	Client(app),
+	viewportId(0)
 {
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
 
-	//if (app)
-	//{
-	//	auto& playerEntity = app->entities.at("player");
-	//	playerController->posses(playerEntity.get());
-	//}
-	
-
-	name = DEFAULT_PLAYER_NAME;
+	this->name = name.empty() ? DEFAULT_PLAYER_NAME : name;
 
 	loadConfig();
 	loadMappings();
@@ -50,6 +45,26 @@ void LocalClient::possesEntity(Entity* entity)
 	Client::possesEntity(entity);
 
 	playerController->posses(entity);
+
+	if (entity)
+	{
+		auto cameraComp = entity->findComponent<CameraComponent>();
+		if (cameraComp)
+		{
+			if (app)
+			{
+				auto renderer = app->getRenderer();
+				if (renderer)
+				{
+					auto viewport = renderer->getViewport(viewportId);
+					if (viewport)
+					{
+						viewport->setCamera(cameraComp->getCamera());
+					}
+				}
+			}
+		}
+	}
 }
 
 void LocalClient::update(float dt)
@@ -70,7 +85,10 @@ void LocalClient::update(float dt)
 					auto meshComp = entity->findComponent<MeshComponent>();
 					if (meshComp)
 					{
-						renderer->pushRender(meshComp);
+						if (entity->getName() != name)
+						{
+							renderer->pushRender(meshComp, viewportId);
+						}
 					}
 				}
 			}
@@ -91,6 +109,16 @@ IController* const LocalClient::getController() const
 void LocalClient::shutdown()
 {
 	config.save();
+}
+
+void LocalClient::setViewportId(unsigned int id)
+{
+	viewportId = id;
+}
+
+unsigned int LocalClient::getViewportId() const
+{
+	return viewportId;
 }
 
 void LocalClient::loadConfig()

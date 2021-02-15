@@ -5,6 +5,7 @@
 
 TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec3& rotation) :
 	position(position),
+	scale({1.0f, 1.0f, 1.0f}),
 	pitch(rotation.x),
 	yaw(rotation.y),
 	roll(rotation.z)
@@ -57,9 +58,20 @@ const glm::mat4 TransformComponent::getTransform() const
 	glm::mat4 transform(1.0f);
 
 	transform = glm::translate(transform, position);
+	transform = glm::scale(transform, scale);
 	transform = glm::rotate(transform, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
 	transform = glm::rotate(transform, glm::radians(pitch), glm::vec3(0.0f, 0.0f, 1.0f));
 	// TODO: rotate for roll
 
 	return transform;
+}
+
+void TransformComponent::setScale(const glm::vec3& scale)
+{
+	this->scale = scale;
+}
+
+const glm::vec3& TransformComponent::getScale() const
+{
+	return scale;
 }

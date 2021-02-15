@@ -45,5 +45,5 @@ private:
 	void initEntityTemplates();
 	void createCubes();
 	void createPlayerEntity(const std::string& name);
-	void possesEntity(const std::string& entityName, const std::string& clientName);
+	void possesEntity(const std::string& entityName, Client* client);
 };

@@ -23,8 +23,12 @@ public:
 
 	const glm::mat4 getTransform() const;
 
+	void setScale(const glm::vec3& scale);
+	const glm::vec3& getScale() const;
+
 private:
 	glm::vec3 position;
+	glm::vec3 scale;
 
 	float pitch;
 	float yaw;

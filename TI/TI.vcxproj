@@ -89,10 +89,11 @@
       </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -102,6 +103,7 @@
     <ClCompile Include="Source\TI\Input.cpp" />
     <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
     <ClCompile Include="Source\TI\Renderer\Camera.cpp" />
+    <ClCompile Include="Source\TI\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="Source\TI\Renderer\glad.c" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\TI\Renderer\Material.cpp" />
@@ -111,6 +113,7 @@
     <ClCompile Include="Source\TI\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\TI\Renderer\Shader.cpp" />
     <ClCompile Include="Source\TI\Renderer\Texture.cpp" />
+    <ClCompile Include="Source\TI\Renderer\Viewport.cpp" />
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
@@ -127,12 +130,15 @@
     <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
     <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />
+    <ClInclude Include="Source\TI\Renderer\FrameBuffer.h" />
     <ClInclude Include="Source\TI\Renderer\Material.h" />
     <ClInclude Include="Source\TI\Renderer\Mesh.h" />
     <ClInclude Include="Source\TI\Renderer\Model.h" />
     <ClInclude Include="Source\TI\ModelManager.h" />
+    <ClInclude Include="Source\TI\Renderer\RenderCommand.h" />
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />
+    <ClInclude Include="Source\TI\Renderer\Viewport.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
     <ClInclude Include="Source\TI\Server\Component\MeshComponent.h" />
@@ -148,6 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\Default.cfg" />
+    <None Include="Shaders\Framebuffer.frag" />
+    <None Include="Shaders\Framebuffer.vert" />
     <None Include="Shaders\SampleShader.frag" />
     <None Include="Shaders\SampleShader.vert" />
   </ItemGroup>

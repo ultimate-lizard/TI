@@ -47,7 +47,7 @@ protected:
 class LocalClient : public Client
 {
 public:
-	LocalClient(Application* app);
+	LocalClient(Application* app, const std::string& name = "");
 
 	void update(float dt) override;
 
@@ -61,6 +61,9 @@ public:
 
 	void shutdown() override;
 
+	void setViewportId(unsigned int id);
+	unsigned int getViewportId() const;
+
 private:
 	void loadConfig();
 	void loadMappings();
@@ -69,4 +72,6 @@ private:
 	std::unique_ptr<IController> playerController;
 
 	Config config;
+
+	unsigned int viewportId;
 };

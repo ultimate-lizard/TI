@@ -4,8 +4,9 @@ class Entity;
 
 class Component
 {
+	friend class Entity;
+
 public:
-	Component(Entity* entity) : entity(entity) {}
 	virtual ~Component() = default;
 
 	virtual void tick(float dt) {}

@@ -4,8 +4,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Entity.h>
 
-MeshComponent::MeshComponent(Entity* entity, ModelManager* modelManager) :
-	Component(entity),
+MeshComponent::MeshComponent(ModelManager* modelManager) :
 	modelManager(modelManager),
 	model(nullptr)
 {

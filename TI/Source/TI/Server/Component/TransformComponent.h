@@ -7,7 +7,7 @@
 class TransformComponent : public Component
 {
 public:
-	TransformComponent(Entity* entity, const glm::vec3& position = { 0.0f, 0.0f, 0.0f }, const glm::vec3& rotation = { 0.0f, 0.0f, 0.0f });
+	TransformComponent(const glm::vec3& position = { 0.0f, 0.0f, 0.0f }, const glm::vec3& rotation = { 0.0f, 0.0f, 0.0f });
 
 	void setPosition(const glm::vec3& position);
 	const glm::vec3& getPosition();

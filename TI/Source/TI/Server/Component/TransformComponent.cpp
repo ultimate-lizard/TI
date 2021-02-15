@@ -3,8 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-TransformComponent::TransformComponent(Entity* entity, const glm::vec3& position, const glm::vec3& rotation) :
-	Component(entity),
+TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec3& rotation) :
 	position(position),
 	pitch(rotation.x),
 	yaw(rotation.y),

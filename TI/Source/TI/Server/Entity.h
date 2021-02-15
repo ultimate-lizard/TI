@@ -5,7 +5,6 @@
 #include <typeinfo>
 
 #include <TI/Server/Component/Component.h>
-// #include <TI/Server/Component/MovementComponent.h>
 
 class Entity
 {
@@ -16,6 +15,7 @@ public:
 		if (!findComponent<AddedComponent>())
 		{
 			auto component = std::make_unique<AddedComponent>(std::forward<Args>(args) ...);
+			component->entity = this;
 			components.push_back(std::move(component));
 		}
 	}

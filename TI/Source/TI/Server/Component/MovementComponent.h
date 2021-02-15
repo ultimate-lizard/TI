@@ -7,7 +7,7 @@
 class MovementComponent : public Component
 {
 public:
-	MovementComponent(Entity* entity);
+	MovementComponent();
 
 	void tick(float dt) override;
 

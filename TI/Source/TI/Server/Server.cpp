@@ -36,6 +36,11 @@ void LocalServer::connectClient(ClientConnectionRequest request)
 	createPlayerEntity(request.client->getName());
 }
 
+void LocalServer::initEntityTemplates()
+{
+	
+}
+
 void LocalServer::createCubes()
 {
 	spawnedEntities.emplace("cube", std::make_unique<Entity>());
@@ -45,10 +50,10 @@ void LocalServer::createCubes()
 	auto& cube2Entity = spawnedEntities.at("cube2");
 
 	// Cube 1
-	cubeEntity->addComponent<TransformComponent>(cubeEntity.get(), glm::vec3(0.0f, 0.0f, -1.0f));
+	cubeEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, -1.0f));
 	if (app)
 	{
-		cubeEntity->addComponent<MeshComponent>(cubeEntity.get(), app->getModelManager());
+		cubeEntity->addComponent<MeshComponent>(app->getModelManager());
 	}
 	auto cubeMesh = cubeEntity->findComponent<MeshComponent>();
 	if (cubeMesh)
@@ -57,10 +62,10 @@ void LocalServer::createCubes()
 	}
 
 	// Cube 2
-	cube2Entity->addComponent<TransformComponent>(cube2Entity.get(), glm::vec3(-2.0f, 0.0f, -1.0f));
+	cube2Entity->addComponent<TransformComponent>(glm::vec3(-2.0f, 0.0f, -1.0f));
 	if (app)
 	{
-		cube2Entity->addComponent<MeshComponent>(cube2Entity.get(), app->getModelManager());
+		cube2Entity->addComponent<MeshComponent>(app->getModelManager());
 	}
 	auto cube2Mesh = cube2Entity->findComponent<MeshComponent>();
 	if (cube2Mesh)
@@ -74,8 +79,8 @@ void LocalServer::createPlayerEntity(const std::string& name)
 	spawnedEntities.emplace(name, std::make_unique<Entity>());
 
 	auto& playerEntity = spawnedEntities.at(name);
-	playerEntity->addComponent<TransformComponent>(playerEntity.get(), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-	playerEntity->addComponent<MovementComponent>(playerEntity.get());
+	playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+	playerEntity->addComponent<MovementComponent>();
 
 	//if (app)
 	//{
@@ -102,7 +107,7 @@ void LocalServer::possesEntity(const std::string& entityName, const std::string&
 
 	auto& playerEntity = spawnedEntities.at(entityName);
 
-	playerEntity->addComponent<CameraComponent>(playerEntity.get());
+	playerEntity->addComponent<CameraComponent>();
 
 	auto cameraComponent = playerEntity->findComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));

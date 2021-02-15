@@ -9,8 +9,6 @@ class Camera;
 class CameraComponent : public Component
 {
 public:
-	CameraComponent(Entity* entity);
-
 	void setCamera(std::unique_ptr<Camera> camera);
 	Camera* getCamera() const;
 

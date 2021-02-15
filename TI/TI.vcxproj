@@ -147,6 +147,7 @@
     <ClInclude Include="Source\TI\Util\File.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Config\Default.cfg" />
     <None Include="Shaders\SampleShader.frag" />
     <None Include="Shaders\SampleShader.vert" />
   </ItemGroup>

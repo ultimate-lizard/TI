@@ -5,8 +5,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Renderer/Camera.h>
 
-MovementComponent::MovementComponent(Entity* entity) :
-	Component(entity),
+MovementComponent::MovementComponent() :
 	yawRate(0.0f),
 	pitchRate(0.0f),
 	speed(10.0f),

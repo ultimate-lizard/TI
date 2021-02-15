@@ -10,7 +10,7 @@ class ModelManager;
 class MeshComponent : public Component
 {
 public:
-	MeshComponent(Entity* entity, ModelManager* modelManager);
+	MeshComponent(ModelManager* modelManager);
 
 	void loadModel(const std::string& name);
 

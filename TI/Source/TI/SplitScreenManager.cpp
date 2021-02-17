@@ -2,7 +2,7 @@
 
 #include <TI/Application.h>
 #include <TI/Renderer/Renderer.h>
-#include <TI/Client/Client.h>
+#include <TI/Client/LocalClient.h>
 
 SplitScreenManager::SplitScreenManager(Application* app) :
 	host(nullptr),

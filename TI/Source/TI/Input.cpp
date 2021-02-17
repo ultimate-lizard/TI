@@ -2,7 +2,7 @@
 
 #include <TI/Application.h>
 #include <TI/Client/Input/InputHandler.h>
-#include <TI/Client/Client.h>
+#include <TI/Client/LocalClient.h>
 
 Input::Input(Application* app) :
 	app(app),

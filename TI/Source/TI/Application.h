@@ -29,6 +29,7 @@ class Application
 {
 public:
 	Application();
+	Application(const std::vector<std::string>& args);
 	~Application();
 
 	Application(const Application&) = delete;
@@ -46,10 +47,15 @@ public:
 	Renderer* const getRenderer() const;
 	ModelManager* const getModelManager() const;
 
+	void addClient(std::unique_ptr<Client> client);
+	void removeClient(const std::string& name);
+
 private:
 	void init();
 	void initClients();
 	void uninit();
+
+	const std::vector<std::string>& getArgs() const;
 
 private:
 	bool simulating;
@@ -65,4 +71,6 @@ private:
 	std::vector<std::unique_ptr<Client>> clients;
 
 	SplitScreenManager splitScreenManager;
+
+	std::vector<std::string> args;
 };

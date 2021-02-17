@@ -1,11 +1,14 @@
 #include "Application.h"
 
 #include <stdexcept>
+#include <algorithm>
 
 #include <TI/Renderer/Renderer.h>
 #include <TI/Input.h>
-#include <TI/Server/Server.h>
-#include <TI/Client/Client.h>
+#include <TI/Server/LocalServer.h>
+#include <TI/Server/ListenServer.h>
+#include <TI/Server/RemoteServer.h>
+#include <TI/Client/LocalClient.h>
 #include <TI/ModelManager.h>
 
 static const char* GAME_TITLE = "TI";
@@ -35,6 +38,12 @@ Application::Application() :
 
 	// TODO: Create window using config
 	window.init(GAME_TITLE);
+}
+
+Application::Application(const std::vector<std::string>& args) :
+	Application()
+{
+	this->args = args;
 }
 
 Application::~Application()
@@ -131,21 +140,56 @@ ModelManager* const Application::getModelManager() const
 	return modelManager.get();
 }
 
+void Application::addClient(std::unique_ptr<Client> client)
+{
+	clients.push_back(std::move(client));
+}
+
+void Application::removeClient(const std::string& name)
+{
+	auto iter = std::find_if(clients.begin(), clients.end(), [&name](std::unique_ptr<Client>& client) {
+		return client->getName() == name;
+	});
+
+	if (iter != clients.end())
+	{
+		(*iter)->shutdown();
+		clients.erase(iter);
+	}
+}
+
 void Application::init()
 {
 	renderer = std::make_unique<Renderer>(&window);
-	renderer->setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
+	renderer->setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	modelManager = std::make_unique<ModelManager>();
 
 	input = std::make_unique<Input>(this);
 
-	server = std::make_unique<LocalServer>(this);
+	 
+	if (args.size() >= 2)
+	{
+		if (args[1] == "client")
+		{
+			server = std::make_unique<RemoteServer>(this);
+		}
+
+		if (args[1] == "server")
+		{
+			server = std::make_unique<ListenServer>(this);
+		}
+	}
 }
 
 void Application::initClients()
 {
 	auto player1 = std::make_unique<LocalClient>(this);
+
+	if (!args.empty())
+	{
+		player1->setName(args[0]);
+	}
 
 	//auto player2 = std::make_unique<LocalClient>(this, "Player2");
 	//player2->setViewportId(1);
@@ -178,4 +222,9 @@ void Application::uninit()
 	{
 		server->shutdown();
 	}
+}
+
+const std::vector<std::string>& Application::getArgs() const
+{
+	return args;
 }

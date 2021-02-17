@@ -13,12 +13,13 @@
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Entity.h>
+#include <TI/Window.h>
 
-Renderer::Renderer(SDL_Window* SDLWindow) :
+Renderer::Renderer(Window* window) :
 	glContext(nullptr),
 	camera(nullptr)
 {
-	glContext = SDL_GL_CreateContext(SDLWindow);
+	glContext = SDL_GL_CreateContext(window->getSdlWindow());
 
 	if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
 	{
@@ -29,8 +30,9 @@ Renderer::Renderer(SDL_Window* SDLWindow) :
 	setClearColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	glEnable(GL_DEPTH_TEST);
 
+	glm::ivec2 windowSize = window->getSize();
 	// TODO: Get window size and pass it into viewport constructor
-	viewportsMap.emplace(0, Viewport({ 0, 0 }, { 800, 600 }));
+	viewportsMap.emplace(0, Viewport({ 0, 0 }, windowSize));
 }
 
 Renderer::~Renderer()

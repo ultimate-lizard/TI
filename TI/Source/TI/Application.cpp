@@ -13,8 +13,7 @@ static const char* GAME_TITLE = "TI";
 static const float DELTA_MODIFIER = 0.0001f;
 
 Application::Application() :
-	simulating(false),
-	sdlWindow(nullptr)
+	simulating(false)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING))
 	{
@@ -34,30 +33,11 @@ Application::Application() :
 	// TODO: Load config
 
 	// TODO: Create window using config
-	sdlWindow = SDL_CreateWindow(
-		GAME_TITLE,
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		DEFAULT_WINDOW_WIDTH,
-		DEFAULT_WINDOW_HEIGHT,
-		SDL_WINDOW_SHOWN
-		| SDL_WINDOW_OPENGL
-	);
-
-	if (!sdlWindow)
-	{
-		// TODO: Handle this
-		throw std::exception();
-	}
+	window.init(GAME_TITLE);
 }
 
 Application::~Application()
 {
-	if (sdlWindow)
-	{
-		SDL_DestroyWindow(sdlWindow);
-	}
-
 	SDL_Quit();
 }
 
@@ -101,7 +81,7 @@ void Application::start()
 
 		renderer->render();
 
-		SDL_GL_SwapWindow(sdlWindow);
+		window.swap();
 
 		endFrame = SDL_GetTicks() - startFrame;
 	}
@@ -114,9 +94,9 @@ void Application::requestQuit()
 	simulating = false;
 }
 
-SDL_Window* const Application::getSDLWindow() const
+Window* Application::getWindow()
 {
-	return sdlWindow;
+	return &window;
 }
 
 Server* const Application::getCurrentServer() const
@@ -152,7 +132,7 @@ ModelManager* const Application::getModelManager() const
 
 void Application::init()
 {
-	renderer = std::make_unique<Renderer>(sdlWindow);
+	renderer = std::make_unique<Renderer>(&window);
 	renderer->setClearColor({0.0f, 0.0f, 0.0f, 1.0f});
 
 	modelManager = std::make_unique<ModelManager>();

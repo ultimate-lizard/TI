@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+#include <TI/Window.h>
+
 // TODO: Move this to Window class
 static const int DEFAULT_WINDOW_WIDTH = 800;
 static const int DEFAULT_WINDOW_HEIGHT = 600;
@@ -35,7 +37,8 @@ public:
 	void start();
 	void requestQuit();
 
-	SDL_Window* const getSDLWindow() const;
+	Window* getWindow();
+
 	Server* const getCurrentServer() const;
 	std::vector<LocalClient*> getLocalClients() const;
 
@@ -50,7 +53,7 @@ private:
 private:
 	bool simulating;
 
-	SDL_Window* sdlWindow;
+	Window window;
 
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<ModelManager> modelManager;

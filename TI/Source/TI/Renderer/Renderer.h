@@ -16,13 +16,14 @@ class Camera;
 class Model;
 class Material;
 class MeshComponent;
+class Window;
 
 #include <TI/Renderer/RenderCommand.h>
 
 class Renderer
 {
 public:
-	Renderer(SDL_Window* sdlWindow);
+	Renderer(Window* window);
 	~Renderer();
 
 	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0);

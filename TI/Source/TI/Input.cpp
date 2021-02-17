@@ -80,7 +80,7 @@ void Input::handleMouseMotion(InputHandler* inputHandler)
 	inputHandler->onAxisInput(Axis::MouseX, static_cast<float>(xOffset));
 	inputHandler->onAxisInput(Axis::MouseY, static_cast<float>(yOffset));
 
-	SDL_Window* window = app->getSDLWindow();
+	SDL_Window* window = app->getWindow()->getSdlWindow();
 
 	SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
 }

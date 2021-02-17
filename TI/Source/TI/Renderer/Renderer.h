@@ -40,6 +40,9 @@ public:
 	Viewport* getViewport(unsigned int viewportId);
 
 private:
+	void createDefaultViewport(Window* window);
+
+private:
 	SDL_GLContext glContext;
 
 	glm::vec4 clearColor;

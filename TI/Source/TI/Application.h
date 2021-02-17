@@ -6,6 +6,7 @@
 #include <string>
 
 #include <TI/Window.h>
+#include <TI/SplitScreenManager.h>
 
 // TODO: Move this to Window class
 static const int DEFAULT_WINDOW_WIDTH = 800;
@@ -62,4 +63,6 @@ private:
 
 	std::unique_ptr<Server> server;
 	std::vector<std::unique_ptr<Client>> clients;
+
+	SplitScreenManager splitScreenManager;
 };

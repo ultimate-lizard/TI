@@ -7,7 +7,8 @@
 Viewport::Viewport(glm::ivec2 position, glm::ivec2 size) :
 	position(position),
 	size(size),
-	camera(nullptr)
+	camera(nullptr),
+	enabled(false)
 {
 	updateCameraPerspective();
 }
@@ -54,6 +55,16 @@ void Viewport::setCamera(Camera* camera)
 Camera* Viewport::getCamera()
 {
 	return camera;
+}
+
+void Viewport::setEnabled(bool enabled)
+{
+	this->enabled = enabled;
+}
+
+bool Viewport::isEnabled() const
+{
+	return enabled == true;
 }
 
 void Viewport::updateCameraPerspective()

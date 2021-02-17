@@ -30,9 +30,7 @@ Renderer::Renderer(Window* window) :
 	setClearColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 	glEnable(GL_DEPTH_TEST);
 
-	glm::ivec2 windowSize = window->getSize();
-	// TODO: Get window size and pass it into viewport constructor
-	viewportsMap.emplace(0, Viewport({ 0, 0 }, windowSize));
+	createDefaultViewport(window);
 }
 
 Renderer::~Renderer()
@@ -44,6 +42,8 @@ void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& trans
 {
 	if (auto iter = viewportsMap.find(viewportId); iter != viewportsMap.end())
 	{
+		if (!iter->second.isEnabled()) return;
+
 		iter->second.getRenderCommands().push_front({ mesh, material, transform });
 	}
 }
@@ -134,7 +134,14 @@ void Renderer::createViewport(unsigned int id, glm::ivec2 pos /*= { 0, 0 }*/, gl
 {
 	if (auto iter = viewportsMap.find(id); iter == viewportsMap.end())
 	{
-		viewportsMap.emplace(id, Viewport(pos, size));
+		if (!size.x || !size.y)
+		{
+			viewportsMap.emplace(id, Viewport(pos));
+		}
+		else
+		{
+			viewportsMap.emplace(id, Viewport(pos, size));
+		}
 	}
 }
 
@@ -146,4 +153,19 @@ Viewport* Renderer::getViewport(unsigned int id)
 	}
 
 	return nullptr;
+}
+
+void Renderer::createDefaultViewport(Window* window)
+{
+	if (window)
+	{
+		Viewport viewport;
+
+		viewport.setEnabled(true);
+
+		glm::ivec2 windowSize = window->getSize();
+		viewport.setSize(windowSize);
+
+		viewportsMap.emplace(0, std::move(viewport));
+	}
 }

@@ -24,6 +24,9 @@ public:
 	void setCamera(Camera* camera);
 	Camera* getCamera();
 
+	void setEnabled(bool enabled);
+	bool isEnabled() const;
+
 private:
 	void updateCameraPerspective();
 
@@ -33,4 +36,6 @@ private:
 	glm::ivec2 position;
 	glm::ivec2 size;
 	Camera* camera;
+
+	bool enabled;
 };

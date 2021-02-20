@@ -30,6 +30,8 @@ public:
 
 protected:
 	void initEntityTemplates();
+	void createPlayerEntity(const std::string& name);
+	void possesEntity(const std::string& entityName, Client* client);
 
 protected:
 	Application* app;

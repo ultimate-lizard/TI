@@ -85,7 +85,7 @@ void LocalClient::update(float dt)
 					auto meshComp = entity->findComponent<MeshComponent>();
 					if (meshComp)
 					{
-						if (entity->getName() != name)
+						if (entity->getId() != name)
 						{
 							renderer->pushRender(meshComp, viewportId);
 						}

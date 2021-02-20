@@ -120,6 +120,8 @@ void ListenServer::handleNewConnection(Socket socket)
 			connectClient(std::move(request));
 
 			socket.setName(msg.clientName);
+
+			sendEntityInitialInfo(socket);
 		}
 
 		waitForMessageThread = std::thread(&ListenServer::waitForMessage, this, socket);
@@ -142,12 +144,32 @@ void ListenServer::waitForMessage(Socket socket)
 	}
 }
 
-void ListenServer::syncEntities(Socket socket)
+void ListenServer::sendEntityInitialInfo(Socket socket)
 {
 	for (auto& mapPair : spawnedEntities)
 	{
 		auto& entity = mapPair.second;
-		entity->getId();
-		// entity->templateName();
+
+		EntityInfoMessage infoMsg;
+		infoMsg.name = entity->getName();
+		infoMsg.id = entity->getId();
+
+		auto transformComp = entity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			// TODO: Implement packet builder
+			auto pos = transformComp->getPosition();
+			infoMsg.x = pos.x;
+			infoMsg.y = pos.y;
+			infoMsg.z = pos.z;
+			infoMsg.pitch = transformComp->getPitch();
+			infoMsg.yaw = transformComp->getYaw();
+			infoMsg.roll = transformComp->getRoll();
+		}
+
+		char data[512];
+		infoMsg.serialize(data);
+
+		socket.send(data, 512);
 	}
 }

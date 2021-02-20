@@ -62,39 +62,3 @@ void LocalServer::createCubes()
 	}
 }
 
-void LocalServer::createPlayerEntity(const std::string& name)
-{
-	spawnedEntities.emplace(name, createEntity("Player", name));
-}
-
-void LocalServer::possesEntity(const std::string& entityName, Client* client)
-{
-	if (!client)
-	{
-		return;
-	}
-
-	auto& playerEntity = spawnedEntities.at(entityName);
-	playerEntity->addComponent<MovementComponent>();
-
-	if (app)
-	{
-		auto renderer = app->getRenderer();
-		if (renderer)
-		{
-			// If the client is a human, add a camera to its entity
-			auto localClient = dynamic_cast<LocalClient*>(client);
-			if (localClient)
-			{
-				auto camera = std::make_unique<Camera>();
-
-				playerEntity->addComponent<CameraComponent>();
-
-				auto cameraComponent = playerEntity->findComponent<CameraComponent>();
-				cameraComponent->setCamera(std::move(camera));
-			}
-		}
-	}
-
-	client->possesEntity(playerEntity.get());
-}

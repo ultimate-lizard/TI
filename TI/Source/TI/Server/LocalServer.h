@@ -15,6 +15,5 @@ public:
 
 protected:
 	void createCubes();
-	void createPlayerEntity(const std::string& name);
-	void possesEntity(const std::string& entityName, Client* client);
+
 };

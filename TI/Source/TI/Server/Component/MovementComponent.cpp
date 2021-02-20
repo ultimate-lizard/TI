@@ -1,5 +1,7 @@
 #include "MovementComponent.h"
 
+#include <iostream>
+
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>

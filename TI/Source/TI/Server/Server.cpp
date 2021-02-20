@@ -5,7 +5,11 @@
 
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
+#include <TI/Server/Component/MovementComponent.h>
+#include <TI/Server/Component/CameraComponent.h>
 #include <TI/Application.h>
+#include <TI/Client/LocalClient.h>
+#include <TI/Renderer/Camera.h>
 
 void Server::initEntityTemplates()
 {
@@ -72,4 +76,41 @@ std::unique_ptr<Entity> Server::createEntity(const std::string& name, const std:
 	}
 	
 	throw std::exception();
+}
+
+void Server::createPlayerEntity(const std::string& name)
+{
+	spawnedEntities.emplace(name, createEntity("Player", name));
+}
+
+void Server::possesEntity(const std::string& entityName, Client* client)
+{
+	if (!client)
+	{
+		return;
+	}
+
+	auto& playerEntity = spawnedEntities.at(entityName);
+	playerEntity->addComponent<MovementComponent>();
+
+	if (app)
+	{
+		auto renderer = app->getRenderer();
+		if (renderer)
+		{
+			// If the client is a human, add a camera to its entity
+			auto localClient = dynamic_cast<LocalClient*>(client);
+			if (localClient)
+			{
+				auto camera = std::make_unique<Camera>();
+
+				playerEntity->addComponent<CameraComponent>();
+
+				auto cameraComponent = playerEntity->findComponent<CameraComponent>();
+				cameraComponent->setCamera(std::move(camera));
+			}
+		}
+	}
+
+	client->possesEntity(playerEntity.get());
 }

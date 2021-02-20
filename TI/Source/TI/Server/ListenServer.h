@@ -23,7 +23,7 @@ private:
 	void acceptConnections(Socket socket);
 	void handleNewConnection(Socket socket);
 	void waitForMessage(Socket socket);
-	void syncEntities(Socket socket);
+	void sendEntityInitialInfo(Socket socket);
 
 private:
 	std::thread acceptConnectionsThread;

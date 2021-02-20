@@ -12,6 +12,7 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
+	initEntityTemplates();
 	createCubes();
 }
 
@@ -39,59 +40,31 @@ void LocalServer::disconnectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-void LocalServer::initEntityTemplates()
-{
-
-}
-
 void LocalServer::createCubes()
 {
-	spawnedEntities.emplace("cube", std::make_unique<Entity>());
-	spawnedEntities.emplace("cube2", std::make_unique<Entity>());
+	// TODO: Spawn() method
+	spawnedEntities.emplace("cube", createEntity("Cube", "cube"));
+	spawnedEntities.emplace("cube2", createEntity("Cube", "cube2"));
 
 	auto& cubeEntity = spawnedEntities.at("cube");
 	auto& cube2Entity = spawnedEntities.at("cube2");
 
-	// Cube 1
-	cubeEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, -1.0f));
-	if (app)
+	auto cubeTransform = cubeEntity->findComponent<TransformComponent>();
+	if (cubeTransform)
 	{
-		cubeEntity->addComponent<MeshComponent>(app->getModelManager());
-	}
-	auto cubeMesh = cubeEntity->findComponent<MeshComponent>();
-	if (cubeMesh)
-	{
-		cubeMesh->loadModel("cube");
+		cubeTransform->setPosition({ 0.0f, 0.0f, -1.0f });
 	}
 
-	// Cube 2
-	cube2Entity->addComponent<TransformComponent>(glm::vec3(-2.0f, 0.0f, -1.0f));
-	if (app)
+	cubeTransform = cube2Entity->findComponent<TransformComponent>();
+	if (cubeTransform)
 	{
-		cube2Entity->addComponent<MeshComponent>(app->getModelManager());
-	}
-	auto cube2Mesh = cube2Entity->findComponent<MeshComponent>();
-	if (cube2Mesh)
-	{
-		cube2Mesh->loadModel("cube");
+		cubeTransform->setPosition({ -2.0f, 0.0f, -1.0f });
 	}
 }
 
 void LocalServer::createPlayerEntity(const std::string& name)
 {
-	spawnedEntities.emplace(name, std::make_unique<Entity>());
-
-	auto& playerEntity = spawnedEntities.at(name);
-	playerEntity->setName(name);
-	playerEntity->addComponent<MovementComponent>();
-
-	playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-	auto transformComp = playerEntity->findComponent<TransformComponent>();
-	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
-
-	playerEntity->addComponent<MeshComponent>(app->getModelManager());
-	auto meshComp = playerEntity->findComponent<MeshComponent>();
-	meshComp->loadModel("cube");
+	spawnedEntities.emplace(name, createEntity("Player", name));
 }
 
 void LocalServer::possesEntity(const std::string& entityName, Client* client)
@@ -102,6 +75,7 @@ void LocalServer::possesEntity(const std::string& entityName, Client* client)
 	}
 
 	auto& playerEntity = spawnedEntities.at(entityName);
+	playerEntity->addComponent<MovementComponent>();
 
 	if (app)
 	{

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 class Entity;
 
 class Component
@@ -13,7 +15,8 @@ public:
 
 	inline Entity* getEntity() { return entity; }
 
+	virtual std::unique_ptr<Component> clone() const = 0;
+
 protected:
 	Entity* entity;
 };
-

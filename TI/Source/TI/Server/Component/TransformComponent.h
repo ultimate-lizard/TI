@@ -8,6 +8,7 @@ class TransformComponent : public Component
 {
 public:
 	TransformComponent(const glm::vec3& position = { 0.0f, 0.0f, 0.0f }, const glm::vec3& rotation = { 0.0f, 0.0f, 0.0f });
+	TransformComponent(const TransformComponent& otherTransformComp);
 
 	void setPosition(const glm::vec3& position);
 	const glm::vec3& getPosition();
@@ -25,6 +26,10 @@ public:
 
 	void setScale(const glm::vec3& scale);
 	const glm::vec3& getScale() const;
+
+	void operator=(const TransformComponent& otherTransformComp);
+
+	std::unique_ptr<Component> clone() const override;
 
 private:
 	glm::vec3 position;

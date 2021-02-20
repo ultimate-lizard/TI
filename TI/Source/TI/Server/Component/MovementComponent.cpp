@@ -17,6 +17,21 @@ MovementComponent::MovementComponent() :
 
 }
 
+MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
+{
+	yawRate = otherMovementComp.yawRate;
+	pitchRate = otherMovementComp.pitchRate;
+
+	velocity = otherMovementComp.velocity;
+	speed = otherMovementComp.speed;
+
+	forward = otherMovementComp.forward;
+	up = otherMovementComp.up;
+	right = otherMovementComp.right;
+
+	sensivity = otherMovementComp.sensivity;
+}
+
 void MovementComponent::tick(float dt)
 {
 	if (entity)
@@ -126,6 +141,26 @@ void MovementComponent::setMovementForward(float value)
 void MovementComponent::setMovementSideways(float value)
 {
 	velocity.x = value;
+}
+
+std::unique_ptr<Component> MovementComponent::clone() const
+{
+	return std::make_unique<MovementComponent>(*this);
+}
+
+void MovementComponent::operator=(const MovementComponent& otherMovementComp)
+{
+	yawRate = otherMovementComp.yawRate;
+	pitchRate = otherMovementComp.pitchRate;
+
+	velocity = otherMovementComp.velocity;
+	float speed = otherMovementComp.speed;
+
+	forward = otherMovementComp.forward;
+	up = otherMovementComp.up;
+	right = otherMovementComp.right;
+
+	sensivity = otherMovementComp.sensivity;
 }
 
 void MovementComponent::addHorizontalLook(float value)

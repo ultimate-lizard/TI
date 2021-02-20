@@ -13,6 +13,16 @@ TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec
 
 }
 
+TransformComponent::TransformComponent(const TransformComponent& otherTransformComp)
+{
+	position = otherTransformComp.position;
+	scale = otherTransformComp.scale;
+
+	pitch = otherTransformComp.pitch;
+	yaw = otherTransformComp.yaw;
+	roll = otherTransformComp.roll;
+}
+
 void TransformComponent::setPosition(const glm::vec3& position)
 {
 	this->position = position;
@@ -74,4 +84,19 @@ void TransformComponent::setScale(const glm::vec3& scale)
 const glm::vec3& TransformComponent::getScale() const
 {
 	return scale;
+}
+
+std::unique_ptr<Component> TransformComponent::clone() const
+{
+	return std::make_unique<TransformComponent>(*this);
+}
+
+void TransformComponent::operator=(const TransformComponent& otherTransformComp)
+{
+	position = otherTransformComp.position;
+	scale = otherTransformComp.scale;
+
+	pitch = otherTransformComp.pitch;
+	yaw = otherTransformComp.yaw;
+	roll = otherTransformComp.roll;
 }

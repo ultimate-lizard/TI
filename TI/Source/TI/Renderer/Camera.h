@@ -8,6 +8,7 @@ class Camera
 {
 public:
 	Camera(const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
+	Camera(const Camera& otherCamera);
 
 	void setPerspective(float fov, float aspect, float near, float far);
 	void updateView();
@@ -26,6 +27,8 @@ public:
 
 	void setRight(const glm::vec3& right);
 	const glm::vec3& getRight() const;
+
+	void operator=(const Camera& otherCamera);
 
 private:
 	glm::mat4 projection;

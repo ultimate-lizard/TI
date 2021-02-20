@@ -54,7 +54,20 @@ public:
 		return name;
 	}
 
+	inline void setId(const std::string& id)
+	{
+		this->id = id;
+	}
+
+	inline std::string getId() const
+	{
+		return id;
+	}
+
+	std::unique_ptr<Entity> clone() const;
+
 private:
 	std::vector<std::unique_ptr<Component>> components;
 	std::string name;
+	std::string id;
 };

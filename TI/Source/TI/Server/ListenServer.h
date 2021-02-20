@@ -16,11 +16,14 @@ public:
 
 	void shutdown() override;
 
+	void update(float dt) override;
+
 private:
 	void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
 	void acceptConnections(Socket socket);
 	void handleNewConnection(Socket socket);
 	void waitForMessage(Socket socket);
+	void syncEntities(Socket socket);
 
 private:
 	std::thread acceptConnectionsThread;

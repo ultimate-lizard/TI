@@ -14,7 +14,6 @@ public:
 	void disconnectClient(Client* client) override;
 
 protected:
-	void initEntityTemplates();
 	void createCubes();
 	void createPlayerEntity(const std::string& name);
 	void possesEntity(const std::string& entityName, Client* client);

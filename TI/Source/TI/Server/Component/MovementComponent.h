@@ -8,6 +8,7 @@ class MovementComponent : public Component
 {
 public:
 	MovementComponent();
+	MovementComponent(const MovementComponent& otherMovementComp);
 
 	void tick(float dt) override;
 
@@ -27,6 +28,10 @@ public:
 
 	void setMovementForward(float value);
 	void setMovementSideways(float value);
+
+	void operator=(const MovementComponent& otherMovementComp);
+
+	std::unique_ptr<Component> clone() const override;
 
 private:
 	float yawRate;

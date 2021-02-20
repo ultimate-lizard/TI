@@ -71,7 +71,7 @@ Socket NetworkHandler::connect(const std::string& ip, int port)
 	if (SDLNet_ResolveHost(&resolvedIp, ip.c_str(), port) == -1)
 	{
 		std::cout << "Couldn't resolve IP" << std::endl;
-		return false;
+		return Socket();
 	}
 	
 	TCPsocket socket = SDLNet_TCP_Open(&resolvedIp);

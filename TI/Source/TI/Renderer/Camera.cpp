@@ -11,6 +11,18 @@ Camera::Camera(const glm::vec3& position) :
 
 }
 
+Camera::Camera(const Camera& otherCamera)
+{
+	projection = otherCamera.projection;
+	view = otherCamera.view;
+
+	position = otherCamera.position;
+
+	forward = otherCamera.forward;
+	up = otherCamera.up;
+	right = otherCamera.right;
+}
+
 void Camera::setPerspective(float fov, float aspect, float near, float far)
 {
 	projection = glm::perspective(fov, aspect, near, far);
@@ -71,4 +83,16 @@ void Camera::setRight(const glm::vec3& right)
 const glm::vec3& Camera::getRight() const
 {
 	return right;
+}
+
+void Camera::operator=(const Camera& otherCamera)
+{
+	projection = otherCamera.projection;
+	view = otherCamera.view;
+
+	position = otherCamera.position;
+
+	forward = otherCamera.forward;
+	up = otherCamera.up;
+	right = otherCamera.right;
 }

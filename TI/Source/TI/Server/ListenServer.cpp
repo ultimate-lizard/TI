@@ -6,6 +6,7 @@
 
 #include <TI/Client/RemoteClient.h>
 #include <TI/Application.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 ListenServer::ListenServer(Application* app) :
 	LocalServer(app),
@@ -52,6 +53,21 @@ void ListenServer::onMessageReceive(const void* data, const int& size)
 void ListenServer::shutdown()
 {
 	shuttingDown = true;
+}
+
+void ListenServer::update(float dt)
+{
+	LocalServer::update(dt);
+
+	for (auto& mapPair : spawnedEntities)
+	{
+		auto& entity = mapPair.second;
+		auto transformComp = entity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			// transformComp->get
+		}
+	}
 }
 
 void ListenServer::handleConnectionRequestMessage(ClientConnectionRequestMessage message)
@@ -123,5 +139,15 @@ void ListenServer::waitForMessage(Socket socket)
 
 			break;
 		}
+	}
+}
+
+void ListenServer::syncEntities(Socket socket)
+{
+	for (auto& mapPair : spawnedEntities)
+	{
+		auto& entity = mapPair.second;
+		entity->getId();
+		// entity->templateName();
 	}
 }

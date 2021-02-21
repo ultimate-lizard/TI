@@ -45,7 +45,7 @@ void ListenServer::connectClient(ClientConnectionRequest request)
 void ListenServer::onMessageReceive(const void* data, const int& size)
 {
 	ClientConnectionRequestMessage msg;
-	msg.deserialzie(data);
+	// msg.deserialzie(data);
 
 	handleConnectionRequestMessage(msg);
 }
@@ -103,8 +103,9 @@ void ListenServer::handleNewConnection(Socket socket)
 	char data[512];
 	if (socket.receive(data, 512))
 	{
+		Buffer buff(data, 512);
 		ClientConnectionRequestMessage msg;
-		msg.deserialzie(data);
+		msg.deserialzie(buff);
 
 		if (app)
 		{
@@ -167,9 +168,9 @@ void ListenServer::sendEntityInitialInfo(Socket socket)
 			infoMsg.roll = transformComp->getRoll();
 		}
 
-		char data[512];
-		infoMsg.serialize(data);
+		Buffer buff(512);
+		infoMsg.serialize(buff);
 
-		socket.send(data, 512);
+		socket.send(buff.getBuffer(), 512);
 	}
 }

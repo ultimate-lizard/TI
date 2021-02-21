@@ -23,6 +23,8 @@ public:
 
 	Socket acceptConnection();
 
+	void close();
+
 	inline bool operator==(const Socket& other) const
 	{
 		return socket == other.socket;

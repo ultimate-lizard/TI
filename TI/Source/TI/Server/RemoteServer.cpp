@@ -18,6 +18,8 @@ RemoteServer::~RemoteServer()
 {
 	shuttingDown = true;
 
+	server.close();
+
 	if (waitForMessageThread.joinable())
 	{
 		waitForMessageThread.join();
@@ -26,17 +28,19 @@ RemoteServer::~RemoteServer()
 
 void RemoteServer::connectClient(ClientConnectionRequest info)
 {
-	Socket server = network.connect("localhost", 25565);
+	server = network.connect("localhost", 25565);
 	if (server)
 	{
 		ClientConnectionRequestMessage msg;
-		msg.clientId = 123;
 		msg.clientName = info.client->getName();
 
-		char data[512];
-		msg.serialize(data);
+		Buffer buff(512);
+		msg.serialize(buff);
 
-		if (!server.send(data, 512))
+		ClientConnectionRequestMessage test;
+		test.deserialzie(buff);
+
+		if (!server.send(buff.getBuffer(), 512))
 		{
 			std::cout << "Unable to send the message to server" << std::endl;
 			return;
@@ -46,7 +50,7 @@ void RemoteServer::connectClient(ClientConnectionRequest info)
 		createPlayerEntity(info.client->getName());
 		possesEntity(info.client->getName(), info.client);
 
-		waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this, server);
+		waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this);
 	}
 }
 
@@ -58,14 +62,16 @@ void RemoteServer::update(float dt)
 	}
 }
 
-void RemoteServer::waitForMessage(Socket socket)
+void RemoteServer::waitForMessage()
 {
 	while (!shuttingDown)
 	{
 		char data[512];
-		socket.receive(data, 512);
+		server.receive(data, 512);
+
+		Buffer buff(data, 512);
 		EntityInfoMessage msg;
-		msg.deserialzie(data);
+		msg.deserialzie(buff);
 
 		for (auto& mapPair : connectedClients)
 		{

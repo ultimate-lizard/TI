@@ -110,3 +110,11 @@ Socket Socket::acceptConnection()
 
 	return Socket(client);
 }
+
+void Socket::close()
+{
+	if (socket)
+	{
+		SDLNet_TCP_Close(socket);
+	}
+}

@@ -18,7 +18,7 @@ public:
 
 	void update(float dt) override;
 
-	void waitForMessage(Socket socket);
+	void waitForMessage();
 
 private:
 	NetworkHandler network;
@@ -26,4 +26,6 @@ private:
 	std::thread waitForMessageThread;
 
 	bool shuttingDown;
+
+	Socket server;
 };

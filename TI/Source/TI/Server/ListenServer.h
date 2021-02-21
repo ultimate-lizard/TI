@@ -19,7 +19,7 @@ public:
 	void update(float dt) override;
 
 private:
-	void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
+	// void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
 	void acceptConnections(Socket socket);
 	void handleNewConnection(Socket socket);
 	void waitForMessage(Socket socket);

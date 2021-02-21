@@ -23,6 +23,33 @@ public:
 		memcpy(this->buffer, buffer, size);
 	}
 
+	void reset(const char* buffer, int size)
+	{
+		this->size = size;
+		readIndex = 0;
+		writeIndex = 0;
+		if (this->buffer)
+		{
+			delete[] this->buffer;
+		}
+
+		this->buffer = new char[size];
+
+		memcpy(this->buffer, buffer, size);
+	}
+
+	bool append(const char* buffer, int size)
+	{
+		if (writeIndex + size >= this->size)
+		{
+			return false;
+		}
+
+		memcpy(this->buffer + writeIndex, buffer, size);
+
+		return true;
+	}
+
 	bool readInt(int& dest)
 	{
 		if (readIndex + sizeof(int) >= size)
@@ -164,20 +191,5 @@ public:
 	bool deserialzie(Buffer& buffer);
 };
 
-//
-//class NetMessage
-//{
-//public:
-//	void addMember(std::variant<int, float, std::string> member);
-//
-//	void serialize(char* data, int len);
-//	void deserialize(const char* data, int len);
-//
-//private:
-//	std::vector<std::variant<int, float, std::string>> members;
-//};
-
-
-
-std::variant<ClientConnectionRequestMessage, EntityInfoMessage> deserializeNetMsg(const char* src, int size);
-void serializeNetMsg(std::variant<ClientConnectionRequestMessage, EntityInfoMessage> msg, char* dest, int size);
+std::variant<ClientConnectionRequestMessage, EntityInfoMessage> deserializeNetMsg(Buffer& buffer);
+void serializeNetMsg(std::variant<ClientConnectionRequestMessage, EntityInfoMessage> msg, Buffer& buffer);

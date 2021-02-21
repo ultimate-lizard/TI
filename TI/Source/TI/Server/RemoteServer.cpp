@@ -34,13 +34,11 @@ void RemoteServer::connectClient(ClientConnectionRequest info)
 		ClientConnectionRequestMessage msg;
 		msg.clientName = info.client->getName();
 
-		Buffer buff(512);
-		msg.serialize(buff);
+		Buffer buffer(512);
+		// msg.serialize(buff);
+		serializeNetMsg(msg, buffer);
 
-		ClientConnectionRequestMessage test;
-		test.deserialzie(buff);
-
-		if (!server.send(buff.getBuffer(), 512))
+		if (!server.send(buffer, 512))
 		{
 			std::cout << "Unable to send the message to server" << std::endl;
 			return;
@@ -66,32 +64,34 @@ void RemoteServer::waitForMessage()
 {
 	while (!shuttingDown)
 	{
-		char data[512];
-		server.receive(data, 512);
+		Buffer buffer(512);
+		server.receive(buffer, 512);
 
-		Buffer buff(data, 512);
-		EntityInfoMessage msg;
-		msg.deserialzie(buff);
-
-		for (auto& mapPair : connectedClients)
+		//EntityInfoMessage msg;
+		//msg.deserialzie(buffer);
+		auto msg = deserializeNetMsg(buffer);
+		if (auto entityInfoMsg = std::get_if<EntityInfoMessage>(&msg))
 		{
-			auto& client = mapPair.second;
-			if (client->getName() == msg.id)
+			for (auto& mapPair : connectedClients)
 			{
-				continue;
+				auto& client = mapPair.second;
+				if (client->getName() == entityInfoMsg->id)
+				{
+					continue;
+				}
 			}
-		}
 
-		spawnedEntities.emplace(msg.id, createEntity(msg.name, msg.id));
+			spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
 
-		auto& entity = spawnedEntities[msg.id];
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			transformComp->setPosition({ msg.x, msg.y, msg.z });
-			transformComp->setPitch(msg.pitch);
-			transformComp->setYaw(msg.yaw);
-			transformComp->setRoll(msg.roll);
+			auto& entity = spawnedEntities[entityInfoMsg->id];
+			auto transformComp = entity->findComponent<TransformComponent>();
+			if (transformComp)
+			{
+				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
+				transformComp->setPitch(entityInfoMsg->pitch);
+				transformComp->setYaw(entityInfoMsg->yaw);
+				transformComp->setRoll(entityInfoMsg->roll);
+			}
 		}
 	}
 }

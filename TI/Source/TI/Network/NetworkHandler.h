@@ -8,6 +8,8 @@
 
 #include <SDL_net.h>
 
+#include <TI/Network/Message.h>
+
 class Socket
 {
 	friend class NetworkHandler;
@@ -15,8 +17,8 @@ class Socket
 public:
 	Socket() : socket(nullptr) {}
 
-	bool send(const void* data, int length);
-	bool receive(void* data, int length);
+	bool send(Buffer& buffer, size_t size);
+	bool receive(Buffer& buffer, size_t size);
 
 	void setName(const std::string& name);
 	const std::string& getName() const;

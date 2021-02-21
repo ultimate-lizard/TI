@@ -11,18 +11,6 @@ NetworkHandler::NetworkHandler()
 
 NetworkHandler::~NetworkHandler()
 {
-	//running = false;
-
-	//if (listenThread.joinable())
-	//{
-	//	listenThread.join();
-	//}
-
-	//if (messageThread.joinable())
-	//{
-	//	messageThread.join();
-	//}
-
 	SDLNet_Quit();
 }
 
@@ -78,20 +66,27 @@ Socket NetworkHandler::connect(const std::string& ip, int port)
 	return Socket(socket);
 }
 
-bool Socket::send(const void* data, int length)
+bool Socket::send(Buffer& buffer, size_t size)
 {
-	int sentLength = 0;
-	sentLength = SDLNet_TCP_Send(socket, data, length);
+	char b[512];
+	memcpy(b, buffer.getBuffer(), size);
 
-	return sentLength == length;
+	int sentLength = 0;
+	sentLength = SDLNet_TCP_Send(socket, buffer.getBuffer(), size);
+
+	return sentLength == size;
 }
 
-bool Socket::receive(void* data, int length)
+bool Socket::receive(Buffer& buffer, size_t size)
 {
-	int receivedLength = 0;
-	receivedLength = SDLNet_TCP_Recv(socket, data, length);
+	char rawBuf[512];
 
-	return receivedLength == length;
+	int receivedLength = 0;
+	receivedLength = SDLNet_TCP_Recv(socket, rawBuf, size);
+
+	buffer.reset(rawBuf, size);
+
+	return receivedLength == size;
 }
 
 void Socket::setName(const std::string& name)

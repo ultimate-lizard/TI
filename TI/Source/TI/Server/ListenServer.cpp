@@ -44,10 +44,10 @@ void ListenServer::connectClient(ClientConnectionRequest request)
 
 void ListenServer::onMessageReceive(const void* data, const int& size)
 {
-	ClientConnectionRequestMessage msg;
+	// ClientConnectionRequestMessage msg;
 	// msg.deserialzie(data);
 
-	handleConnectionRequestMessage(msg);
+	// handleConnectionRequestMessage(msg);
 }
 
 void ListenServer::shutdown()
@@ -70,20 +70,20 @@ void ListenServer::update(float dt)
 	}
 }
 
-void ListenServer::handleConnectionRequestMessage(ClientConnectionRequestMessage message)
-{
-	if (app)
-	{
-		auto client = std::make_unique<RemoteClient>(app);
-		client->setName(message.clientName);
-		auto clientPtr = client.get();
-		app->addClient(std::move(client));
-
-		ClientConnectionRequest connectionRequest;
-		connectionRequest.client = clientPtr;
-		connectClient(std::move(connectionRequest));
-	}
-}
+//void ListenServer::handleConnectionRequestMessage(ClientConnectionRequestMessage message)
+//{
+//	if (app)
+//	{
+//		auto client = std::make_unique<RemoteClient>(app);
+//		client->setName(message.clientName);
+//		auto clientPtr = client.get();
+//		app->addClient(std::move(client));
+//
+//		ClientConnectionRequest connectionRequest;
+//		connectionRequest.client = clientPtr;
+//		connectClient(std::move(connectionRequest));
+//	}
+//}
 
 void ListenServer::acceptConnections(Socket socket)
 {
@@ -100,32 +100,36 @@ void ListenServer::acceptConnections(Socket socket)
 
 void ListenServer::handleNewConnection(Socket socket)
 {
-	char data[512];
-	if (socket.receive(data, 512))
+	Buffer buffer(512);
+	if (socket.receive(buffer, 512))
 	{
-		Buffer buff(data, 512);
-		ClientConnectionRequestMessage msg;
-		msg.deserialzie(buff);
-
-		if (app)
+		auto msg = deserializeNetMsg(buffer);
+		if (auto clientMsg = std::get_if<ClientConnectionRequestMessage>(&msg))
 		{
-			auto client = std::make_unique<RemoteClient>(app);
-			client->setName(msg.clientName);
+			if (app)
+			{
+				auto client = std::make_unique<RemoteClient>(app);
+				client->setName(clientMsg->clientName);
 
-			Client* clientPtr = client.get();
-			app->addClient(std::move(client));
+				Client* clientPtr = client.get();
+				app->addClient(std::move(client));
 
-			ClientConnectionRequest request;
-			request.client = clientPtr;
+				ClientConnectionRequest request;
+				request.client = clientPtr;
 
-			connectClient(std::move(request));
+				connectClient(std::move(request));
 
-			socket.setName(msg.clientName);
+				socket.setName(clientMsg->clientName);
 
-			sendEntityInitialInfo(socket);
+				sendEntityInitialInfo(socket);
+			}
+
+			waitForMessageThread = std::thread(&ListenServer::waitForMessage, this, socket);
 		}
-
-		waitForMessageThread = std::thread(&ListenServer::waitForMessage, this, socket);
+		else
+		{
+			throw std::exception();
+		}
 	}
 }
 
@@ -133,8 +137,8 @@ void ListenServer::waitForMessage(Socket socket)
 {
 	while (!shuttingDown)
 	{
-		char data[512];
-		if (!socket.receive(data, 512))
+		Buffer buffer(512);
+		if (!socket.receive(buffer, 512))
 		{
 			std::cout << "The client has disconnected" << std::endl;
 
@@ -169,8 +173,9 @@ void ListenServer::sendEntityInitialInfo(Socket socket)
 		}
 
 		Buffer buff(512);
-		infoMsg.serialize(buff);
+		// infoMsg.serialize(buff);
+		serializeNetMsg(infoMsg, buff);
 
-		socket.send(buff.getBuffer(), 512);
+		socket.send(buff, 512);
 	}
 }

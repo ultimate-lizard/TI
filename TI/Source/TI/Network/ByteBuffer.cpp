@@ -95,7 +95,13 @@ bool Buffer::writeFloat(float src)
 bool Buffer::readString(std::string& dest)
 {
 	int len = 0;
+
 	if (!readInt(len))
+	{
+		return false;
+	}
+
+	if (!len)
 	{
 		return false;
 	}

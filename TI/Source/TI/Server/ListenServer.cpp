@@ -220,7 +220,6 @@ void ListenServer::syncEntities(Socket socket)
 			auto transformComp = entity->findComponent<TransformComponent>();
 			if (transformComp)
 			{
-				// TODO: Implement packet builder
 				auto pos = transformComp->getPosition();
 				infoMsg.x = pos.x;
 				infoMsg.y = pos.y;
@@ -234,6 +233,8 @@ void ListenServer::syncEntities(Socket socket)
 			serializeNetMessage(infoMsg, buff);
 
 			socket.send(buff, 512);
+
+			SDL_Delay(8);
 		}
 	}
 }

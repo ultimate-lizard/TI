@@ -19,6 +19,8 @@ public:
 
 	const glm::ivec2& getSize() const;
 
+	bool hasFocus() const;
+
 private:
 	SDL_Window* sdlWindow;
 

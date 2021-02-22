@@ -3,6 +3,7 @@
 #include <TI/Application.h>
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/LocalClient.h>
+#include <TI/Window.h>
 
 Input::Input(Application* app) :
 	app(app),
@@ -58,6 +59,24 @@ void Input::handleInput()
 			case SDL_CONTROLLERAXISMOTION:
 				handleControllerAxisMotion(inputHandler);
 				break;
+
+			case SDL_WINDOWEVENT:
+			{
+				switch (event.window.event)
+				{
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+				case SDL_WINDOWEVENT_LEAVE:
+					SDL_SetRelativeMouseMode(SDL_FALSE);
+					SDL_CaptureMouse(SDL_FALSE);
+					break;
+
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+				case SDL_WINDOWEVENT_ENTER:
+					SDL_SetRelativeMouseMode(SDL_TRUE);
+					SDL_CaptureMouse(SDL_TRUE);
+					break;
+				}
+			}
 			}
 		}
 	}
@@ -82,7 +101,10 @@ void Input::handleMouseMotion(InputHandler* inputHandler)
 
 	SDL_Window* window = app->getWindow()->getSdlWindow();
 
-	SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
+	if (app->getWindow()->hasFocus())
+	{
+		SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
+	}
 }
 
 void Input::handleControllerAxisMotion(InputHandler* inputHandler)

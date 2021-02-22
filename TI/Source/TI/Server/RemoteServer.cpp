@@ -29,7 +29,8 @@ RemoteServer::~RemoteServer()
 
 void RemoteServer::connectClient(Client* client)
 {
-	server = network.connect("localhost", 25565);
+	server = network.connect("93.78.45.19", 25565);
+	// server = network.connect("localhost", 25565);
 	if (server)
 	{
 		ClientConnectionRequestNetMessage msg;

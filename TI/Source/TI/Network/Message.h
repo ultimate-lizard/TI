@@ -40,17 +40,31 @@ public:
 	bool deserialzie(Buffer& buffer);
 };
 
+class FinishInitialEntitySyncNetMessage
+{
+
+};
+
+class ClientReadyNetMessage
+{
+
+};
+
 using NetMessageVariantsType = std::variant<
 	ClientConnectionRequestNetMessage,
 	ClientConnectionResponseNetMessage,
-	EntityInfoNetMessage
+	EntityInfoNetMessage,
+	FinishInitialEntitySyncNetMessage,
+	ClientReadyNetMessage
 >;
 
 enum NetMessageType
 {
 	ClientConnectionRequest,
 	ClientConnectionResponse,
-	EntityInfo
+	EntityInfo,
+	FinishInitialEntitySync,
+	ClientReady
 };
 
 void serializeNetMessage(NetMessageVariantsType src, Buffer& dest);

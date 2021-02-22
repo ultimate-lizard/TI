@@ -8,7 +8,8 @@
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
-	shuttingDown(false)
+	shuttingDown(false),
+	state(ServerState::ServerStateSync)
 {
 	// network.connect("localhost")
 	initEntityTemplates();
@@ -87,26 +88,62 @@ void RemoteServer::waitForMessage()
 		auto msg = deserializeNetMessage(buffer);
 		if (auto entityInfoMsg = std::get_if<EntityInfoNetMessage>(&msg))
 		{
-			for (auto& mapPair : connectedClients)
+			if (state == ServerState::ServerStateSync)
 			{
-				auto& client = mapPair.second;
-				if (client->getName() == entityInfoMsg->id)
+				for (auto& mapPair : connectedClients)
 				{
-					continue;
+					auto& client = mapPair.second;
+					if (client->getName() == entityInfoMsg->id)
+					{
+						continue;
+					}
+				}
+
+				spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
+
+				auto& entity = spawnedEntities[entityInfoMsg->id];
+				auto transformComp = entity->findComponent<TransformComponent>();
+				if (transformComp)
+				{
+					transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
+					transformComp->setPitch(entityInfoMsg->pitch);
+					transformComp->setYaw(entityInfoMsg->yaw);
+					transformComp->setRoll(entityInfoMsg->roll);
 				}
 			}
-
-			spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
-
-			auto& entity = spawnedEntities[entityInfoMsg->id];
-			auto transformComp = entity->findComponent<TransformComponent>();
-			if (transformComp)
+			else if (state == ServerState::ServerStatePlay)
 			{
-				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
-				transformComp->setPitch(entityInfoMsg->pitch);
-				transformComp->setYaw(entityInfoMsg->yaw);
-				transformComp->setRoll(entityInfoMsg->roll);
+				bool skip = false;
+				for (auto& mapPair : connectedClients)
+				{
+					auto& client = mapPair.second;
+					if (client->getName() == entityInfoMsg->id)
+					{
+						skip = true;
+					}
+				}
+
+				if (skip) continue;
+
+				auto& entity = spawnedEntities[entityInfoMsg->id];
+				auto transformComp = entity->findComponent<TransformComponent>();
+				if (transformComp)
+				{
+					transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
+					transformComp->setPitch(entityInfoMsg->pitch);
+					transformComp->setYaw(entityInfoMsg->yaw);
+					transformComp->setRoll(entityInfoMsg->roll);
+				}
 			}
+		}
+		else if (std::get_if<FinishInitialEntitySyncNetMessage>(&msg))
+		{
+			// Receive sync messages
+			state = ServerState::ServerStatePlay;
+
+			Buffer buffer(512);
+			serializeNetMessage(ClientReadyNetMessage(), buffer);
+			server.send(buffer, 512);
 		}
 	}
 }

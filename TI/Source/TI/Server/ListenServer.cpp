@@ -10,7 +10,8 @@
 
 ListenServer::ListenServer(Application* app) :
 	LocalServer(app),
-	shuttingDown(false)
+	shuttingDown(false),
+	state(ServerState::ServerStateSync)
 {
 	server = network.openConnection(25565);
 	if (server)
@@ -152,11 +153,19 @@ void ListenServer::waitForMessage(Socket socket)
 
 			break;
 		}
+
+		auto msg = deserializeNetMessage(buffer);
+		if (std::get_if<ClientReadyNetMessage>(&msg))
+		{
+			state = ServerState::ServerStatePlay;
+		}
 	}
 }
 
 void ListenServer::sendEntityInitialInfo(Socket socket)
 {
+	Buffer buff(512);
+
 	for (auto& mapPair : spawnedEntities)
 	{
 		auto& entity = mapPair.second;
@@ -178,9 +187,53 @@ void ListenServer::sendEntityInitialInfo(Socket socket)
 			infoMsg.roll = transformComp->getRoll();
 		}
 
-		Buffer buff(512);
+		buff.clear();
 		serializeNetMessage(infoMsg, buff);
 
 		socket.send(buff, 512);
+	}
+
+	buff.clear();
+	serializeNetMessage(FinishInitialEntitySyncNetMessage(), buff);
+	socket.send(buff, 512);
+
+	syncEntitiesThread = std::thread(&ListenServer::syncEntities, this, socket);
+}
+
+void ListenServer::syncEntities(Socket socket)
+{
+	while (!shuttingDown)
+	{
+		if (state != ServerState::ServerStatePlay)
+		{
+			continue;
+		}
+
+		for (auto& mapPair : spawnedEntities)
+		{
+			auto& entity = mapPair.second;
+
+			EntityInfoNetMessage infoMsg;
+			infoMsg.name = entity->getName();
+			infoMsg.id = entity->getId();
+
+			auto transformComp = entity->findComponent<TransformComponent>();
+			if (transformComp)
+			{
+				// TODO: Implement packet builder
+				auto pos = transformComp->getPosition();
+				infoMsg.x = pos.x;
+				infoMsg.y = pos.y;
+				infoMsg.z = pos.z;
+				infoMsg.pitch = transformComp->getPitch();
+				infoMsg.yaw = transformComp->getYaw();
+				infoMsg.roll = transformComp->getRoll();
+			}
+
+			Buffer buff(512);
+			serializeNetMessage(infoMsg, buff);
+
+			socket.send(buff, 512);
+		}
 	}
 }

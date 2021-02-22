@@ -4,6 +4,8 @@
 #include <TI/Network/NetworkHandler.h>
 #include <TI/Network/Message.h>
 
+
+
 class ListenServer : public LocalServer
 {
 public:
@@ -24,14 +26,18 @@ private:
 	void handleNewConnection(Socket socket);
 	void waitForMessage(Socket socket);
 	void sendEntityInitialInfo(Socket socket);
+	void syncEntities(Socket socket);
 
 private:
 	std::thread acceptConnectionsThread;
 	std::thread waitForMessageThread;
+	std::thread syncEntitiesThread;
 
 	NetworkHandler network;
 
 	bool shuttingDown;
 
 	Socket server;
+
+	ServerState state;
 };

@@ -72,6 +72,14 @@ void serializeNetMessage(NetMessageVariantsType src, Buffer& dest)
 		dest.writeInt(NetMessageType::ClientConnectionResponse);
 		msg->serialize(dest);
 	}
+	else if (auto msg = std::get_if<FinishInitialEntitySyncNetMessage>(&src))
+	{
+		dest.writeInt(NetMessageType::FinishInitialEntitySync);
+	}
+	else if (auto msg = std::get_if<ClientReadyNetMessage>(&src))
+	{
+		dest.writeInt(NetMessageType::ClientReady);
+	}
 	else
 	{
 		throw std::exception();
@@ -105,6 +113,12 @@ NetMessageVariantsType deserializeNetMessage(Buffer& src)
 			msg.deserialzie(src);
 			return msg;
 		}
+
+		case NetMessageType::FinishInitialEntitySync:
+			return FinishInitialEntitySyncNetMessage();
+
+		case NetMessageType::ClientReady:
+			return ClientReadyNetMessage();
 
 		default:
 			std::cout << "Unknown message has been received" << std::endl;

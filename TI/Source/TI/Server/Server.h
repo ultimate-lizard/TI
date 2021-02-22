@@ -9,6 +9,12 @@
 
 class Application;
 
+enum ServerState
+{
+	ServerStateSync,
+	ServerStatePlay
+};
+
 class Server
 {
 public:

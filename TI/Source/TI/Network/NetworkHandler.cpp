@@ -66,7 +66,7 @@ Socket NetworkHandler::connect(const std::string& ip, int port)
 	return Socket(socket);
 }
 
-bool Socket::send(Buffer& buffer, size_t size)
+bool Socket::send(Buffer& buffer, int size)
 {
 	char b[512];
 	memcpy(b, buffer.getBuffer(), size);
@@ -77,7 +77,7 @@ bool Socket::send(Buffer& buffer, size_t size)
 	return sentLength == size;
 }
 
-bool Socket::receive(Buffer& buffer, size_t size)
+bool Socket::receive(Buffer& buffer, int size)
 {
 	char rawBuf[512];
 

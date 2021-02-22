@@ -17,8 +17,8 @@ class Socket
 public:
 	Socket() : socket(nullptr) {}
 
-	bool send(Buffer& buffer, size_t size);
-	bool receive(Buffer& buffer, size_t size);
+	bool send(Buffer& buffer, int size);
+	bool receive(Buffer& buffer, int size);
 
 	void setName(const std::string& name);
 	const std::string& getName() const;

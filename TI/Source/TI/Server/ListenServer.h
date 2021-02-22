@@ -10,7 +10,7 @@ public:
 	ListenServer(Application* app);
 	~ListenServer();
 
-	void connectClient(ClientConnectionRequest request) override;
+	void connectClient(Client*) override;
 
 	void onMessageReceive(const void* data, const int& size);
 

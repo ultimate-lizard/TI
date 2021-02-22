@@ -26,27 +26,44 @@ RemoteServer::~RemoteServer()
 	}
 }
 
-void RemoteServer::connectClient(ClientConnectionRequest info)
+void RemoteServer::connectClient(Client* client)
 {
 	server = network.connect("localhost", 25565);
 	if (server)
 	{
-		ClientConnectionRequestMessage msg;
-		msg.clientName = info.client->getName();
+		ClientConnectionRequestNetMessage msg;
+		msg.clientName = client->getName();
 
 		Buffer buffer(512);
 		// msg.serialize(buff);
-		serializeNetMsg(msg, buffer);
+		serializeNetMessage(msg, buffer);
 
 		if (!server.send(buffer, 512))
 		{
-			std::cout << "Unable to send the message to server" << std::endl;
 			return;
 		}
 
-		connectedClients.emplace(info.client->getName(), info.client);
-		createPlayerEntity(info.client->getName());
-		possesEntity(info.client->getName(), info.client);
+		if (!server.receive(buffer, 512))
+		{
+			return;
+		}
+
+		auto responseVariant = deserializeNetMessage(buffer);
+		if (auto response = std::get_if<ClientConnectionResponseNetMessage>(&responseVariant))
+		{
+			if (response->clientName != client->getName())
+			{
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
+
+		connectedClients.emplace(client->getName(), client);
+		createPlayerEntity(client->getName());
+		possesEntity(client->getName(), client);
 
 		waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this);
 	}
@@ -67,10 +84,8 @@ void RemoteServer::waitForMessage()
 		Buffer buffer(512);
 		server.receive(buffer, 512);
 
-		//EntityInfoMessage msg;
-		//msg.deserialzie(buffer);
-		auto msg = deserializeNetMsg(buffer);
-		if (auto entityInfoMsg = std::get_if<EntityInfoMessage>(&msg))
+		auto msg = deserializeNetMessage(buffer);
+		if (auto entityInfoMsg = std::get_if<EntityInfoNetMessage>(&msg))
 		{
 			for (auto& mapPair : connectedClients)
 			{

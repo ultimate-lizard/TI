@@ -31,6 +31,15 @@ void Buffer::reset(const char* buffer, int size)
 	memcpy(this->buffer, buffer, size);
 }
 
+void Buffer::clear()
+{
+	index = 0;
+	for (int i = 0; i < maxSize; ++i)
+	{
+		buffer[i] = 0;
+	}
+}
+
 bool Buffer::readInt(int& dest)
 {
 	if (index + sizeof(int) >= maxSize)

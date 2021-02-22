@@ -4,7 +4,7 @@
 
 #include <TI/Network/ByteBuffer.h>
 
-class ClientConnectionRequestMessage
+class ClientConnectionRequestNetMessage
 {
 public:
 	std::string clientName;
@@ -13,7 +13,7 @@ public:
 	bool deserialzie(Buffer& buffer);
 };
 
-class EntityInfoMessage
+class EntityInfoNetMessage
 {
 public:
 	std::string name;
@@ -31,5 +31,27 @@ public:
 	bool deserialzie(Buffer& buffer);
 };
 
-std::variant<ClientConnectionRequestMessage, EntityInfoMessage> deserializeNetMsg(Buffer& buffer);
-void serializeNetMsg(std::variant<ClientConnectionRequestMessage, EntityInfoMessage> msg, Buffer& buffer);
+class ClientConnectionResponseNetMessage
+{
+public:
+	std::string clientName;
+
+	bool serialize(Buffer& buffer);
+	bool deserialzie(Buffer& buffer);
+};
+
+using NetMessageVariantsType = std::variant<
+	ClientConnectionRequestNetMessage,
+	ClientConnectionResponseNetMessage,
+	EntityInfoNetMessage
+>;
+
+enum NetMessageType
+{
+	ClientConnectionRequest,
+	ClientConnectionResponse,
+	EntityInfo
+};
+
+void serializeNetMessage(NetMessageVariantsType src, Buffer& dest);
+NetMessageVariantsType deserializeNetMessage(Buffer& src);

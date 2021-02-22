@@ -2,9 +2,6 @@
 
 #include <string>
 
-const int MSG_CLIENT_CONNECTION_REQUEST = 0;
-const int MSG_ENTITY_INFO = 1;
-
 class Buffer
 {
 public:
@@ -12,6 +9,7 @@ public:
 	Buffer(const char* buffer, int size);
 
 	void reset(const char* buffer, int size);
+	void clear();
 
 	bool readInt(int& dest);
 	bool writeInt(int src);

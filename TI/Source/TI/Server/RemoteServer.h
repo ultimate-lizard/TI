@@ -12,7 +12,7 @@ public:
 	RemoteServer(Application* app);
 	~RemoteServer();
 
-	void connectClient(ClientConnectionRequest info) override;
+	void connectClient(Client* client) override;
 
 	void disconnectClient(Client* client) override {};
 

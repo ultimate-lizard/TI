@@ -9,7 +9,7 @@ public:
 
 	void update(float dt) override;
 
-	void connectClient(ClientConnectionRequest request) override;
+	void connectClient(Client* client) override;
 
 	void disconnectClient(Client* client) override;
 

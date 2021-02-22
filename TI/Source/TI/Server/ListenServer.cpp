@@ -34,12 +34,12 @@ ListenServer::~ListenServer()
 	}
 }
 
-void ListenServer::connectClient(ClientConnectionRequest request)
+void ListenServer::connectClient(Client* client)
 {
-	connectedClients.emplace(request.client->getName(), request.client);
+	connectedClients.emplace(client->getName(), client);
 
-	createPlayerEntity(request.client->getName());
-	possesEntity(request.client->getName(), request.client);
+	createPlayerEntity(client->getName());
+	possesEntity(client->getName(), client);
 }
 
 void ListenServer::onMessageReceive(const void* data, const int& size)
@@ -103,8 +103,9 @@ void ListenServer::handleNewConnection(Socket socket)
 	Buffer buffer(512);
 	if (socket.receive(buffer, 512))
 	{
-		auto msg = deserializeNetMsg(buffer);
-		if (auto clientMsg = std::get_if<ClientConnectionRequestMessage>(&msg))
+		// Handle client connection request
+		auto msg = deserializeNetMessage(buffer);
+		if (auto clientMsg = std::get_if<ClientConnectionRequestNetMessage>(&msg))
 		{
 			if (app)
 			{
@@ -114,12 +115,18 @@ void ListenServer::handleNewConnection(Socket socket)
 				Client* clientPtr = client.get();
 				app->addClient(std::move(client));
 
-				ClientConnectionRequest request;
-				request.client = clientPtr;
-
-				connectClient(std::move(request));
+				connectClient(clientPtr);
 
 				socket.setName(clientMsg->clientName);
+
+				// Handle client connection response
+				ClientConnectionResponseNetMessage response;
+				response.clientName = socket.getName();
+
+				buffer.clear();
+				serializeNetMessage(response, buffer);
+
+				socket.send(buffer, 512);
 
 				sendEntityInitialInfo(socket);
 			}
@@ -140,8 +147,7 @@ void ListenServer::waitForMessage(Socket socket)
 		Buffer buffer(512);
 		if (!socket.receive(buffer, 512))
 		{
-			std::cout << "The client has disconnected" << std::endl;
-
+			// Handle client disconnection
 			app->removeClient(socket.getName());
 
 			break;
@@ -155,7 +161,7 @@ void ListenServer::sendEntityInitialInfo(Socket socket)
 	{
 		auto& entity = mapPair.second;
 
-		EntityInfoMessage infoMsg;
+		EntityInfoNetMessage infoMsg;
 		infoMsg.name = entity->getName();
 		infoMsg.id = entity->getId();
 
@@ -173,8 +179,7 @@ void ListenServer::sendEntityInitialInfo(Socket socket)
 		}
 
 		Buffer buff(512);
-		// infoMsg.serialize(buff);
-		serializeNetMsg(infoMsg, buff);
+		serializeNetMessage(infoMsg, buff);
 
 		socket.send(buff, 512);
 	}

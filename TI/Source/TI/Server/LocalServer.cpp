@@ -24,15 +24,15 @@ void LocalServer::update(float dt)
 	}
 }
 
-void LocalServer::connectClient(ClientConnectionRequest request)
+void LocalServer::connectClient(Client* client)
 {
 	// Send packet with client info to IP
 	// If IP responds with ConnectionSuccessful packet:
 	// client->receiveServerConnectionResponse(ServerConnectionInfo info);
-	request.client->receiveServerConnectionResponse({ ++clientId });
-	connectedClients.emplace(request.client->getName(), request.client);
-	createPlayerEntity(request.client->getName());
-	possesEntity(request.client->getName(), request.client);
+	client->receiveServerConnectionResponse({ ++clientId });
+	connectedClients.emplace(client->getName(), client);
+	createPlayerEntity(client->getName());
+	possesEntity(client->getName(), client);
 }
 
 void LocalServer::disconnectClient(Client* client)

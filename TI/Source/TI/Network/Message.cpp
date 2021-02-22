@@ -1,18 +1,29 @@
 #include "Message.h"
 
+#include <iostream>
 #include <vector>
 
-bool ClientConnectionRequestMessage::serialize(Buffer& buffer)
+bool ClientConnectionRequestNetMessage::serialize(Buffer& buffer)
 {
 	return buffer.writeString(clientName);
 }
 
-bool ClientConnectionRequestMessage::deserialzie(Buffer& buffer)
+bool ClientConnectionRequestNetMessage::deserialzie(Buffer& buffer)
 {
 	return buffer.readString(clientName);
 }
 
-bool EntityInfoMessage::serialize(Buffer& buffer)
+bool ClientConnectionResponseNetMessage::serialize(Buffer& buffer)
+{
+	return buffer.writeString(clientName);
+}
+
+bool ClientConnectionResponseNetMessage::deserialzie(Buffer& buffer)
+{
+	return buffer.readString(clientName);
+}
+
+bool EntityInfoNetMessage::serialize(Buffer& buffer)
 {
 	bool result = false;
 
@@ -28,7 +39,7 @@ bool EntityInfoMessage::serialize(Buffer& buffer)
 	return result;
 }
 
-bool EntityInfoMessage::deserialzie(Buffer& buffer)
+bool EntityInfoNetMessage::deserialzie(Buffer& buffer)
 {
 	bool result = false;
 
@@ -44,67 +55,60 @@ bool EntityInfoMessage::deserialzie(Buffer& buffer)
 	return result;
 }
 
-std::variant<ClientConnectionRequestMessage, EntityInfoMessage> deserializeNetMsg(Buffer& buffer)
+void serializeNetMessage(NetMessageVariantsType src, Buffer& dest)
 {
-	int msgType;
-
-	if (!buffer.readInt(msgType))
+	if (auto msg = std::get_if<ClientConnectionRequestNetMessage>(&src))
+	{
+		dest.writeInt(NetMessageType::ClientConnectionRequest);
+		msg->serialize(dest);
+	}
+	else if (auto msg = std::get_if<EntityInfoNetMessage>(&src))
+	{
+		dest.writeInt(NetMessageType::EntityInfo);
+		msg->serialize(dest);
+	}
+	else if (auto msg = std::get_if<ClientConnectionResponseNetMessage>(&src))
+	{
+		dest.writeInt(NetMessageType::ClientConnectionResponse);
+		msg->serialize(dest);
+	}
+	else
 	{
 		throw std::exception();
-	}
-	
-	switch (msgType)
-	{
-	case MSG_CLIENT_CONNECTION_REQUEST:
-		{
-			ClientConnectionRequestMessage msg;
-			if (msg.deserialzie(buffer))
-			{
-				return msg;
-			}
-			else
-			{
-				throw std::exception();
-			}
-		}
-		break;
-
-	case MSG_ENTITY_INFO:
-		{
-			EntityInfoMessage msg;
-			if (msg.deserialzie(buffer))
-			{
-				return msg;
-			}
-			else
-			{
-				throw std::exception();
-			}
-		}
-		break;
-
-	//default:
-		//throw std::exception();
 	}
 }
 
-void serializeNetMsg(std::variant<ClientConnectionRequestMessage, EntityInfoMessage> msg, Buffer& buffer)
+NetMessageVariantsType deserializeNetMessage(Buffer& src)
 {
-	bool result = false;
+	int type = 0;
+	src.readInt(type);
 
-	if (auto msgPtr = std::get_if<ClientConnectionRequestMessage>(&msg); msgPtr)
+	switch (type)
 	{
-		result = buffer.writeInt(MSG_CLIENT_CONNECTION_REQUEST);
-		result = msgPtr->serialize(buffer);
-	}
-	else if (auto msgPtr = std::get_if<EntityInfoMessage>(&msg); msgPtr)
-	{
-		result = buffer.writeInt(MSG_ENTITY_INFO);
-		result = msgPtr->serialize(buffer);
+		case NetMessageType::ClientConnectionRequest:
+		{
+			ClientConnectionRequestNetMessage msg;
+			msg.deserialzie(src);
+			return msg;
+		}
+
+		case NetMessageType::ClientConnectionResponse:
+		{
+			ClientConnectionResponseNetMessage msg;
+			msg.deserialzie(src);
+			return msg;
+		}
+
+		case NetMessageType::EntityInfo:
+		{
+			EntityInfoNetMessage msg;
+			msg.deserialzie(src);
+			return msg;
+		}
+
+		default:
+			std::cout << "Unknown message has been received" << std::endl;
 	}
 
-	if (!result)
-	{
-		throw std::exception();
-	}
+	return {};
 }

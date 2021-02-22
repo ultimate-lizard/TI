@@ -17,7 +17,7 @@ public:
 
 	virtual void update(float dt) {};
 
-	virtual void connectClient(ClientConnectionRequest info) = 0;
+	virtual void connectClient(Client* client) = 0;
 	virtual void disconnectClient(Client* client) = 0;
 
 	virtual void shutdown() {}

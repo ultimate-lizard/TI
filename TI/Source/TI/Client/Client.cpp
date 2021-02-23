@@ -25,7 +25,7 @@ void Client::shutdown()
 		auto server = app->getCurrentServer();
 		if (server)
 		{
-			server->disconnectClient(this);
+			server->ejectClient(this);
 		}
 	}
 }

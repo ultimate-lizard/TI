@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include <TI/Network/Message.h>
+#include <TI/Util/Serialization.h>
 
 NetworkHandler::NetworkHandler()
 {
@@ -66,38 +66,92 @@ Socket NetworkHandler::connect(const std::string& ip, int port)
 	return Socket(socket);
 }
 
-bool Socket::send(Buffer& buffer, int size)
+//bool Socket::send(NetworkPacket& packet)
+//{
+//	char b[512];
+//	memcpy(b, buffer.getBuffer(), size);
+//
+//	int sentLength = 0;
+//	sentLength = SDLNet_TCP_Send(socket, buffer.getBuffer(), size);
+//
+//	return sentLength == size;
+//}
+
+void Socket::send(NetworkPacket& packet)
 {
-	char b[512];
-	memcpy(b, buffer.getBuffer(), size);
+	int packetSize = static_cast<int>(packet.getSize());
+	int sentSize = SDLNet_TCP_Send(socket, &packetSize, sizeof(int));
+	if (sentSize != sizeof(int))
+	{
+		std::cout << "Unable to send packet size" << std::endl;
+		throw std::exception();
+	}
 
-	int sentLength = 0;
-	sentLength = SDLNet_TCP_Send(socket, buffer.getBuffer(), size);
+	int packetId = static_cast<int>(packet.getPacketId());
+	sentSize = 0;
+	sentSize = SDLNet_TCP_Send(socket, &packetId, sizeof(int));
+	if (sentSize != sizeof(int))
+	{
+		std::cout << "Unable to send packet ID" << std::endl;
+		throw std::exception();
+	}
 
-	return sentLength == size;
+	sentSize = 0;
+	sentSize = SDLNet_TCP_Send(socket, packet.getData(), packetSize);
+	if (sentSize != packet.getSize())
+	{
+		std::cout << "Unable to send packet" << std::endl;
+		throw std::exception();
+	}
 }
 
-bool Socket::receive(Buffer& buffer, int size)
+void Socket::receive(NetworkPacket& packet)
 {
-	char rawBuf[512];
+	int packetSize = 0;
+	int receivedSize = 0;
 
-	int receivedLength = 0;
-	receivedLength = SDLNet_TCP_Recv(socket, rawBuf, size);
+	receivedSize = SDLNet_TCP_Recv(socket, &packetSize, sizeof(int));
+	if (receivedSize != sizeof(int))
+	{
+		std::cout << "Unable to receive packet size" << std::endl;
+		throw std::exception();
+	}
 
-	buffer.reset(rawBuf, size);
+	int packetId = 0;
+	receivedSize = 0;
+	receivedSize = SDLNet_TCP_Recv(socket, &packetId, sizeof(int));
+	if (receivedSize != sizeof(int))
+	{
+		std::cout << "Unable to receive packet ID" << std::endl;
+		throw std::exception();
+	}
 
-	return receivedLength == size;
+	std::vector<char> buffer;
+	buffer.resize(packetSize);
+
+	receivedSize = 0;
+	receivedSize = SDLNet_TCP_Recv(socket, &buffer[0], packetSize);
+	if (receivedSize != packetSize)
+	{
+		std::cout << "Unable to receive packet" << std::endl;
+		throw std::exception();
+	}
+
+	packet.reset(&buffer[0], packetSize, 0);
+	packet.setPacketId(static_cast<PacketId>(packetId));
 }
 
-void Socket::setName(const std::string& name)
-{
-	this->name = name;
-}
-
-const std::string& Socket::getName() const
-{
-	return name;
-}
+//bool Socket::receive(NetworkPacket& packet)
+//{
+//	char rawBuf[512];
+//
+//	int receivedLength = 0;
+//	receivedLength = SDLNet_TCP_Recv(socket, rawBuf, size);
+//
+//	buffer.reset(rawBuf, size);
+//
+//	return receivedLength == size;
+//}
 
 Socket Socket::acceptConnection()
 {

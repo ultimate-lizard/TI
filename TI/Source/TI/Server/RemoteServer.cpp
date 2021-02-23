@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include <TI/Network/Message.h>
 #include <TI/Client/Client.h>
 #include <TI/Server/Component/TransformComponent.h>
 
@@ -27,48 +26,59 @@ RemoteServer::~RemoteServer()
 	}
 }
 
-void RemoteServer::connectClient(Client* client)
+void RemoteServer::admitClient(Client* client)
 {
-	server = network.connect("93.78.45.19", 25565);
-	// server = network.connect("localhost", 25565);
+	// server = network.connect("93.78.45.19", 25565);
+	server = network.connect("localhost", 25565);
+
 	if (server)
 	{
-		ClientConnectionRequestNetMessage msg;
-		msg.clientName = client->getName();
+		NetworkPacket packet(PacketId::CConnectionRequest);
+		packet << client->getName();
 
-		Buffer buffer(512);
-		// msg.serialize(buff);
-		serializeNetMessage(msg, buffer);
-
-		if (!server.send(buffer, 512))
-		{
-			return;
-		}
-
-		if (!server.receive(buffer, 512))
-		{
-			return;
-		}
-
-		auto responseVariant = deserializeNetMessage(buffer);
-		if (auto response = std::get_if<ClientConnectionResponseNetMessage>(&responseVariant))
-		{
-			if (response->clientName != client->getName())
-			{
-				return;
-			}
-		}
-		else
-		{
-			return;
-		}
-
-		connectedClients.emplace(client->getName(), client);
-		createPlayerEntity(client->getName());
-		possesEntity(client->getName(), client);
-
-		waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this);
+		server.send(packet);
 	}
+
+	std::cout << "Test" << std::endl;
+
+	//if (server)
+	//{
+	//	ClientConnectionRequestNetMessage msg;
+	//	msg.clientName = client->getName();
+
+	//	NetworkPacket buffer(512);
+	//	// msg.serialize(buff);
+	//	serializeNetMessage(msg, buffer);
+
+	//	if (!server.send(buffer, 512))
+	//	{
+	//		return;
+	//	}
+
+	//	if (!server.receive(buffer, 512))
+	//	{
+	//		return;
+	//	}
+
+	//	auto responseVariant = deserializeNetMessage(buffer);
+	//	if (auto response = std::get_if<ClientConnectionResponseNetMessage>(&responseVariant))
+	//	{
+	//		if (response->clientName != client->getName())
+	//		{
+	//			return;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		return;
+	//	}
+
+	//	connectedClients.emplace(client->getName(), client);
+	//	createPlayerEntity(client->getName());
+	//	possesEntity(client->getName(), client);
+
+	//	waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this);
+	//}
 }
 
 void RemoteServer::update(float dt)
@@ -81,70 +91,70 @@ void RemoteServer::update(float dt)
 
 void RemoteServer::waitForMessage()
 {
-	while (!shuttingDown)
-	{
-		Buffer buffer(512);
-		server.receive(buffer, 512);
+	//while (!shuttingDown)
+	//{
+	//	NetworkPacket buffer(512);
+	//	server.receive(buffer, 512);
 
-		auto msg = deserializeNetMessage(buffer);
-		if (auto entityInfoMsg = std::get_if<EntityInfoNetMessage>(&msg))
-		{
-			if (state == ServerState::ServerStateSync)
-			{
-				for (auto& mapPair : connectedClients)
-				{
-					auto& client = mapPair.second;
-					if (client->getName() == entityInfoMsg->id)
-					{
-						continue;
-					}
-				}
+	//	auto msg = deserializeNetMessage(buffer);
+	//	if (auto entityInfoMsg = std::get_if<EntityInfoNetMessage>(&msg))
+	//	{
+	//		if (state == ServerState::ServerStateSync)
+	//		{
+	//			for (auto& mapPair : connectedClients)
+	//			{
+	//				auto& client = mapPair.second;
+	//				if (client->getName() == entityInfoMsg->id)
+	//				{
+	//					continue;
+	//				}
+	//			}
 
-				spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
+	//			spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
 
-				auto& entity = spawnedEntities[entityInfoMsg->id];
-				auto transformComp = entity->findComponent<TransformComponent>();
-				if (transformComp)
-				{
-					transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
-					transformComp->setPitch(entityInfoMsg->pitch);
-					transformComp->setYaw(entityInfoMsg->yaw);
-					transformComp->setRoll(entityInfoMsg->roll);
-				}
-			}
-			else if (state == ServerState::ServerStatePlay)
-			{
-				bool skip = false;
-				for (auto& mapPair : connectedClients)
-				{
-					auto& client = mapPair.second;
-					if (client->getName() == entityInfoMsg->id)
-					{
-						skip = true;
-					}
-				}
+	//			auto& entity = spawnedEntities[entityInfoMsg->id];
+	//			auto transformComp = entity->findComponent<TransformComponent>();
+	//			if (transformComp)
+	//			{
+	//				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
+	//				transformComp->setPitch(entityInfoMsg->pitch);
+	//				transformComp->setYaw(entityInfoMsg->yaw);
+	//				transformComp->setRoll(entityInfoMsg->roll);
+	//			}
+	//		}
+	//		else if (state == ServerState::ServerStatePlay)
+	//		{
+	//			bool skip = false;
+	//			for (auto& mapPair : connectedClients)
+	//			{
+	//				auto& client = mapPair.second;
+	//				if (client->getName() == entityInfoMsg->id)
+	//				{
+	//					skip = true;
+	//				}
+	//			}
 
-				if (skip) continue;
+	//			if (skip) continue;
 
-				auto& entity = spawnedEntities[entityInfoMsg->id];
-				auto transformComp = entity->findComponent<TransformComponent>();
-				if (transformComp)
-				{
-					transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
-					transformComp->setPitch(entityInfoMsg->pitch);
-					transformComp->setYaw(entityInfoMsg->yaw);
-					transformComp->setRoll(entityInfoMsg->roll);
-				}
-			}
-		}
-		else if (std::get_if<FinishInitialEntitySyncNetMessage>(&msg))
-		{
-			// Receive sync messages
-			state = ServerState::ServerStatePlay;
+	//			auto& entity = spawnedEntities[entityInfoMsg->id];
+	//			auto transformComp = entity->findComponent<TransformComponent>();
+	//			if (transformComp)
+	//			{
+	//				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
+	//				transformComp->setPitch(entityInfoMsg->pitch);
+	//				transformComp->setYaw(entityInfoMsg->yaw);
+	//				transformComp->setRoll(entityInfoMsg->roll);
+	//			}
+	//		}
+	//	}
+	//	else if (std::get_if<FinishInitialEntitySyncNetMessage>(&msg))
+	//	{
+	//		// Receive sync messages
+	//		state = ServerState::ServerStatePlay;
 
-			Buffer buffer(512);
-			serializeNetMessage(ClientReadyNetMessage(), buffer);
-			server.send(buffer, 512);
-		}
-	}
+	//		NetworkPacket buffer(512);
+	//		serializeNetMessage(ClientReadyNetMessage(), buffer);
+	//		server.send(buffer, 512);
+	//	}
+	//}
 }

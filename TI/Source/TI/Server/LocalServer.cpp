@@ -24,7 +24,7 @@ void LocalServer::update(float dt)
 	}
 }
 
-void LocalServer::connectClient(Client* client)
+void LocalServer::admitClient(Client* client)
 {
 	// Send packet with client info to IP
 	// If IP responds with ConnectionSuccessful packet:
@@ -35,7 +35,7 @@ void LocalServer::connectClient(Client* client)
 	possesEntity(client->getName(), client);
 }
 
-void LocalServer::disconnectClient(Client* client)
+void LocalServer::ejectClient(Client* client)
 {
 	spawnedEntities.erase(client->getName());
 }

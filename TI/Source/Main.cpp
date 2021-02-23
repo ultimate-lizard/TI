@@ -3,7 +3,7 @@
 #include <SDL.h>
 
 #include <TI/Application.h>
-#include <TI/Network/Message.h>
+#include <TI/Network/Protocol.h>
 
 int main(int argc, char* argv[])
 {

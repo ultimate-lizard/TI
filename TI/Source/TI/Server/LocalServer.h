@@ -9,9 +9,9 @@ public:
 
 	void update(float dt) override;
 
-	void connectClient(Client* client) override;
+	void admitClient(Client* client) override;
 
-	void disconnectClient(Client* client) override;
+	void ejectClient(Client* client) override;
 
 protected:
 	void createCubes();

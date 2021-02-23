@@ -31,7 +31,7 @@ void LocalClient::connect()
 	Server* server = app->getCurrentServer();
 	if (server)
 	{
-		server->connectClient({ this });
+		server->admitClient({ this });
 	}
 }
 

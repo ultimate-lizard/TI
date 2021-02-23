@@ -2,9 +2,6 @@
 
 #include <TI/Server/LocalServer.h>
 #include <TI/Network/NetworkHandler.h>
-#include <TI/Network/Message.h>
-
-
 
 class ListenServer : public LocalServer
 {
@@ -12,7 +9,7 @@ public:
 	ListenServer(Application* app);
 	~ListenServer();
 
-	void connectClient(Client*) override;
+	void admitClient(Client*) override;
 
 	void onMessageReceive(const void* data, const int& size);
 
@@ -21,15 +18,19 @@ public:
 	void update(float dt) override;
 
 private:
+	void openConnection();
+	void waitConnections();
+
+	void handleClientConnectionRequest(Socket socket);
+
 	// void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
-	void acceptConnections(Socket socket);
-	void handleNewConnection(Socket socket);
-	void waitForMessage(Socket socket);
-	void sendEntityInitialInfo(Socket socket);
-	void syncEntities(Socket socket);
+	//void acceptConnections(Socket socket);
+	//void waitForMessage(Socket socket);
+	//void sendEntityInitialInfo(Socket socket);
+	//void syncEntities(Socket socket);
 
 private:
-	std::thread acceptConnectionsThread;
+	std::thread waitConnectionsThread;
 	std::thread waitForMessageThread;
 	std::thread syncEntitiesThread;
 

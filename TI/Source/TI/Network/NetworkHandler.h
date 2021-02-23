@@ -8,7 +8,8 @@
 
 #include <SDL_net.h>
 
-#include <TI/Network/Message.h>
+#include <TI/Network/Protocol.h>
+#include <TI/Network/NetworkPacket.h>
 
 class Socket
 {
@@ -17,11 +18,8 @@ class Socket
 public:
 	Socket() : socket(nullptr) {}
 
-	bool send(Buffer& buffer, int size);
-	bool receive(Buffer& buffer, int size);
-
-	void setName(const std::string& name);
-	const std::string& getName() const;
+	void send(NetworkPacket& packet);
+	void receive(NetworkPacket& packet);
 
 	Socket acceptConnection();
 
@@ -38,7 +36,6 @@ public:
 	}
 
 private:
-	std::string name;
 	Socket(TCPsocket socket) : socket(socket) {}
 
 private:

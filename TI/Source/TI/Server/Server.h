@@ -23,8 +23,8 @@ public:
 
 	virtual void update(float dt) {};
 
-	virtual void connectClient(Client* client) = 0;
-	virtual void disconnectClient(Client* client) = 0;
+	virtual void admitClient(Client* client) = 0;
+	virtual void ejectClient(Client* client) = 0;
 
 	virtual void shutdown() {}
 

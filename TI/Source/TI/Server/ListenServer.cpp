@@ -84,12 +84,12 @@ void ListenServer::waitConnections()
 		Socket client = server.acceptConnection();
 		if (client)
 		{
-			handleNewConnection(client);
+			handleClientConnectionRequest(client);
 		}
 	}
 }
 
-void ListenServer::handleNewConnection(Socket socket)
+void ListenServer::handleClientConnectionRequest(Socket socket)
 {
 	NetworkPacket packet;
 	socket.receive(packet);

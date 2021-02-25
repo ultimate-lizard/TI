@@ -217,6 +217,7 @@
     <ClInclude Include="Source\TI\Client\RemoteClient.h" />
     <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Network\NetworkPacket.h" />
+    <ClInclude Include="Source\TI\Network\Opcode.h" />
     <ClInclude Include="Source\TI\Network\Protocol.h" />
     <ClInclude Include="Source\TI\Network\NetworkHandler.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />

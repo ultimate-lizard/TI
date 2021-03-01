@@ -35,11 +35,6 @@ void LocalClient::connect()
 	}
 }
 
-void LocalClient::receiveServerConnectionResponse(ServerConnectionResponse response)
-{
-	id = response.id;
-}
-
 void LocalClient::possesEntity(Entity* entity)
 {
 	Client::possesEntity(entity);
@@ -85,6 +80,7 @@ void LocalClient::update(float dt)
 					auto meshComp = entity->findComponent<MeshComponent>();
 					if (meshComp)
 					{
+						// Don't render your entity as we play in first person
 						if (entity->getId() != name)
 						{
 							renderer->pushRender(meshComp, viewportId);

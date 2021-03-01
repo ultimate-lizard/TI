@@ -7,8 +7,7 @@
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
-	shuttingDown(false),
-	state(ServerState::ServerStateSync)
+	shuttingDown(false)
 {
 	// network.connect("localhost")
 	initEntityTemplates();
@@ -28,19 +27,23 @@ RemoteServer::~RemoteServer()
 
 void RemoteServer::admitClient(Client* client)
 {
-	// server = network.connect("93.78.45.19", 25565);
 	server = network.connect("localhost", 25565);
 
 	if (server)
 	{
-		NetworkPacket packet(PacketId::CConnectionRequest);
-		packet << client->getName();
+		NetworkPacket request(PacketId::CConnectionRequest);
+		request << client->getName();
 
-		server.send(packet);
+		server.send(request);
+
+		NetworkPacket response;
+		server.receive(response);
+
+		if (response.getPacketId() == PacketId::SConnectionResponse)
+		{
+			std::cout << "Received connection response" << std::endl;
+		}
 	}
-
-	std::cout << "Test" << std::endl;
-
 	//if (server)
 	//{
 	//	ClientConnectionRequestNetMessage msg;

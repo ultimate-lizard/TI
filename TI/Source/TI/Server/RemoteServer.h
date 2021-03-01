@@ -28,6 +28,4 @@ private:
 	bool shuttingDown;
 
 	Socket server;
-
-	ServerState state;
 };

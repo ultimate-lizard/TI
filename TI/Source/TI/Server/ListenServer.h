@@ -11,7 +11,7 @@ public:
 
 	void admitClient(Client*) override;
 
-	void onMessageReceive(const void* data, const int& size);
+	// void onMessageReceive(const void* data, const int& size);
 
 	void shutdown() override;
 
@@ -21,7 +21,7 @@ private:
 	void openConnection();
 	void waitConnections();
 
-	void handleClientConnectionRequest(Socket socket);
+	void handleConnectionRequest(Socket socket);
 
 	// void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
 	//void acceptConnections(Socket socket);
@@ -39,6 +39,4 @@ private:
 	bool shuttingDown;
 
 	Socket server;
-
-	ServerState state;
 };

@@ -10,8 +10,7 @@
 
 ListenServer::ListenServer(Application* app) :
 	LocalServer(app),
-	shuttingDown(false),
-	state(ServerState::ServerStateSync)
+	shuttingDown(false)
 {
 	openConnection();
 }
@@ -33,19 +32,19 @@ ListenServer::~ListenServer()
 
 void ListenServer::admitClient(Client* client)
 {
-	connectedClients.emplace(client->getName(), client);
+	// connectedClients.emplace(client->getName(), client);
 
 	createPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
 }
 
-void ListenServer::onMessageReceive(const void* data, const int& size)
-{
-	// ClientConnectionRequestMessage msg;
-	// msg.deserialzie(data);
-
-	// handleConnectionRequestMessage(msg);
-}
+//void ListenServer::onMessageReceive(const void* data, const int& size)
+//{
+//	// ClientConnectionRequestMessage msg;
+//	// msg.deserialzie(data);
+//
+//	// handleConnectionRequestMessage(msg);
+//}
 
 void ListenServer::shutdown()
 {
@@ -84,15 +83,36 @@ void ListenServer::waitConnections()
 		Socket client = server.acceptConnection();
 		if (client)
 		{
-			handleClientConnectionRequest(client);
+			handleConnectionRequest(client);
 		}
 	}
 }
 
-void ListenServer::handleClientConnectionRequest(Socket socket)
+void ListenServer::handleConnectionRequest(Socket socket)
 {
-	NetworkPacket packet;
-	socket.receive(packet);
+	NetworkPacket request;
+	socket.receive(request);
+	std::string clientName;
+	request >> clientName;
+
+	if (app->findClient(clientName))
+	{
+		std::cout << "A player with the same name is already connected to the server" << std::endl;
+		socket.close();
+		return;
+	}
+
+	auto remoteClient = std::make_unique<RemoteClient>(app);
+	remoteClient->setSocket(socket);
+	remoteClient->setName(clientName);
+
+	admitClient(remoteClient.get());
+
+	app->addClient(std::move(remoteClient));
+
+	NetworkPacket response;
+	response.setPacketId(PacketId::SConnectionResponse);
+	socket.send(response);
 }
 
 //void ListenServer::handleConnectionRequestMessage(ClientConnectionRequestMessage message)

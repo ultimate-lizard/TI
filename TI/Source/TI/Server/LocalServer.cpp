@@ -26,11 +26,7 @@ void LocalServer::update(float dt)
 
 void LocalServer::admitClient(Client* client)
 {
-	// Send packet with client info to IP
-	// If IP responds with ConnectionSuccessful packet:
-	// client->receiveServerConnectionResponse(ServerConnectionInfo info);
-	client->receiveServerConnectionResponse({ ++clientId });
-	connectedClients.emplace(client->getName(), client);
+	// connectedClients.emplace(client->getName(), client);
 	createPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
 }

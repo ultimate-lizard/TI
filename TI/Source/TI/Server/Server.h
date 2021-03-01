@@ -9,12 +9,6 @@
 
 class Application;
 
-enum ServerState
-{
-	ServerStateSync,
-	ServerStatePlay
-};
-
 class Server
 {
 public:
@@ -44,7 +38,7 @@ protected:
 
 	static int clientId;
 
-	std::map<std::string, Client*> connectedClients;
+	// std::map<std::string, Client*> connectedClients;
 	std::map<std::string, std::unique_ptr<Entity>> spawnedEntities;
 	std::map<std::string, std::unique_ptr<Entity>> entityTemplates;
 };

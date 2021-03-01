@@ -2,16 +2,13 @@
 
 enum class PacketId
 {
-	Invalid = 0,
-
-	CConnectionRequest = 1,
+	Invalid,
+	CConnectionRequest,
 	/*
 		std::string clientName;
 	*/
-
-	SConnectionResponse = 2,
-
-	SEntityInitialSync = 3,
+	SConnectionResponse,
+	SEntityInitialSync,
 	/*
 		std::string name;
 		std::string id;
@@ -19,11 +16,9 @@ enum class PacketId
 		glm::vec3 position;
 		glm::vec3 rotation;
 	*/
-	SFinishInitialEntitySync = 4,
-
-	CFinishInitialEntitySync = 5,
-
-	SEntitySync = 6,
+	SFinishInitialEntitySync,
+	CFinishInitialEntitySync,
+	SEntitySync,
 	/*
 		std::string id;
 

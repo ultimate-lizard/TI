@@ -27,7 +27,11 @@ NetworkPacket::NetworkPacket(const char* data, int size, int peerId) :
 {
 	dataSize = size;
 	this->data.resize(dataSize);
-	memcpy(&this->data[0], data, dataSize);
+
+	if (dataSize > 0)
+	{
+		memcpy(&this->data[0], data, dataSize);
+	}
 }
 
 void NetworkPacket::reset(const char* data, int size, int peerId)
@@ -37,7 +41,11 @@ void NetworkPacket::reset(const char* data, int size, int peerId)
 
 	dataSize = size;
 	this->data.resize(dataSize);
-	memcpy(&this->data[0], data, dataSize);
+
+	if (dataSize > 0)
+	{
+		memcpy(&this->data[0], data, dataSize);
+	}
 }
 
 void NetworkPacket::setPacketId(PacketId id)

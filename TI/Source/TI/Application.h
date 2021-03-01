@@ -49,6 +49,7 @@ public:
 
 	void addClient(std::unique_ptr<Client> client);
 	void removeClient(const std::string& name);
+	Client* findClient(const std::string& name);
 
 private:
 	void init();

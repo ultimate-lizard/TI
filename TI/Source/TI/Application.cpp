@@ -66,7 +66,7 @@ void Application::start()
 
 	for (auto& client : clients)
 	{
-		client->connect();
+		client->connect(); 	// This is temporary. Should be called from other places
 	}
 
 	while (simulating)
@@ -156,6 +156,15 @@ void Application::removeClient(const std::string& name)
 		(*iter)->shutdown();
 		clients.erase(iter);
 	}
+}
+
+Client* Application::findClient(const std::string& name)
+{
+	auto iter = std::find_if(clients.begin(), clients.end(), [&name](auto& client) {
+		return client->getName() == name;
+	});
+
+	return iter != clients.end() ? iter->get() : nullptr;
 }
 
 void Application::init()

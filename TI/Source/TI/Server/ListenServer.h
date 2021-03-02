@@ -3,6 +3,8 @@
 #include <TI/Server/LocalServer.h>
 #include <TI/Network/NetworkHandler.h>
 
+class RemoteClient;
+
 class ListenServer : public LocalServer
 {
 public:
@@ -22,6 +24,8 @@ private:
 	void waitConnections();
 
 	void handleConnectionRequest(Socket socket);
+
+	void sendEntityInitialSync(RemoteClient* client);
 
 	// void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
 	//void acceptConnections(Socket socket);

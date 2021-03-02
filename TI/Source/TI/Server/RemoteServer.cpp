@@ -7,9 +7,9 @@
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
-	shuttingDown(false)
+	shuttingDown(false),
+	state(RemoteServerState::Undefined)
 {
-	// network.connect("localhost")
 	initEntityTemplates();
 }
 
@@ -31,6 +31,8 @@ void RemoteServer::admitClient(Client* client)
 
 	if (server)
 	{
+		state = RemoteServerState::Handshake;
+
 		NetworkPacket request(PacketId::CConnectionRequest);
 		request << client->getName();
 
@@ -42,46 +44,14 @@ void RemoteServer::admitClient(Client* client)
 		if (response.getPacketId() == PacketId::SConnectionResponse)
 		{
 			std::cout << "Received connection response" << std::endl;
+			state = RemoteServerState::Sync;
+
+			waitForMessageThread = std::thread(&RemoteServer::waitForMessages, this);
 		}
+
+		createPlayerEntity(client->getName());
+		possesEntity(client->getName(), client);
 	}
-	//if (server)
-	//{
-	//	ClientConnectionRequestNetMessage msg;
-	//	msg.clientName = client->getName();
-
-	//	NetworkPacket buffer(512);
-	//	// msg.serialize(buff);
-	//	serializeNetMessage(msg, buffer);
-
-	//	if (!server.send(buffer, 512))
-	//	{
-	//		return;
-	//	}
-
-	//	if (!server.receive(buffer, 512))
-	//	{
-	//		return;
-	//	}
-
-	//	auto responseVariant = deserializeNetMessage(buffer);
-	//	if (auto response = std::get_if<ClientConnectionResponseNetMessage>(&responseVariant))
-	//	{
-	//		if (response->clientName != client->getName())
-	//		{
-	//			return;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		return;
-	//	}
-
-	//	connectedClients.emplace(client->getName(), client);
-	//	createPlayerEntity(client->getName());
-	//	possesEntity(client->getName(), client);
-
-	//	waitForMessageThread = std::thread(&RemoteServer::waitForMessage, this);
-	//}
 }
 
 void RemoteServer::update(float dt)
@@ -92,72 +62,81 @@ void RemoteServer::update(float dt)
 	}
 }
 
-void RemoteServer::waitForMessage()
+void RemoteServer::handleMessage(NetworkPacket& packet)
 {
-	//while (!shuttingDown)
-	//{
-	//	NetworkPacket buffer(512);
-	//	server.receive(buffer, 512);
+	switch (packet.getPacketId())
+	{
+	case PacketId::SEntityInitialSync:
+		if (state == RemoteServerState::Sync)
+		{
+			handleInitialEntitySync(packet);
+		}
+		break;
 
-	//	auto msg = deserializeNetMessage(buffer);
-	//	if (auto entityInfoMsg = std::get_if<EntityInfoNetMessage>(&msg))
-	//	{
-	//		if (state == ServerState::ServerStateSync)
-	//		{
-	//			for (auto& mapPair : connectedClients)
-	//			{
-	//				auto& client = mapPair.second;
-	//				if (client->getName() == entityInfoMsg->id)
-	//				{
-	//					continue;
-	//				}
-	//			}
+	case PacketId::SFinishInitialEntitySync:
+	{
+		if (state == RemoteServerState::Sync)
+		{
+			handleFinishInitialEntitySync(packet);
+		}
+	}
+	break;
 
-	//			spawnedEntities.emplace(entityInfoMsg->id, createEntity(entityInfoMsg->name, entityInfoMsg->id));
+	case PacketId::SEntitySync:
+		if (state == RemoteServerState::Play)
+		{
 
-	//			auto& entity = spawnedEntities[entityInfoMsg->id];
-	//			auto transformComp = entity->findComponent<TransformComponent>();
-	//			if (transformComp)
-	//			{
-	//				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
-	//				transformComp->setPitch(entityInfoMsg->pitch);
-	//				transformComp->setYaw(entityInfoMsg->yaw);
-	//				transformComp->setRoll(entityInfoMsg->roll);
-	//			}
-	//		}
-	//		else if (state == ServerState::ServerStatePlay)
-	//		{
-	//			bool skip = false;
-	//			for (auto& mapPair : connectedClients)
-	//			{
-	//				auto& client = mapPair.second;
-	//				if (client->getName() == entityInfoMsg->id)
-	//				{
-	//					skip = true;
-	//				}
-	//			}
+		}
+		break;
 
-	//			if (skip) continue;
+	default:
+		std::cout << "Client is out of sync" << std::endl;
+		throw std::exception();
+	}
+}
 
-	//			auto& entity = spawnedEntities[entityInfoMsg->id];
-	//			auto transformComp = entity->findComponent<TransformComponent>();
-	//			if (transformComp)
-	//			{
-	//				transformComp->setPosition({ entityInfoMsg->x, entityInfoMsg->y, entityInfoMsg->z });
-	//				transformComp->setPitch(entityInfoMsg->pitch);
-	//				transformComp->setYaw(entityInfoMsg->yaw);
-	//				transformComp->setRoll(entityInfoMsg->roll);
-	//			}
-	//		}
-	//	}
-	//	else if (std::get_if<FinishInitialEntitySyncNetMessage>(&msg))
-	//	{
-	//		// Receive sync messages
-	//		state = ServerState::ServerStatePlay;
+void RemoteServer::handleInitialEntitySync(NetworkPacket& packet)
+{
+	std::string name;
+	std::string id;
+	glm::vec3 position;
+	glm::vec3 rotation;
 
-	//		NetworkPacket buffer(512);
-	//		serializeNetMessage(ClientReadyNetMessage(), buffer);
-	//		server.send(buffer, 512);
-	//	}
-	//}
+	packet >> name;
+	packet >> id;
+	packet >> position >> rotation;
+
+	spawnedEntities.emplace(id, createEntity(name, id));
+}
+
+void RemoteServer::handleFinishInitialEntitySync(NetworkPacket& packet)
+{
+	state = RemoteServerState::Play;
+
+	NetworkPacket response;
+	response.setPacketId(PacketId::CFinishInitialEntitySync);
+	server.send(response);
+}
+
+void RemoteServer::waitForMessages()
+{
+	while (!shuttingDown)
+	{
+		if (server)
+		{
+			try
+			{
+				NetworkPacket packet;
+				server.receive(packet);
+				handleMessage(packet);
+			}
+			catch (std::exception&)
+			{
+				std::cout << "Exception during RemoteClient::waitForMessages" << std::endl;
+				server.close();
+				shuttingDown = true;
+				break;
+			}
+		}
+	}
 }

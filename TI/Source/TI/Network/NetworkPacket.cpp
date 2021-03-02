@@ -120,7 +120,7 @@ NetworkPacket& NetworkPacket::operator<<(const std::string& src)
 	checkWriteBounds(static_cast<int>(src.size() + 1));
 
 	writeString(&data[offset], src);
-	offset += src.size();
+	offset += src.size() + 1;
 
 	return *this;
 }
@@ -135,6 +135,38 @@ NetworkPacket& NetworkPacket::operator>>(std::string& dst)
 
 	readString(dst, &data[offset], len);
 	offset += len;
+
+	return *this;
+}
+
+NetworkPacket& NetworkPacket::operator<<(const glm::vec3& src)
+{
+	checkWriteBounds(sizeof(float) * 3);
+
+	writeFloat(&data[offset], src.x);
+	offset += sizeof(float);
+
+	writeFloat(&data[offset], src.y);
+	offset += sizeof(float);
+
+	writeFloat(&data[offset], src.z);
+	offset += sizeof(float);
+
+	return *this;
+}
+
+NetworkPacket& NetworkPacket::operator>>(glm::vec3& dst)
+{
+	checkReadBounds(sizeof(float) * 3);
+
+	readFloat(dst.x, &data[offset]);
+	offset += sizeof(float);
+
+	readFloat(dst.y, &data[offset]);
+	offset += sizeof(float);
+
+	readFloat(dst.z, &data[offset]);
+	offset += sizeof(float);
 
 	return *this;
 }

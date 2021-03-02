@@ -172,5 +172,6 @@ void Socket::close()
 	if (socket)
 	{
 		SDLNet_TCP_Close(socket);
+		socket = nullptr;
 	}
 }

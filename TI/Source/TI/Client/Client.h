@@ -10,18 +10,10 @@ class Entity;
 
 static const char* DEFAULT_PLAYER_NAME = "Player";
 
-enum class ClientState
-{
-	Undefined,
-	Handshake,
-	Sync,
-	Play
-};
-
 class Client
 {
 public:
-	Client(Application* app) : app(app), id(0), possessedEntity(nullptr), state(ClientState::Undefined){}
+	Client(Application* app) : app(app), id(0), possessedEntity(nullptr) {}
 	virtual ~Client() = default;
 
 	virtual void update(float dt) {};
@@ -45,6 +37,4 @@ protected:
 	int id;
 
 	Entity* possessedEntity;
-
-	ClientState state;
 };

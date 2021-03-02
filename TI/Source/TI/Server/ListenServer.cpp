@@ -105,14 +105,69 @@ void ListenServer::handleConnectionRequest(Socket socket)
 	auto remoteClient = std::make_unique<RemoteClient>(app);
 	remoteClient->setSocket(socket);
 	remoteClient->setName(clientName);
-
 	admitClient(remoteClient.get());
+	
+
+	try
+	{
+		// Send response
+		NetworkPacket response;
+		response.setPacketId(PacketId::SConnectionResponse);
+		socket.send(response);
+
+		// Initial sync entities
+		sendEntityInitialSync(remoteClient.get());
+	}
+	catch (std::exception&)
+	{
+		std::cout << "Exception during ListenServer::handleConnectionRequest" << std::endl;
+		socket.close();
+	}
 
 	app->addClient(std::move(remoteClient));
+}
 
-	NetworkPacket response;
-	response.setPacketId(PacketId::SConnectionResponse);
-	socket.send(response);
+void ListenServer::sendEntityInitialSync(RemoteClient* client)
+{
+	for (auto& mapPair : spawnedEntities)
+	{
+		auto& entity = mapPair.second;
+
+		if (entity->getId() == client->getName())
+		{
+			continue;
+		}
+
+		NetworkPacket packet;
+		packet.setPacketId(PacketId::SEntityInitialSync);
+
+		packet << entity->getName() << entity->getId();
+
+		glm::vec3 position;
+		glm::vec3 rotation;
+
+		auto transformComp = entity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			position = transformComp->getPosition();
+			rotation.x = transformComp->getPitch();
+			rotation.y = transformComp->getYaw();
+			rotation.z = transformComp->getRoll();
+		}
+
+		packet << position << rotation;
+
+		try
+		{
+			client->getSocket().send(packet);
+		}
+		catch (std::exception&)
+		{
+			std::cout << "Exception during sending entity initial info" << std::endl;
+			ejectClient(client);
+			client->shutdown();
+		}
+	}
 }
 
 //void ListenServer::handleConnectionRequestMessage(ClientConnectionRequestMessage message)

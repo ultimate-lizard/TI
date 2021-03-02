@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <glm/glm.hpp>
+
 #include <TI/Network/Protocol.h>
 
 class NetworkPacket
@@ -25,6 +27,8 @@ public:
 	NetworkPacket& operator>>(float& dst);
 	NetworkPacket& operator<<(const std::string& src);
 	NetworkPacket& operator>>(std::string& dst);
+	NetworkPacket& operator<<(const glm::vec3& src);
+	NetworkPacket& operator>>(glm::vec3& dst);
 
 private:
 	void checkReadBounds(int size);

@@ -5,6 +5,14 @@
 #include <TI/Server/Server.h>
 #include <TI/Network/NetworkHandler.h>
 
+enum class RemoteServerState
+{
+	Undefined,
+	Handshake,
+	Sync,
+	Play
+};
+
 // TODO: Derive from LocalServer
 class RemoteServer : public Server
 {
@@ -13,12 +21,16 @@ public:
 	~RemoteServer();
 
 	void admitClient(Client* client) override;
-
 	void ejectClient(Client* client) override {};
 
 	void update(float dt) override;
 
-	void waitForMessage();
+private:
+	void waitForMessages();
+	void handleMessage(NetworkPacket& packet);
+
+	void handleInitialEntitySync(NetworkPacket& packet);
+	void handleFinishInitialEntitySync(NetworkPacket& packet);
 
 private:
 	NetworkHandler network;
@@ -28,4 +40,6 @@ private:
 	bool shuttingDown;
 
 	Socket server;
+
+	RemoteServerState state;
 };

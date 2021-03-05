@@ -85,6 +85,12 @@ void Application::start()
 		{
 			if (client)
 			{
+				if (client->isPendingDeletion())
+				{
+					removeClient(client->getName());
+					continue;
+				}
+
 				client->update(dt);
 			}
 		}
@@ -94,6 +100,11 @@ void Application::start()
 		window.swap();
 
 		endFrame = SDL_GetTicks() - startFrame;
+
+		if (clients.empty())
+		{
+			break;
+		}
 	}
 
 	uninit();
@@ -128,6 +139,11 @@ std::vector<LocalClient*> Application::getLocalClients() const
 	}
 
 	return std::move(localClients);
+}
+
+const std::vector<std::unique_ptr<Client>>& Application::getClients() const
+{
+	return clients;
 }
 
 Renderer* const Application::getRenderer() const

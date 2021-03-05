@@ -2,7 +2,9 @@
 
 #include <iostream>
 
-
+#include <TI/Application.h>
+#include <TI/Server/Server.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 RemoteClient::RemoteClient(Application* app) :
 	Client(app),
@@ -42,6 +44,8 @@ Socket RemoteClient::getSocket() const
 
 void RemoteClient::waitForMessages()
 {
+	state = ClientState::Sync;
+
 	while (!shuttingDown)
 	{
 		if (socket)
@@ -50,7 +54,7 @@ void RemoteClient::waitForMessages()
 			{
 				NetworkPacket packet;
 				socket.receive(packet);
-				// handleMessage(packet);
+				handleMessage(packet);
 			}
 			catch (std::exception&)
 			{
@@ -62,58 +66,55 @@ void RemoteClient::waitForMessages()
 		}
 	}
 }
-//
-//void RemoteClient::handleMessage(NetworkPacket& packet)
-//{
-//	switch (packet.getPacketId())
-//	{
-//	case PacketId::SEntityInitialSync:
-//		if (state == ClientState::Sync)
-//		{
-//			handleInitialEntitySync(packet);
-//		}
-//		break;
-//
-//	case PacketId::SFinishInitialEntitySync:
-//	{
-//		if (state == ClientState::Sync)
-//		{
-//			NetworkPacket packet;
-//			packet.setPacketId(PacketId::CFinishInitialEntitySync);
-//			socket.send(packet);
-//			state = ClientState::Play;
-//		}
-//	}
-//	break;
-//
-//	case PacketId::SEntitySync:
-//		if (state == ClientState::Play)
-//		{
-//
-//		}
-//		break;
-//
-//	default:
-//		std::cout << "Client is out of sync" << std::endl;
-//		throw std::exception();
-//	}
-//}
-//
-//void RemoteClient::handleInitialEntitySync(NetworkPacket& packet)
-//{
-//	std::string name;
-//	std::string id;
-//	glm::vec3 position;
-//	glm::vec3 rotation;
-//
-//	packet >> name >> id >> position >> rotation;
-//}
-//
-//void RemoteClient::handleFinishInitialEntitySync(NetworkPacket& packet)
-//{
-//	state = ClientState::Play;
-//
-//	NetworkPacket packet;
-//	packet.setPacketId(PacketId::CFinishInitialEntitySync);
-//	socket.send(packet);
-//}
+
+void RemoteClient::handleFinishInitialEntitySync(NetworkPacket& packet)
+{
+	std::cout << "Received Finish Sync from Client" << std::endl;
+	state = ClientState::Play;
+}
+
+void RemoteClient::handlePlayerSync(NetworkPacket& packet)
+{
+	std::string name;
+
+	glm::vec3 position;
+	glm::vec3 rotation;
+
+	packet >> name >> position >> rotation;
+
+	auto server = app->getCurrentServer();
+
+	auto entity = server->findEntity(name);
+	if (entity)
+	{
+		auto transformComp = entity->findComponent<TransformComponent>();
+		transformComp->setPosition(position);
+		transformComp->setPitch(rotation.x);
+		transformComp->setYaw(rotation.y);
+		transformComp->setRoll(rotation.z);
+	}
+}
+
+void RemoteClient::handleMessage(NetworkPacket& packet)
+{
+	switch (packet.getPacketId())
+	{
+	case PacketId::CFinishInitialEntitySync:
+		if (state == ClientState::Sync)
+		{
+			handleFinishInitialEntitySync(packet);
+		}
+		break;
+
+	case PacketId::CPlayerSync:
+		if (state == ClientState::Play)
+		{
+			handlePlayerSync(packet);
+		}
+		break;
+
+	default:
+		std::cout << "Client is out of sync" << std::endl;
+		throw std::exception();
+	}
+}

@@ -79,6 +79,11 @@ Socket NetworkHandler::connect(const std::string& ip, int port)
 
 void Socket::send(NetworkPacket& packet)
 {
+	if (!socket)
+	{
+		return;
+	}
+
 	int packetSize = static_cast<int>(packet.getSize());
 	int sentSize = SDLNet_TCP_Send(socket, &packetSize, sizeof(int));
 	if (sentSize != sizeof(int))
@@ -110,6 +115,11 @@ void Socket::send(NetworkPacket& packet)
 
 void Socket::receive(NetworkPacket& packet)
 {
+	if (!socket)
+	{
+		return;
+	}
+
 	int packetSize = 0;
 	int receivedSize = 0;
 

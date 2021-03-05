@@ -25,4 +25,11 @@ enum class PacketId
 		glm::vec3 position;
 		glm::vec3 rotation;
 	*/
+	CPlayerSync,
+	/*
+		std::string name;
+
+		glm::vec3 position;
+		glm::vec3 rotation;
+	*/
 };

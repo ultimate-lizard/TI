@@ -49,9 +49,9 @@ void Server::initEntityTemplates()
 
 int Server::clientId = 0;
 
-Entity* const Server::findEntity(const std::string& name)
+Entity* const Server::findEntity(const std::string& id)
 {
-	auto iter = spawnedEntities.find(name);
+	auto iter = spawnedEntities.find(id);
 	if (iter != spawnedEntities.end())
 	{
 		return iter->second.get();

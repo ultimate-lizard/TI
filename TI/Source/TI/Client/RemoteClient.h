@@ -19,9 +19,13 @@ public:
 	void setSocket(Socket socket);
 	Socket getSocket() const;
 
+
+
 private:
 	void waitForMessages();
-	// void handleMessage(NetworkPacket& packet);
+	void handleFinishInitialEntitySync(NetworkPacket& packet);
+	void handlePlayerSync(NetworkPacket& packet);
+	void handleMessage(NetworkPacket& packet);
 
 private:
 	Socket socket;

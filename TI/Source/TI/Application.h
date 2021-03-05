@@ -43,6 +43,7 @@ public:
 
 	Server* const getCurrentServer() const;
 	std::vector<LocalClient*> getLocalClients() const;
+	const std::vector<std::unique_ptr<Client>>& getClients() const;
 
 	Renderer* const getRenderer() const;
 	ModelManager* const getModelManager() const;

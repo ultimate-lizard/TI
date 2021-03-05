@@ -13,8 +13,6 @@ public:
 
 	void admitClient(Client*) override;
 
-	// void onMessageReceive(const void* data, const int& size);
-
 	void shutdown() override;
 
 	void update(float dt) override;
@@ -27,12 +25,6 @@ private:
 
 	void sendEntityInitialSync(RemoteClient* client);
 
-	// void handleConnectionRequestMessage(ClientConnectionRequestMessage message);
-	//void acceptConnections(Socket socket);
-	//void waitForMessage(Socket socket);
-	//void sendEntityInitialInfo(Socket socket);
-	//void syncEntities(Socket socket);
-
 private:
 	std::thread waitConnectionsThread;
 	std::thread waitForMessageThread;
@@ -43,4 +35,6 @@ private:
 	bool shuttingDown;
 
 	Socket server;
+
+	std::vector<RemoteClient*> remoteClients;
 };

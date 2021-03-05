@@ -4,6 +4,7 @@
 
 #include <TI/Client/Client.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Application.h>
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
@@ -39,8 +40,16 @@ void RemoteServer::admitClient(Client* client)
 		server.send(request);
 
 		NetworkPacket response;
-		server.receive(response);
-
+		try
+		{
+			server.receive(response);
+		}
+		catch (std::exception&)
+		{
+			std::cout << "Unable to join the server" << std::endl;
+			client->shutdown();
+		}
+	
 		if (response.getPacketId() == PacketId::SConnectionResponse)
 		{
 			std::cout << "Received connection response" << std::endl;
@@ -59,6 +68,37 @@ void RemoteServer::update(float dt)
 	for (auto& entityPair : spawnedEntities)
 	{
 		entityPair.second->tick(dt);
+	}
+
+	for (auto& client : app->getClients())
+	{
+		if (state == RemoteServerState::Play)
+		{
+			auto server = app->getCurrentServer();
+			if (server)
+			{
+				auto entity = server->findEntity(client->getName());
+				if (entity)
+				{
+					auto transformComp = entity->findComponent<TransformComponent>();
+					if (transformComp)
+					{
+						glm::vec3 position = transformComp->getPosition();
+
+						glm::vec3 rotation;
+						rotation.x = transformComp->getPitch();
+						rotation.y = transformComp->getYaw();
+						rotation.z = transformComp->getRoll();
+
+						NetworkPacket packet;
+						packet.setPacketId(PacketId::CPlayerSync);
+						packet << client->getName() << position << rotation;
+
+						this->server.send(packet);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -85,7 +125,7 @@ void RemoteServer::handleMessage(NetworkPacket& packet)
 	case PacketId::SEntitySync:
 		if (state == RemoteServerState::Play)
 		{
-
+			handleEntitySync(packet);
 		}
 		break;
 
@@ -106,7 +146,17 @@ void RemoteServer::handleInitialEntitySync(NetworkPacket& packet)
 	packet >> id;
 	packet >> position >> rotation;
 
-	spawnedEntities.emplace(id, createEntity(name, id));
+	auto entity = createEntity(name, id);
+	auto transformComp = entity->findComponent<TransformComponent>();
+	if (transformComp)
+	{
+		transformComp->setPosition(position);
+		transformComp->setPitch(rotation.x);
+		transformComp->setYaw(rotation.y);
+		transformComp->setRoll(rotation.z);
+	}
+
+	spawnedEntities.emplace(id, std::move(entity));
 }
 
 void RemoteServer::handleFinishInitialEntitySync(NetworkPacket& packet)
@@ -116,6 +166,32 @@ void RemoteServer::handleFinishInitialEntitySync(NetworkPacket& packet)
 	NetworkPacket response;
 	response.setPacketId(PacketId::CFinishInitialEntitySync);
 	server.send(response);
+}
+
+void RemoteServer::handleEntitySync(NetworkPacket& packet)
+{
+	std::string id;
+	packet >> id;
+
+	for (auto& mapPair : spawnedEntities)
+	{
+		auto& entity = mapPair.second;
+		if (entity->getId() == id)
+		{
+			auto transformComp = entity->findComponent<TransformComponent>();
+			if (transformComp)
+			{
+				glm::vec3 position;
+				glm::vec3 rotation;
+				packet >> position >> rotation;
+
+				transformComp->setPosition(position);
+				transformComp->setPitch(rotation.x);
+				transformComp->setYaw(rotation.y);
+				transformComp->setRoll(rotation.z);
+			}
+		}
+	}
 }
 
 void RemoteServer::waitForMessages()

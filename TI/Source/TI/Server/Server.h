@@ -22,11 +22,10 @@ public:
 
 	virtual void shutdown() {}
 
-	Entity* const findEntity(const std::string& name);
+	Entity* const findEntity(const std::string& id);
 	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
 
 	std::unique_ptr<Entity> createEntity(const std::string& name, const std::string& id);
-
 
 protected:
 	void initEntityTemplates();

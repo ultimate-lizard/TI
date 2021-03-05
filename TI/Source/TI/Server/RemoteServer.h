@@ -32,6 +32,7 @@ private:
 	void handleInitialEntitySync(NetworkPacket& packet);
 	void handleFinishInitialEntitySync(NetworkPacket& packet);
 
+	void handleEntitySync(NetworkPacket& packet);
 private:
 	NetworkHandler network;
 

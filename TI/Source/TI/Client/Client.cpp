@@ -27,7 +27,14 @@ void Client::shutdown()
 		{
 			server->ejectClient(this);
 		}
+
+		pendingDeletion = true;
 	}
+}
+
+ClientState Client::getState() const
+{
+	return state;
 }
 
 Application* const Client::getApplication() const
@@ -38,4 +45,9 @@ Application* const Client::getApplication() const
 void Client::possesEntity(Entity* entity)
 {
 	possessedEntity = entity;
+}
+
+bool Client::isPendingDeletion() const
+{
+	return pendingDeletion;
 }

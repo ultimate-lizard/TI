@@ -65,13 +65,11 @@ void Input::handleInput()
 				switch (event.window.event)
 				{
 				case SDL_WINDOWEVENT_FOCUS_LOST:
-				case SDL_WINDOWEVENT_LEAVE:
 					SDL_SetRelativeMouseMode(SDL_FALSE);
 					SDL_CaptureMouse(SDL_FALSE);
 					break;
 
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
-				case SDL_WINDOWEVENT_ENTER:
 					SDL_SetRelativeMouseMode(SDL_TRUE);
 					SDL_CaptureMouse(SDL_TRUE);
 					break;
@@ -84,6 +82,11 @@ void Input::handleInput()
 
 void Input::handleMouseMotion(InputHandler* inputHandler)
 {
+	if (!app->getWindow()->hasFocus())
+	{
+		return;
+	}
+
 	int xPos = event.motion.x;
 	int yPos = event.motion.y;
 
@@ -101,10 +104,7 @@ void Input::handleMouseMotion(InputHandler* inputHandler)
 
 	SDL_Window* window = app->getWindow()->getSdlWindow();
 
-	if (app->getWindow()->hasFocus())
-	{
-		SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
-	}
+	SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
 }
 
 void Input::handleControllerAxisMotion(InputHandler* inputHandler)

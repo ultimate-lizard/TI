@@ -53,5 +53,5 @@ bool Window::hasFocus() const
 {
 	int flags = SDL_GetWindowFlags(sdlWindow);
 
-	return flags & SDL_WINDOW_INPUT_FOCUS & SDL_WINDOW_MOUSE_FOCUS;
+	return flags & SDL_WINDOW_INPUT_FOCUS;
 }

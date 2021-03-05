@@ -61,20 +61,34 @@ void Input::handleInput()
 				break;
 
 			case SDL_WINDOWEVENT:
-			{
-				switch (event.window.event)
 				{
-				case SDL_WINDOWEVENT_FOCUS_LOST:
-					SDL_SetRelativeMouseMode(SDL_FALSE);
-					SDL_CaptureMouse(SDL_FALSE);
-					break;
+					switch (event.window.event)
+					{
+					case SDL_WINDOWEVENT_FOCUS_LOST:
+						{
+							int x, y;
+							SDL_GetMouseState(&x, &y);
+							lastX = x;
+							lastY = y;
 
-				case SDL_WINDOWEVENT_FOCUS_GAINED:
-					SDL_SetRelativeMouseMode(SDL_TRUE);
-					SDL_CaptureMouse(SDL_TRUE);
-					break;
+							SDL_SetRelativeMouseMode(SDL_FALSE);
+							SDL_CaptureMouse(SDL_FALSE);
+						}
+						break;
+
+					case SDL_WINDOWEVENT_FOCUS_GAINED:
+						{
+							int x, y;
+							SDL_GetMouseState(&x, &y);
+							lastX = x;
+							lastY = y;
+
+							SDL_SetRelativeMouseMode(SDL_TRUE);
+							SDL_CaptureMouse(SDL_TRUE);
+						}
+						break;
+					}
 				}
-			}
 			}
 		}
 	}

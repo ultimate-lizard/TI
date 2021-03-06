@@ -8,10 +8,6 @@
 #include <TI/Window.h>
 #include <TI/SplitScreenManager.h>
 
-// TODO: Move this to Window class
-static const int DEFAULT_WINDOW_WIDTH = 800;
-static const int DEFAULT_WINDOW_HEIGHT = 600;
-
 static const char* CONFIG_FOLDER = "../Config/";
 static const char* CONFIG_EXTENSION = ".cfg";
 

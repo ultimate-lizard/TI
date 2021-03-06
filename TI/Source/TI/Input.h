@@ -70,6 +70,8 @@ public:
 private:
 	void handleMouseMotion(InputHandler* inputHandler);
 	void handleControllerAxisMotion(InputHandler* inputHandler);
+	void handleWindowFocus(bool gained);
+	void handleWindowResized();
 
 	Application* app;
 	SDL_Event event;

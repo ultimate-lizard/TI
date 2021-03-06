@@ -4,6 +4,16 @@
 
 #include <SDL.h>
 
+Window::Window()
+	:
+	DEFAULT_WINDOW_WIDTH(1024),
+	DEFAULT_WINDOW_HEIGHT(768),
+	sdlWindow(nullptr),
+	size({DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT})
+{
+
+}
+
 Window::~Window()
 {
 	if (sdlWindow)
@@ -25,6 +35,7 @@ void Window::init(const std::string& title, glm::ivec2 size /*= { 800, 600 }*/, 
 		size.y,
 		SDL_WINDOW_SHOWN
 		| SDL_WINDOW_OPENGL
+		| SDL_WINDOW_RESIZABLE
 	);
 
 	if (!sdlWindow)
@@ -32,6 +43,11 @@ void Window::init(const std::string& title, glm::ivec2 size /*= { 800, 600 }*/, 
 		// TODO: Handle this
 		throw std::exception();
 	}
+}
+
+void Window::init(const std::string& title, glm::ivec2 pos /*= { -1, -1 }*/)
+{
+	init(title, { DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }, pos);
 }
 
 SDL_Window* const Window::getSdlWindow() const

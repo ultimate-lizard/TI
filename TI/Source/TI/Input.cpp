@@ -4,6 +4,8 @@
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Window.h>
+// #include <TI/Renderer/Viewport.h>
+#include <TI/Renderer/Renderer.h>
 
 Input::Input(Application* app) :
 	app(app),
@@ -65,27 +67,15 @@ void Input::handleInput()
 					switch (event.window.event)
 					{
 					case SDL_WINDOWEVENT_FOCUS_LOST:
-						{
-							int x, y;
-							SDL_GetMouseState(&x, &y);
-							lastX = x;
-							lastY = y;
-
-							SDL_SetRelativeMouseMode(SDL_FALSE);
-							SDL_CaptureMouse(SDL_FALSE);
-						}
+						handleWindowFocus(false);
 						break;
 
 					case SDL_WINDOWEVENT_FOCUS_GAINED:
-						{
-							int x, y;
-							SDL_GetMouseState(&x, &y);
-							lastX = x;
-							lastY = y;
+						handleWindowFocus(true);
+						break;
 
-							SDL_SetRelativeMouseMode(SDL_TRUE);
-							SDL_CaptureMouse(SDL_TRUE);
-						}
+					case SDL_WINDOWEVENT_RESIZED:
+						handleWindowResized();
 						break;
 					}
 				}
@@ -116,9 +106,11 @@ void Input::handleMouseMotion(InputHandler* inputHandler)
 	inputHandler->onAxisInput(Axis::MouseX, static_cast<float>(xOffset));
 	inputHandler->onAxisInput(Axis::MouseY, static_cast<float>(yOffset));
 
-	SDL_Window* window = app->getWindow()->getSdlWindow();
+	Window* window = app->getWindow();
+	SDL_Window* sdlWindow = window->getSdlWindow();
+	auto windowSize = window->getSize();
 
-	SDL_WarpMouseInWindow(window, DEFAULT_WINDOW_WIDTH / 2, DEFAULT_WINDOW_HEIGHT / 2);
+	SDL_WarpMouseInWindow(sdlWindow, windowSize.x / 2, windowSize.y / 2);
 }
 
 void Input::handleControllerAxisMotion(InputHandler* inputHandler)
@@ -149,4 +141,23 @@ void Input::handleControllerAxisMotion(InputHandler* inputHandler)
 		inputHandler->onAxisInput(Axis::ControllerRightStickY, normalizedMotion);
 		break;
 	}
+}
+
+void Input::handleWindowFocus(bool gained)
+{
+	SDL_bool flag = gained ? SDL_TRUE : SDL_FALSE;
+
+	int x, y;
+	SDL_GetMouseState(&x, &y);
+	lastX = x;
+	lastY = y;
+
+	SDL_SetRelativeMouseMode(flag);
+	SDL_CaptureMouse(flag);
+}
+
+void Input::handleWindowResized()
+{
+	SDL_Surface* surface = SDL_GetWindowSurface(app->getWindow()->getSdlWindow());
+	app->getRenderer()->getViewport(0)->setSize({ surface->clip_rect.w, surface->clip_rect.h });
 }

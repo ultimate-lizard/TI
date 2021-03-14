@@ -20,7 +20,7 @@ public:
 	virtual void admitClient(Client* client) = 0;
 	virtual void ejectClient(Client* client) = 0;
 
-	virtual void shutdown() {}
+	virtual void shutdown();
 
 	Entity* const findEntity(const std::string& id);
 	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;

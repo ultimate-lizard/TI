@@ -49,6 +49,14 @@ void Server::initEntityTemplates()
 
 int Server::clientId = 0;
 
+void Server::shutdown()
+{
+	if (app)
+	{
+		app->requestQuit();
+	}
+}
+
 Entity* const Server::findEntity(const std::string& id)
 {
 	auto iter = spawnedEntities.find(id);

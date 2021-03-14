@@ -77,6 +77,7 @@ void RemoteServer::update(float dt)
 			auto server = app->getCurrentServer();
 			if (server)
 			{
+				// Send info about client's player
 				auto entity = server->findEntity(client->getName());
 				if (entity)
 				{
@@ -94,7 +95,15 @@ void RemoteServer::update(float dt)
 						packet.setPacketId(PacketId::CPlayerSync);
 						packet << client->getName() << position << rotation;
 
-						this->server.send(packet);
+						try
+						{
+							this->server.send(packet);
+						}
+						catch (std::exception&)
+						{
+							this->server.close();
+							shutdown();
+						}
 					}
 				}
 			}

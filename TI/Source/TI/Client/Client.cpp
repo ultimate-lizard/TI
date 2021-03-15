@@ -14,6 +14,14 @@ Client::Client(Application* app) :
 
 }
 
+void Client::update(float dt)
+{
+	if (shuttingDown)
+	{
+		shutdown();
+	}
+}
+
 void Client::setName(const std::string& name)
 {
 	this->name = name;

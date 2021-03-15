@@ -32,8 +32,23 @@ ListenServer::~ListenServer()
 
 void ListenServer::admitClient(Client* client)
 {
-	createPlayerEntity(client->getName());
+	spawnPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
+
+	broadcastPlayerEntitySpawn(findEntity(client->getName()));
+}
+
+void ListenServer::ejectClient(Client* client)
+{
+	auto iter = std::find(remoteClients.begin(), remoteClients.end(), client);
+	if (iter != remoteClients.end())
+	{
+		remoteClients.erase(iter);
+	}
+
+	broadcastDestroyEntity(findEntity(client->getName()));
+
+	LocalServer::ejectClient(client);
 }
 
 void ListenServer::shutdown()
@@ -45,6 +60,33 @@ void ListenServer::update(float dt)
 {
 	LocalServer::update(dt);
 
+	broadcastEntitiesInfo();
+}
+
+void ListenServer::openConnection()
+{
+	server = network.openConnection(25565);
+	if (server)
+	{
+		waitConnectionsThread = std::thread(&ListenServer::waitConnections, this);
+	}
+}
+
+void ListenServer::waitConnections()
+{
+	std::cout << "Started waiting for connections" << std::endl;
+	while (!shuttingDown)
+	{
+		Socket client = server.acceptConnection();
+		if (client)
+		{
+			handleConnectionRequest(client);
+		}
+	}
+}
+
+void ListenServer::broadcastEntitiesInfo()
+{
 	for (auto& client : remoteClients)
 	{
 		if (client->getState() == ClientState::Play)
@@ -54,6 +96,7 @@ void ListenServer::update(float dt)
 				auto& entity = mapPair.second;
 				std::string id = entity->getId();
 
+				// Don't send info about the player entity to the remote entity owner
 				if (id == client->getName())
 				{
 					continue;
@@ -79,6 +122,7 @@ void ListenServer::update(float dt)
 					}
 					catch (std::exception&)
 					{
+						std::cout << "Lost connection to the remote client or an error occurred during package receipt" << std::endl;
 						client->shutdown();
 					}
 				}
@@ -87,24 +131,61 @@ void ListenServer::update(float dt)
 	}
 }
 
-void ListenServer::openConnection()
+void ListenServer::broadcastPlayerEntitySpawn(Entity* entity)
 {
-	server = network.openConnection(25565);
-	if (server)
+	if (!entity)
 	{
-		waitConnectionsThread = std::thread(&ListenServer::waitConnections, this);
+		return;
+	}
+
+	for (auto& client : remoteClients)
+	{
+		if (client->getState() == ClientState::Play)
+		{
+			auto transformComp = entity->findComponent<TransformComponent>();
+			if (transformComp)
+			{
+				NetworkPacket packet;
+				packet.setPacketId(PacketId::SSpawnPlayerEntity);
+
+				glm::vec3 rotation;
+				rotation.x = transformComp->getPitch();
+				rotation.y = transformComp->getYaw();
+				rotation.z = transformComp->getRoll();
+
+				packet << entity->getId() << transformComp->getPosition() << rotation;
+
+				// Broadcast only to NOT owners of the entity
+				if (client->getName() != entity->getId())
+				{
+					client->getSocket().send(packet);
+				}
+			}
+		}
 	}
 }
 
-void ListenServer::waitConnections()
+void ListenServer::broadcastDestroyEntity(Entity* entity)
 {
-	std::cout << "Started waiting for connections" << std::endl;
-	while (!shuttingDown)
+	if (!entity)
 	{
-		Socket client = server.acceptConnection();
-		if (client)
+		return;
+	}
+
+	NetworkPacket packet;
+	packet.setPacketId(PacketId::SDestroyEntity);
+
+	packet << entity->getId();
+
+	for (auto& client : remoteClients)
+	{
+		try
 		{
-			handleConnectionRequest(client);
+			client->getSocket().send(packet);
+		}
+		catch (std::exception&)
+		{
+			client->getSocket().close();
 		}
 	}
 }
@@ -126,7 +207,6 @@ void ListenServer::handleConnectionRequest(Socket socket)
 	auto remoteClient = std::make_unique<RemoteClient>(app);
 	remoteClient->setSocket(socket);
 	remoteClient->setName(clientName);
-	admitClient(remoteClient.get());
 
 	try
 	{
@@ -142,10 +222,14 @@ void ListenServer::handleConnectionRequest(Socket socket)
 	{
 		std::cout << "Exception during ListenServer::handleConnectionRequest" << std::endl;
 		socket.close();
+		return;
 	}
 
 	remoteClients.push_back(remoteClient.get());
+
 	app->addClient(std::move(remoteClient));
+
+	admitClient(app->findClient(clientName));
 }
 
 void ListenServer::sendEntityInitialSync(RemoteClient* client)

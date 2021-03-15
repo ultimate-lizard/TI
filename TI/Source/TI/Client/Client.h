@@ -24,7 +24,7 @@ public:
 	Client(Application* app);
 	virtual ~Client() = default;
 
-	virtual void update(float dt) {};
+	virtual void update(float dt);
 
 	void setName(const std::string& name);
 	const std::string& getName() const;

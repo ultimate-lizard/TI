@@ -32,4 +32,15 @@ enum class PacketId
 		glm::vec3 position;
 		glm::vec3 rotation;
 	*/
+	SSpawnPlayerEntity,
+	/*
+		std::string name;
+
+		glm::vec3 position;
+		glm::vec3 rotation;
+	*/
+	SDestroyEntity,
+	/*
+		std::string id;
+	*/
 };

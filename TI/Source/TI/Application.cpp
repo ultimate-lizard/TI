@@ -221,21 +221,32 @@ void Application::initClients()
 	//auto player2 = std::make_unique<LocalClient>(this, "Player2");
 	//player2->setViewportId(1);
 
-	//auto player3 = std::make_unique<LocalClient>(this, "Player3");
-	//player3->setViewportId(2);
+	auto player3 = std::make_unique<LocalClient>(this, "Player3");
+	player3->setViewportId(2);
 
-	//splitScreenManager.setHost(player1.get());
+	splitScreenManager.setHost(player1.get());
 	//splitScreenManager.addGuest(player2.get());
-	//splitScreenManager.addGuest(player3.get());
+	
 
 	clients.push_back(std::move(player1));
 	//clients.push_back(std::move(player2));
-	//clients.push_back(std::move(player3));
 
-	//splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
+	// This is hardcoded
+	if (args.size() == 2)
+	{
+		if (args[1] == "client")
+		{
+			return;
+		}
+	}
+	return;
+	splitScreenManager.addGuest(player3.get());
+	clients.push_back(std::move(player3));
+
+	// splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
 
 	//splitScreenManager.displayHost();
-	//splitScreenManager.displayAll();
+	splitScreenManager.displayAll();
 }
 
 void Application::uninit()

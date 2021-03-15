@@ -14,21 +14,12 @@ RemoteClient::RemoteClient(Application* app) :
 
 void RemoteClient::shutdown()
 {
-	socket.close();
 	if (messageThread.joinable())
 	{
 		messageThread.join();
 	}
 
 	Client::shutdown();
-}
-
-void RemoteClient::update(float dt)
-{
-	if (shuttingDown)
-	{
-		shutdown();
-	}
 }
 
 void RemoteClient::setSocket(Socket socket)
@@ -58,6 +49,7 @@ void RemoteClient::waitForMessages()
 			catch (std::exception&)
 			{
 				std::cout << "Lost connection to the remote client or an error occurred during package receipt" << std::endl;
+				socket.close();
 				requestShutdown();
 				break;
 			}

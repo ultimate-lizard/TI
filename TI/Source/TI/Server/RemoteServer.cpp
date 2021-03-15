@@ -55,13 +55,15 @@ void RemoteServer::admitClient(Client* client)
 			waitForMessageThread = std::thread(&RemoteServer::waitForMessages, this);
 		}
 
-		createPlayerEntity(client->getName());
+		spawnPlayerEntity(client->getName());
 		possesEntity(client->getName(), client);
 	}
 }
 
 void RemoteServer::update(float dt)
 {
+	Server::update(dt);
+
 	for (auto& entityPair : spawnedEntities)
 	{
 		entityPair.second->tick(dt);
@@ -107,6 +109,20 @@ void RemoteServer::handleMessage(NetworkPacket& packet)
 		if (state == RemoteServerState::Play)
 		{
 			handleEntitySync(packet);
+		}
+		break;
+
+	case PacketId::SSpawnPlayerEntity:
+		if (state == RemoteServerState::Play)
+		{
+			handleSpawnPlayerEntity(packet);
+		}
+		break;
+
+	case PacketId::SDestroyEntity:
+		if (state == RemoteServerState::Play)
+		{
+			handleDestroyEntity(packet);
 		}
 		break;
 
@@ -172,6 +188,38 @@ void RemoteServer::handleEntitySync(NetworkPacket& packet)
 			}
 		}
 	}
+}
+
+void RemoteServer::handleSpawnPlayerEntity(NetworkPacket& packet)
+{
+	std::string name;
+	glm::vec3 position;
+	glm::vec3 rotation;
+
+	packet >> name >> position >> rotation;
+
+	spawnPlayerEntity(name);
+
+	Entity* playerEntity = findEntity(name);
+	if (playerEntity)
+	{
+		auto transformComp = playerEntity->findComponent<TransformComponent>();
+		if (transformComp)
+		{
+			transformComp->setPosition(position);
+			transformComp->setPitch(rotation.x);
+			transformComp->setYaw(rotation.y);
+			transformComp->setRoll(rotation.z);
+		}
+	}
+}
+
+void RemoteServer::handleDestroyEntity(NetworkPacket& packet)
+{
+	std::string id;
+	packet >> id;
+
+	removeEntity(id);
 }
 
 void RemoteServer::sendPlayerInfo(Client* client)

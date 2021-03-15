@@ -12,6 +12,7 @@ public:
 	~ListenServer();
 
 	void admitClient(Client*) override;
+	void ejectClient(Client* client) override;
 
 	void shutdown() override;
 
@@ -21,6 +22,10 @@ private:
 	void openConnection();
 	void waitConnections();
 
+	void broadcastEntitiesInfo();
+	void broadcastPlayerEntitySpawn(Entity* entity);
+	void broadcastDestroyEntity(Entity* entity);
+
 	void handleConnectionRequest(Socket socket);
 
 	void sendEntityInitialSync(RemoteClient* client);
@@ -28,8 +33,7 @@ private:
 private:
 	std::thread waitConnectionsThread;
 	std::thread waitForMessageThread;
-	std::thread syncEntitiesThread;
-
+	
 	NetworkHandler network;
 
 	bool shuttingDown;

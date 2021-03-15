@@ -21,13 +21,13 @@ void Server::initEntityTemplates()
 	auto transformComp = player->findComponent<TransformComponent>();
 	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
 
-	// Cube
 	player->addComponent<MeshComponent>(app->getModelManager());
 	auto meshComp = player->findComponent<MeshComponent>();
-	meshComp->loadModel("cube");
+	meshComp->loadModel("player");
 
 	entityTemplates.emplace(player->getName(), std::move(player));
 
+	// Cube
 	auto cube = std::make_unique<Entity>();
 	cube->setName("Cube");
 
@@ -43,6 +43,14 @@ void Server::initEntityTemplates()
 	entityTemplates.emplace(cube->getName(), std::move(cube));
 }
 
+void Server::update(float dt)
+{
+	if (shuttingDown)
+	{
+		shutdown();
+	}
+}
+
 void Server::requestShutdown()
 {
 	shuttingDown = true;
@@ -55,13 +63,21 @@ void Server::shutdown()
 
 Entity* const Server::findEntity(const std::string& id)
 {
-	auto iter = spawnedEntities.find(id);
-	if (iter != spawnedEntities.end())
+	
+	if (auto iter = spawnedEntities.find(id); iter != spawnedEntities.end())
 	{
 		return iter->second.get();
 	}
 
 	return nullptr;
+}
+
+void Server::removeEntity(const std::string& id)
+{
+	if (auto iter = spawnedEntities.find(id); iter != spawnedEntities.end())
+	{
+		spawnedEntities.erase(iter);
+	}
 }
 
 const std::map<std::string, std::unique_ptr<Entity>>& Server::getEntities() const
@@ -82,9 +98,12 @@ std::unique_ptr<Entity> Server::createEntity(const std::string& name, const std:
 	throw std::exception();
 }
 
-void Server::createPlayerEntity(const std::string& name)
+void Server::spawnPlayerEntity(const std::string& name)
 {
-	spawnedEntities.emplace(name, createEntity("Player", name));
+	if (!findEntity(name))
+	{
+		spawnedEntities.emplace(name, createEntity("Player", name));
+	}
 }
 
 void Server::possesEntity(const std::string& entityName, Client* client)

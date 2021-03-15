@@ -35,6 +35,8 @@ private:
 	void handleFinishInitialEntitySync(NetworkPacket& packet);
 
 	void handleEntitySync(NetworkPacket& packet);
+	void handleSpawnPlayerEntity(NetworkPacket& packet);
+	void handleDestroyEntity(NetworkPacket& packet);
 
 	void sendPlayerInfo(Client* client);
 

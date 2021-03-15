@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <set>
+#include <mutex>
 
 #include <TI/Client/Client.h>
 #include <TI/Network/NetworkHandler.h>
@@ -13,8 +14,6 @@ public:
 
 	void connect() override {};
 	void shutdown() override;
-
-	void update(float dt) override;
 
 	void setSocket(Socket socket);
 	Socket getSocket() const;
@@ -28,4 +27,5 @@ private:
 private:
 	Socket socket;
 	std::thread messageThread;
+	std::mutex socketMutex;
 };

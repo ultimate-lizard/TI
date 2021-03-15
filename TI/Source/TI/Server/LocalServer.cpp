@@ -18,6 +18,8 @@ LocalServer::LocalServer(Application* app) :
 
 void LocalServer::update(float dt)
 {
+	Server::update(dt);
+
 	for (auto& entityPair : spawnedEntities)
 	{
 		entityPair.second->tick(dt);
@@ -27,7 +29,7 @@ void LocalServer::update(float dt)
 void LocalServer::admitClient(Client* client)
 {
 	// connectedClients.emplace(client->getName(), client);
-	createPlayerEntity(client->getName());
+	spawnPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
 }
 

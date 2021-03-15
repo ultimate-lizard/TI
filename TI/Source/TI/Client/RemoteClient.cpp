@@ -7,8 +7,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 
 RemoteClient::RemoteClient(Application* app) :
-	Client(app),
-	shuttingDown(false)
+	Client(app)
 {
 	messageThread = std::thread(&RemoteClient::waitForMessages, this);
 }
@@ -58,9 +57,8 @@ void RemoteClient::waitForMessages()
 			}
 			catch (std::exception&)
 			{
-				std::cout << "Exception during RemoteClient::waitForMessages" << std::endl;
-				socket.close();
-				shuttingDown = true;
+				std::cout << "Lost connection to the remote client or an error occurred during package receipt" << std::endl;
+				requestShutdown();
 				break;
 			}
 		}
@@ -69,7 +67,6 @@ void RemoteClient::waitForMessages()
 
 void RemoteClient::handleFinishInitialEntitySync(NetworkPacket& packet)
 {
-	std::cout << "Received Finish Sync from Client" << std::endl;
 	state = ClientState::Play;
 }
 
@@ -114,7 +111,6 @@ void RemoteClient::handleMessage(NetworkPacket& packet)
 		break;
 
 	default:
-		std::cout << "Client is out of sync" << std::endl;
-		throw std::exception();
+		throw std::runtime_error("The client is out of sync");
 	}
 }

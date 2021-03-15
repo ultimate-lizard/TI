@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <atomic>
 
 #include <TI/Server/ServerConnectionResponse.h>
 
@@ -20,7 +21,7 @@ static const char* DEFAULT_PLAYER_NAME = "Player";
 class Client
 {
 public:
-	Client(Application* app) : app(app), id(0), possessedEntity(nullptr), pendingDeletion(false), state(ClientState::Undefined) {}
+	Client(Application* app);
 	virtual ~Client() = default;
 
 	virtual void update(float dt) {};
@@ -31,6 +32,8 @@ public:
 	int getId() const;
 
 	virtual void connect() = 0;
+
+	void requestShutdown();
 	virtual void shutdown();
 
 	Application* const getApplication() const;
@@ -52,4 +55,5 @@ protected:
 	ClientState state;
 
 	bool pendingDeletion;
+	std::atomic<bool> shuttingDown;
 };

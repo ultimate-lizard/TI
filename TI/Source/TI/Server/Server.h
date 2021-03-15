@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <atomic>
 
 #include <TI/Client/ClientConnectionRequest.h>
 #include <TI/Server/Entity.h>
@@ -12,7 +13,7 @@ class Application;
 class Server
 {
 public:
-	Server(Application* app) : app(app) {}
+	Server(Application* app) : app(app), shuttingDown(false) {}
 	virtual ~Server() = default;
 
 	virtual void update(float dt) {};
@@ -20,6 +21,7 @@ public:
 	virtual void admitClient(Client* client) = 0;
 	virtual void ejectClient(Client* client) = 0;
 
+	void requestShutdown();
 	virtual void shutdown();
 
 	Entity* const findEntity(const std::string& id);
@@ -35,9 +37,8 @@ protected:
 protected:
 	Application* app;
 
-	static int clientId;
-
-	// std::map<std::string, Client*> connectedClients;
 	std::map<std::string, std::unique_ptr<Entity>> spawnedEntities;
 	std::map<std::string, std::unique_ptr<Entity>> entityTemplates;
+
+	std::atomic<bool> shuttingDown;
 };

@@ -41,52 +41,55 @@ void LocalClient::possesEntity(Entity* entity)
 
 	playerController->posses(entity);
 
-	if (entity)
+	if (!entity)
 	{
-		auto cameraComp = entity->findComponent<CameraComponent>();
-		if (cameraComp)
-		{
-			if (app)
-			{
-				auto renderer = app->getRenderer();
-				if (renderer)
-				{
-					auto viewport = renderer->getViewport(viewportId);
-					if (viewport)
-					{
-						viewport->setCamera(cameraComp->getCamera());
-					}
-				}
-			}
-		}
+		return;
+	}
+
+	auto cameraComp = entity->findComponent<CameraComponent>();
+	if (!cameraComp)
+	{
+		return;
+	}
+
+	auto renderer = app->getRenderer();
+	if (!renderer)
+	{
+		return;
+	}
+
+	auto viewport = renderer->getViewport(viewportId);
+	if (viewport)
+	{
+		viewport->setCamera(cameraComp->getCamera());
 	}
 }
 
 void LocalClient::update(float dt)
 {
-	// Render
-	if (app)
+	Renderer* const renderer = app->getRenderer();
+	if (!renderer)
 	{
-		Renderer* const renderer = app->getRenderer();
-		if (renderer)
-		{
-			auto server = app->getCurrentServer();
-			if (server)
-			{
-				for (auto& entityPair : server->getEntities())
-				{
-					auto& entity = entityPair.second;
+		return;
+	}
 
-					auto meshComp = entity->findComponent<MeshComponent>();
-					if (meshComp)
-					{
-						// Don't render your entity as we play in first person
-						if (entity->getId() != name)
-						{
-							renderer->pushRender(meshComp, viewportId);
-						}
-					}
-				}
+	auto server = app->getCurrentServer();
+	if (!server)
+	{
+		return;
+	}
+
+	for (auto& entityPair : server->getEntities())
+	{
+		auto& entity = entityPair.second;
+
+		auto meshComp = entity->findComponent<MeshComponent>();
+		if (meshComp)
+		{
+			// Don't render your entity as we play in first person
+			if (entity->getId() != name)
+			{
+				renderer->pushRender(meshComp, viewportId);
 			}
 		}
 	}

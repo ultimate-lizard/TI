@@ -32,19 +32,9 @@ ListenServer::~ListenServer()
 
 void ListenServer::admitClient(Client* client)
 {
-	// connectedClients.emplace(client->getName(), client);
-
 	createPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
 }
-
-//void ListenServer::onMessageReceive(const void* data, const int& size)
-//{
-//	// ClientConnectionRequestMessage msg;
-//	// msg.deserialzie(data);
-//
-//	// handleConnectionRequestMessage(msg);
-//}
 
 void ListenServer::shutdown()
 {

@@ -13,6 +13,7 @@
 
 void Server::initEntityTemplates()
 {
+	// Player
 	auto player = std::make_unique<Entity>();
 	player->setName("Player");
 
@@ -20,12 +21,10 @@ void Server::initEntityTemplates()
 	auto transformComp = player->findComponent<TransformComponent>();
 	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
 
-	if (app)
-	{
-		player->addComponent<MeshComponent>(app->getModelManager());
-		auto meshComp = player->findComponent<MeshComponent>();
-		meshComp->loadModel("cube");
-	}
+	// Cube
+	player->addComponent<MeshComponent>(app->getModelManager());
+	auto meshComp = player->findComponent<MeshComponent>();
+	meshComp->loadModel("cube");
 
 	entityTemplates.emplace(player->getName(), std::move(player));
 
@@ -33,10 +32,7 @@ void Server::initEntityTemplates()
 	cube->setName("Cube");
 
 	cube->addComponent<TransformComponent>();
-	if (app)
-	{
-		cube->addComponent<MeshComponent>(app->getModelManager());
-	}
+	cube->addComponent<MeshComponent>(app->getModelManager());
 
 	auto cubeMesh = cube->findComponent<MeshComponent>();
 	if (cubeMesh)
@@ -47,14 +43,14 @@ void Server::initEntityTemplates()
 	entityTemplates.emplace(cube->getName(), std::move(cube));
 }
 
-int Server::clientId = 0;
+void Server::requestShutdown()
+{
+	shuttingDown = true;
+}
 
 void Server::shutdown()
 {
-	if (app)
-	{
-		app->requestQuit();
-	}
+	app->requestQuit();
 }
 
 Entity* const Server::findEntity(const std::string& id)
@@ -101,22 +97,19 @@ void Server::possesEntity(const std::string& entityName, Client* client)
 	auto& playerEntity = spawnedEntities.at(entityName);
 	playerEntity->addComponent<MovementComponent>();
 
-	if (app)
+	auto renderer = app->getRenderer();
+	if (renderer)
 	{
-		auto renderer = app->getRenderer();
-		if (renderer)
+		// If the client is a human, add a camera to its entity
+		auto localClient = dynamic_cast<LocalClient*>(client);
+		if (localClient)
 		{
-			// If the client is a human, add a camera to its entity
-			auto localClient = dynamic_cast<LocalClient*>(client);
-			if (localClient)
-			{
-				auto camera = std::make_unique<Camera>();
+			auto camera = std::make_unique<Camera>();
 
-				playerEntity->addComponent<CameraComponent>();
+			playerEntity->addComponent<CameraComponent>();
 
-				auto cameraComponent = playerEntity->findComponent<CameraComponent>();
-				cameraComponent->setCamera(std::move(camera));
-			}
+			auto cameraComponent = playerEntity->findComponent<CameraComponent>();
+			cameraComponent->setCamera(std::move(camera));
 		}
 	}
 

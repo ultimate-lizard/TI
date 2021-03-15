@@ -64,10 +64,12 @@ void Application::start()
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
 
+	// TODO: MOVE THIS TO APPROPRIATE LOCATION
 	for (auto& client : clients)
 	{
-		client->connect(); 	// This is temporary. Should be called from other places
+		client->connect();
 	}
+	// !!
 
 	while (simulating)
 	{

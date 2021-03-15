@@ -3,6 +3,17 @@
 #include <TI/Application.h>
 #include <TI/Server/Server.h>
 
+Client::Client(Application* app) :
+	app(app),
+	id(0),
+	possessedEntity(nullptr),
+	pendingDeletion(false),
+	state(ClientState::Undefined),
+	shuttingDown(false)
+{
+
+}
+
 void Client::setName(const std::string& name)
 {
 	this->name = name;
@@ -18,18 +29,20 @@ int Client::getId() const
 	return id;
 }
 
+void Client::requestShutdown()
+{
+	shuttingDown = true;
+}
+
 void Client::shutdown()
 {
-	if (app)
+	auto server = app->getCurrentServer();
+	if (server)
 	{
-		auto server = app->getCurrentServer();
-		if (server)
-		{
-			server->ejectClient(this);
-		}
-
-		pendingDeletion = true;
+		server->ejectClient(this);
 	}
+
+	pendingDeletion = true;
 }
 
 ClientState Client::getState() const

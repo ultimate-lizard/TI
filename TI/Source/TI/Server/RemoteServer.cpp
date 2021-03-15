@@ -8,7 +8,6 @@
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
-	shuttingDown(false),
 	state(RemoteServerState::Undefined)
 {
 	initEntityTemplates();
@@ -29,7 +28,6 @@ RemoteServer::~RemoteServer()
 void RemoteServer::admitClient(Client* client)
 {
 	server = network.connect("localhost", 25565);
-
 	if (server)
 	{
 		state = RemoteServerState::Handshake;
@@ -47,12 +45,11 @@ void RemoteServer::admitClient(Client* client)
 		catch (std::exception&)
 		{
 			std::cout << "Unable to join the server" << std::endl;
-			client->shutdown();
+			requestShutdown();
 		}
 	
 		if (response.getPacketId() == PacketId::SConnectionResponse)
 		{
-			std::cout << "Received connection response" << std::endl;
 			state = RemoteServerState::Sync;
 
 			waitForMessageThread = std::thread(&RemoteServer::waitForMessages, this);
@@ -74,41 +71,16 @@ void RemoteServer::update(float dt)
 	{
 		if (state == RemoteServerState::Play)
 		{
-			auto server = app->getCurrentServer();
-			if (server)
-			{
-				// Send info about client's player
-				auto entity = server->findEntity(client->getName());
-				if (entity)
-				{
-					auto transformComp = entity->findComponent<TransformComponent>();
-					if (transformComp)
-					{
-						glm::vec3 position = transformComp->getPosition();
-
-						glm::vec3 rotation;
-						rotation.x = transformComp->getPitch();
-						rotation.y = transformComp->getYaw();
-						rotation.z = transformComp->getRoll();
-
-						NetworkPacket packet;
-						packet.setPacketId(PacketId::CPlayerSync);
-						packet << client->getName() << position << rotation;
-
-						try
-						{
-							this->server.send(packet);
-						}
-						catch (std::exception&)
-						{
-							this->server.close();
-							shutdown();
-						}
-					}
-				}
-			}
+			sendPlayerInfo(client.get());
 		}
 	}
+}
+
+void RemoteServer::shutdown()
+{
+	server.close();
+
+	Server::shutdown();
 }
 
 void RemoteServer::handleMessage(NetworkPacket& packet)
@@ -139,8 +111,7 @@ void RemoteServer::handleMessage(NetworkPacket& packet)
 		break;
 
 	default:
-		std::cout << "Client is out of sync" << std::endl;
-		throw std::exception();
+		throw std::runtime_error("The client is out of sync");
 	}
 }
 
@@ -203,6 +174,47 @@ void RemoteServer::handleEntitySync(NetworkPacket& packet)
 	}
 }
 
+void RemoteServer::sendPlayerInfo(Client* client)
+{
+	auto server = app->getCurrentServer();
+	if (!server)
+	{
+		return;
+	}
+
+	auto entity = server->findEntity(client->getName());
+	if (!entity)
+	{
+		return;
+	}
+
+	auto transformComp = entity->findComponent<TransformComponent>();
+	if (!transformComp)
+	{
+		return;
+	}
+		
+	glm::vec3 position = transformComp->getPosition();
+
+	glm::vec3 rotation;
+	rotation.x = transformComp->getPitch();
+	rotation.y = transformComp->getYaw();
+	rotation.z = transformComp->getRoll();
+
+	NetworkPacket packet;
+	packet.setPacketId(PacketId::CPlayerSync);
+	packet << client->getName() << position << rotation;
+
+	try
+	{
+		this->server.send(packet);
+	}
+	catch (std::exception&)
+	{
+		requestShutdown();
+	}
+}
+
 void RemoteServer::waitForMessages()
 {
 	while (!shuttingDown)
@@ -217,9 +229,8 @@ void RemoteServer::waitForMessages()
 			}
 			catch (std::exception&)
 			{
-				std::cout << "Exception during RemoteClient::waitForMessages" << std::endl;
-				server.close();
-				shuttingDown = true;
+				std::cout << "Lost connection to the remote server or an error occurred during package receipt" << std::endl;
+				requestShutdown();
 				break;
 			}
 		}

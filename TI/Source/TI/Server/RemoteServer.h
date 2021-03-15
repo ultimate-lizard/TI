@@ -25,6 +25,8 @@ public:
 
 	void update(float dt) override;
 
+	void shutdown() override;
+
 private:
 	void waitForMessages();
 	void handleMessage(NetworkPacket& packet);
@@ -33,12 +35,13 @@ private:
 	void handleFinishInitialEntitySync(NetworkPacket& packet);
 
 	void handleEntitySync(NetworkPacket& packet);
+
+	void sendPlayerInfo(Client* client);
+
 private:
 	NetworkHandler network;
 
 	std::thread waitForMessageThread;
-
-	bool shuttingDown;
 
 	Socket server;
 

@@ -19,8 +19,6 @@ public:
 	void setSocket(Socket socket);
 	Socket getSocket() const;
 
-
-
 private:
 	void waitForMessages();
 	void handleFinishInitialEntitySync(NetworkPacket& packet);
@@ -30,5 +28,4 @@ private:
 private:
 	Socket socket;
 	std::thread messageThread;
-	bool shuttingDown;
 };

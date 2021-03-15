@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <sstream>
 
 #include <TI/Renderer/Renderer.h>
 #include <TI/Input.h>
@@ -65,10 +66,10 @@ void Application::start()
 	SDL_CaptureMouse(SDL_TRUE);
 
 	// TODO: MOVE THIS TO APPROPRIATE LOCATION
-	for (auto& client : clients)
-	{
-		client->connect();
-	}
+	//for (auto& client : clients)
+	//{
+	//	client->connect("", 0);
+	//}
 	// !!
 
 	while (simulating)
@@ -185,6 +186,11 @@ Client* Application::findClient(const std::string& name)
 	return iter != clients.end() ? iter->get() : nullptr;
 }
 
+SplitScreenManager& Application::getSplitScreenManager()
+{
+	return splitScreenManager;
+}
+
 void Application::init()
 {
 	renderer = std::make_unique<Renderer>(&window);
@@ -194,8 +200,7 @@ void Application::init()
 
 	input = std::make_unique<Input>(this);
 
-	 
-	if (args.size() >= 2)
+	if (args.size() >= 3)
 	{
 		if (args[1] == "client")
 		{
@@ -204,13 +209,57 @@ void Application::init()
 
 		if (args[1] == "server")
 		{
-			server = std::make_unique<ListenServer>(this);
+			std::stringstream ss;
+			ss << args[2];
+			int port = 0;
+			ss >> port;
+			server = std::make_unique<ListenServer>(this, port);
 		}
 	}
 }
 
 void Application::initClients()
 {
+	if (args.size() >= 2)
+	{
+		if (args[1] == "server")
+		{
+			auto player1 = std::make_unique<LocalClient>(this, args[0]);
+
+			auto player3 = std::make_unique<LocalClient>(this, "Player3");
+			player3->setViewportId(1);
+
+			splitScreenManager.setHost(player1.get());
+			splitScreenManager.addGuest(player3.get());
+
+			splitScreenManager.displayAll();
+
+			player1->connect("", 0);
+			player3->connect("", 0);
+
+			clients.push_back(std::move(player1));
+			clients.push_back(std::move(player3));
+		}
+	}
+
+	if (args.size() == 4)
+	{
+		if (args[1] == "client")
+		{
+			std::string ip = args[2];
+			int port = 0;
+			std::stringstream ss;
+			ss << args[3];
+			ss >> port;
+			auto player1 = std::make_unique<LocalClient>(this);
+			player1->setName(args[0]);
+			player1->connect(ip, port);
+			clients.push_back(std::move(player1));
+		}
+	}
+
+	return;
+
 	auto player1 = std::make_unique<LocalClient>(this);
 
 	if (!args.empty())
@@ -240,6 +289,7 @@ void Application::initClients()
 		}
 	}
 	return;
+
 	splitScreenManager.addGuest(player3.get());
 	clients.push_back(std::move(player3));
 

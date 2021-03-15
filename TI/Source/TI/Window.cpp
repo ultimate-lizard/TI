@@ -8,8 +8,7 @@ Window::Window()
 	:
 	DEFAULT_WINDOW_WIDTH(1024),
 	DEFAULT_WINDOW_HEIGHT(768),
-	sdlWindow(nullptr),
-	size({DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT})
+	sdlWindow(nullptr)
 {
 
 }
@@ -25,7 +24,6 @@ Window::~Window()
 void Window::init(const std::string& title, glm::ivec2 size /*= { 800, 600 }*/, glm::ivec2 pos /*= { -1, -1 }*/)
 {
 	this->title = title;
-	this->size = size;
 
 	sdlWindow = SDL_CreateWindow(
 		this->title.c_str(),
@@ -62,7 +60,11 @@ void Window::swap()
 
 const glm::ivec2& Window::getSize() const
 {
-	return size;
+	int x = 0;
+	int y = 0;
+
+	SDL_GetWindowSize(sdlWindow, &x, &y);
+	return {x, y};
 }
 
 bool Window::hasFocus() const

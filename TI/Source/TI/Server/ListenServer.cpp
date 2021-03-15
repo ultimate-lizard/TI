@@ -8,11 +8,11 @@
 #include <TI/Application.h>
 #include <TI/Server/Component/TransformComponent.h>
 
-ListenServer::ListenServer(Application* app) :
+ListenServer::ListenServer(Application* app, int port) :
 	LocalServer(app),
 	shuttingDown(false)
 {
-	openConnection();
+	openConnection(port);
 }
 
 ListenServer::~ListenServer()
@@ -30,7 +30,7 @@ ListenServer::~ListenServer()
 	}
 }
 
-void ListenServer::admitClient(Client* client)
+void ListenServer::connectClient(Client* client, const std::string&, int)
 {
 	spawnPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
@@ -61,11 +61,13 @@ void ListenServer::update(float dt)
 	LocalServer::update(dt);
 
 	broadcastEntitiesInfo();
+
+	SDL_Delay(10);
 }
 
-void ListenServer::openConnection()
+void ListenServer::openConnection(int port)
 {
-	server = network.openConnection(25565);
+	server = network.openConnection(port);
 	if (server)
 	{
 		waitConnectionsThread = std::thread(&ListenServer::waitConnections, this);
@@ -229,7 +231,7 @@ void ListenServer::handleConnectionRequest(Socket socket)
 
 	app->addClient(std::move(remoteClient));
 
-	admitClient(app->findClient(clientName));
+	connectClient(app->findClient(clientName), "", 0);
 }
 
 void ListenServer::sendEntityInitialSync(RemoteClient* client)

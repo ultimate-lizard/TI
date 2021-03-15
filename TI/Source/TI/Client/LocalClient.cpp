@@ -26,12 +26,12 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	loadMappings();
 }
 
-void LocalClient::connect()
+void LocalClient::connect(const std::string& ip, int port)
 {
 	Server* server = app->getCurrentServer();
 	if (server)
 	{
-		server->admitClient({ this });
+		server->connectClient(this, ip, port);
 	}
 }
 

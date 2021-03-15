@@ -43,7 +43,6 @@ void Texture::load(const std::string& path)
 		int channelCount = 0;
 
 		unsigned char* data = stbi_load(path.c_str(), &width, &height, &channelCount, 0);
-
 		this->width = width;
 		this->height = height;
 

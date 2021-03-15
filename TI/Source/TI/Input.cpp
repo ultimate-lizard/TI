@@ -76,6 +76,7 @@ void Input::handleInput()
 
 					case SDL_WINDOWEVENT_RESIZED:
 						handleWindowResized();
+						app->getSplitScreenManager().displayAll();
 						break;
 					}
 				}

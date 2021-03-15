@@ -8,10 +8,10 @@ class RemoteClient;
 class ListenServer : public LocalServer
 {
 public:
-	ListenServer(Application* app);
+	ListenServer(Application* app, int port);
 	~ListenServer();
 
-	void admitClient(Client*) override;
+	void connectClient(Client* client, const std::string& ip, int port) override;
 	void ejectClient(Client* client) override;
 
 	void shutdown() override;
@@ -19,7 +19,7 @@ public:
 	void update(float dt) override;
 
 private:
-	void openConnection();
+	void openConnection(int port);
 	void waitConnections();
 
 	void broadcastEntitiesInfo();

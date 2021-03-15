@@ -48,6 +48,8 @@ public:
 	void removeClient(const std::string& name);
 	Client* findClient(const std::string& name);
 
+	SplitScreenManager& getSplitScreenManager();
+
 private:
 	void init();
 	void initClients();

@@ -12,7 +12,7 @@ class RemoteClient : public Client
 public:
 	RemoteClient(Application* app);
 
-	void connect() override {};
+	void connect(const std::string& ip, int port) override {};
 	void shutdown() override;
 
 	void setSocket(Socket socket);

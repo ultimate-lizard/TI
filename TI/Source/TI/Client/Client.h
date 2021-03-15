@@ -31,7 +31,7 @@ public:
 
 	int getId() const;
 
-	virtual void connect() = 0;
+	virtual void connect(const std::string& ip, int port) = 0;
 
 	void requestShutdown();
 	virtual void shutdown();

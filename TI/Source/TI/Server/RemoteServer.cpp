@@ -25,9 +25,9 @@ RemoteServer::~RemoteServer()
 	}
 }
 
-void RemoteServer::admitClient(Client* client)
+void RemoteServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	server = network.connect("localhost", 25565);
+	server = network.connect(ip, port);
 	if (server)
 	{
 		state = RemoteServerState::Handshake;
@@ -76,6 +76,8 @@ void RemoteServer::update(float dt)
 			sendPlayerInfo(client.get());
 		}
 	}
+
+	SDL_Delay(10);
 }
 
 void RemoteServer::shutdown()

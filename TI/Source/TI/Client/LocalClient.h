@@ -13,7 +13,7 @@ public:
 
 	void update(float dt) override;
 
-	void connect() override;
+	void connect(const std::string& ip, int port) override;
 	void possesEntity(Entity* entity) override;
 
 	InputHandler* const getInputHandler() const;

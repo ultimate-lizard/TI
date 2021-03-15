@@ -9,7 +9,7 @@ public:
 
 	void update(float dt) override;
 
-	void admitClient(Client* client) override;
+	void connectClient(Client* client, const std::string& ip, int port) override;
 
 	void ejectClient(Client* client) override;
 

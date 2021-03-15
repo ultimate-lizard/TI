@@ -26,9 +26,8 @@ void LocalServer::update(float dt)
 	}
 }
 
-void LocalServer::admitClient(Client* client)
+void LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	// connectedClients.emplace(client->getName(), client);
 	spawnPlayerEntity(client->getName());
 	possesEntity(client->getName(), client);
 }

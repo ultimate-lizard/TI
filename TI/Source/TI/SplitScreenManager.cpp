@@ -63,6 +63,7 @@ void SplitScreenManager::displayGuest(LocalClient* guest)
 
 }
 
+// Should be called before clients connected
 void SplitScreenManager::displayAll()
 {
 	int screenCount = 1 + static_cast<int>(guests.size());

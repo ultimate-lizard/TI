@@ -34,6 +34,4 @@ private:
 	SDL_Window* sdlWindow;
 
 	std::string title;
-
-	glm::ivec2 size;
 };

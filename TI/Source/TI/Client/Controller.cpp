@@ -90,6 +90,12 @@ void PlayerController::quitGame()
 	}
 }
 
+void PlayerController::releaseMouse()
+{
+	auto app = client->getApplication();
+	app->getInput()->releaseMouse();
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -104,5 +110,6 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindAxis("VerticalLookRate", std::bind(&PlayerController::handleLookVerticalRate, this, std::placeholders::_1));
 
 		inputHandler->bindKey("QuitGame", ActionInputType::KeyPress, std::bind(&PlayerController::quitGame, this));
+		inputHandler->bindKey("ReleaseMouse", ActionInputType::KeyPress, std::bind(&PlayerController::releaseMouse, this));
 	}
 }

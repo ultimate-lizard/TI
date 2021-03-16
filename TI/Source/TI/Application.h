@@ -50,6 +50,8 @@ public:
 
 	SplitScreenManager& getSplitScreenManager();
 
+	Input* const getInput() const;
+
 private:
 	void init();
 	void initClients();

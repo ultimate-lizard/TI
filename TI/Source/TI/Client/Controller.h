@@ -37,6 +37,7 @@ private:
 	void handleLookHorizontalRate(float value);
 
 	void quitGame();
+	void releaseMouse();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComp;

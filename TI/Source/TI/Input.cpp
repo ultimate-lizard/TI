@@ -11,7 +11,8 @@ Input::Input(Application* app) :
 	app(app),
 	event(),
 	lastX(0),
-	lastY(0)
+	lastY(0),
+	mouseReleased(false)
 {
 }
 
@@ -46,6 +47,7 @@ void Input::handleInput()
 			case SDL_KEYDOWN:
 				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
 				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
+
 				break;
 
 			case SDL_CONTROLLERBUTTONUP:
@@ -56,6 +58,13 @@ void Input::handleInput()
 
 			case SDL_MOUSEMOTION:
 				handleMouseMotion(inputHandler);
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					handleWindowFocus(true);
+				}
 				break;
 
 			case SDL_CONTROLLERAXISMOTION:
@@ -85,9 +94,14 @@ void Input::handleInput()
 	}
 }
 
+void Input::releaseMouse()
+{
+	handleWindowFocus(false);
+}
+
 void Input::handleMouseMotion(InputHandler* inputHandler)
 {
-	if (!app->getWindow()->hasFocus())
+	if (mouseReleased)
 	{
 		return;
 	}
@@ -155,6 +169,8 @@ void Input::handleWindowFocus(bool gained)
 
 	SDL_SetRelativeMouseMode(flag);
 	SDL_CaptureMouse(flag);
+
+	mouseReleased = gained ? false : true;
 }
 
 void Input::handleWindowResized()

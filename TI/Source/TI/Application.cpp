@@ -191,6 +191,11 @@ SplitScreenManager& Application::getSplitScreenManager()
 	return splitScreenManager;
 }
 
+Input* const Application::getInput() const
+{
+	return input.get();
+}
+
 void Application::init()
 {
 	renderer = std::make_unique<Renderer>(&window);
@@ -226,19 +231,19 @@ void Application::initClients()
 		{
 			auto player1 = std::make_unique<LocalClient>(this, args[0]);
 
-			auto player3 = std::make_unique<LocalClient>(this, "Player3");
+			/*auto player3 = std::make_unique<LocalClient>(this, "Player3");
 			player3->setViewportId(1);
 
 			splitScreenManager.setHost(player1.get());
 			splitScreenManager.addGuest(player3.get());
 
-			splitScreenManager.displayAll();
+			splitScreenManager.displayAll();*/
 
 			player1->connect("", 0);
-			player3->connect("", 0);
+			//player3->connect("", 0);
 
 			clients.push_back(std::move(player1));
-			clients.push_back(std::move(player3));
+			//clients.push_back(std::move(player3));
 		}
 	}
 
@@ -257,46 +262,6 @@ void Application::initClients()
 			clients.push_back(std::move(player1));
 		}
 	}
-
-	return;
-
-	auto player1 = std::make_unique<LocalClient>(this);
-
-	if (!args.empty())
-	{
-		player1->setName(args[0]);
-	}
-
-	//auto player2 = std::make_unique<LocalClient>(this, "Player2");
-	//player2->setViewportId(1);
-
-	auto player3 = std::make_unique<LocalClient>(this, "Player3");
-	player3->setViewportId(2);
-
-	splitScreenManager.setHost(player1.get());
-	//splitScreenManager.addGuest(player2.get());
-	
-
-	clients.push_back(std::move(player1));
-	//clients.push_back(std::move(player2));
-
-	// This is hardcoded
-	if (args.size() == 2)
-	{
-		if (args[1] == "client")
-		{
-			return;
-		}
-	}
-	return;
-
-	splitScreenManager.addGuest(player3.get());
-	clients.push_back(std::move(player3));
-
-	// splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
-
-	//splitScreenManager.displayHost();
-	splitScreenManager.displayAll();
 }
 
 void Application::uninit()

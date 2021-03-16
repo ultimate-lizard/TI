@@ -34,6 +34,7 @@ enum Key
 	Y,
 	Z,
 	Escape = SDL_SCANCODE_ESCAPE,
+	LeftCtrl = SDL_SCANCODE_LCTRL,
 	ControllerButtonB = SDL_CONTROLLER_BUTTON_B,
 	Right = SDL_SCANCODE_RIGHT,
 	Left,
@@ -67,6 +68,8 @@ public:
 	Input(Application* app);
 	void handleInput();
 
+	void releaseMouse();
+
 private:
 	void handleMouseMotion(InputHandler* inputHandler);
 	void handleControllerAxisMotion(InputHandler* inputHandler);
@@ -78,4 +81,6 @@ private:
 
 	int lastX;
 	int lastY;
+
+	bool mouseReleased;
 };

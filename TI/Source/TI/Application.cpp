@@ -65,13 +65,6 @@ void Application::start()
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
 
-	// TODO: MOVE THIS TO APPROPRIATE LOCATION
-	//for (auto& client : clients)
-	//{
-	//	client->connect("", 0);
-	//}
-	// !!
-
 	while (simulating)
 	{
 		startFrame = SDL_GetTicks();
@@ -221,6 +214,10 @@ void Application::init()
 			server = std::make_unique<ListenServer>(this, port);
 		}
 	}
+	else
+	{
+		server = std::make_unique<LocalServer>(this);
+	}
 }
 
 void Application::initClients()
@@ -231,19 +228,19 @@ void Application::initClients()
 		{
 			auto player1 = std::make_unique<LocalClient>(this, args[0]);
 
-			/*auto player3 = std::make_unique<LocalClient>(this, "Player3");
+			auto player3 = std::make_unique<LocalClient>(this, "Player3");
 			player3->setViewportId(1);
 
 			splitScreenManager.setHost(player1.get());
 			splitScreenManager.addGuest(player3.get());
 
-			splitScreenManager.displayAll();*/
+			splitScreenManager.displayAll();
 
 			player1->connect("", 0);
-			//player3->connect("", 0);
+			player3->connect("", 0);
 
 			clients.push_back(std::move(player1));
-			//clients.push_back(std::move(player3));
+			clients.push_back(std::move(player3));
 		}
 	}
 
@@ -261,6 +258,12 @@ void Application::initClients()
 			player1->connect(ip, port);
 			clients.push_back(std::move(player1));
 		}
+	}
+	else
+	{
+		auto player1 = std::make_unique<LocalClient>(this);
+		player1->connect("", 0);
+		clients.push_back(std::move(player1));
 	}
 }
 

@@ -30,11 +30,11 @@ public:
 
 	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
 
-	std::unique_ptr<Entity> createEntity(const std::string& name, const std::string& id);
+	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
 protected:
-	void initEntityTemplates();
-	void spawnPlayerEntity(const std::string& name);
+	void createEntityTemplates();
+	void spawnEntity(const std::string& id, const std::string& templateName);
 	void possesEntity(const std::string& entityName, Client* client);
 	void spawnPlayer(Client* client);
 

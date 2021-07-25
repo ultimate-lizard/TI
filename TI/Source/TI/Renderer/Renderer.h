@@ -34,8 +34,6 @@ public:
 	void setClearColor(const glm::vec4& color);
 	const glm::vec4& getClearColor() const;
 
-	void setCamera(Camera* camera);
-	
 	void createViewport(unsigned int id, glm::ivec2 pos = { 0, 0 }, glm::ivec2 size = { 0, 0 });
 	Viewport* getViewport(unsigned int viewportId);
 

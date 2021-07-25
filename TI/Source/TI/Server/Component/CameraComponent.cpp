@@ -2,6 +2,10 @@
 
 #include <TI/Renderer/Camera.h>
 
+CameraComponent::CameraComponent()
+{
+}
+
 CameraComponent::CameraComponent(const CameraComponent& otherCameraComp)
 {
 	camera = std::make_unique<Camera>(*otherCameraComp.camera);

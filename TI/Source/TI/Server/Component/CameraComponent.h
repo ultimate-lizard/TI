@@ -9,7 +9,7 @@ class Camera;
 class CameraComponent : public Component
 {
 public:
-	CameraComponent() = default;
+	CameraComponent();
 	CameraComponent(const CameraComponent& otherCameraComp);
 
 	void setCamera(std::unique_ptr<Camera> camera);

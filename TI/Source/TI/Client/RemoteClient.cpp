@@ -78,9 +78,9 @@ void RemoteClient::handlePlayerSync(NetworkPacket& packet)
 	{
 		auto transformComp = entity->findComponent<TransformComponent>();
 		transformComp->setPosition(position);
-		transformComp->setPitch(rotation.x);
+		/*transformComp->setPitch(rotation.x);
 		transformComp->setYaw(rotation.y);
-		transformComp->setRoll(rotation.z);
+		transformComp->setRoll(rotation.z);*/
 	}
 }
 

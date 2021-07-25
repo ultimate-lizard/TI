@@ -32,7 +32,7 @@ ListenServer::~ListenServer()
 
 void ListenServer::connectClient(Client* client, const std::string&, int)
 {
-	spawnPlayerEntity(client->getName());
+	// spawnEntity(client->getName());
 	possesEntity(client->getName(), client);
 
 	broadcastPlayerEntitySpawn(findEntity(client->getName()));
@@ -110,9 +110,9 @@ void ListenServer::broadcastEntitiesInfo()
 					glm::vec3 position = transformComp->getPosition();
 
 					glm::vec3 rotation;
-					rotation.x = transformComp->getPitch();
+					/*rotation.x = transformComp->getPitch();
 					rotation.y = transformComp->getYaw();
-					rotation.z = transformComp->getRoll();
+					rotation.z = transformComp->getRoll();*/
 
 					NetworkPacket packet;
 					packet.setPacketId(PacketId::SEntitySync);
@@ -151,9 +151,9 @@ void ListenServer::broadcastPlayerEntitySpawn(Entity* entity)
 				packet.setPacketId(PacketId::SSpawnPlayerEntity);
 
 				glm::vec3 rotation;
-				rotation.x = transformComp->getPitch();
+				/*rotation.x = transformComp->getPitch();
 				rotation.y = transformComp->getYaw();
-				rotation.z = transformComp->getRoll();
+				rotation.z = transformComp->getRoll();*/
 
 				packet << entity->getId() << transformComp->getPosition() << rotation;
 
@@ -257,9 +257,9 @@ void ListenServer::sendEntityInitialSync(RemoteClient* client)
 		if (transformComp)
 		{
 			position = transformComp->getPosition();
-			rotation.x = transformComp->getPitch();
+			/*rotation.x = transformComp->getPitch();
 			rotation.y = transformComp->getYaw();
-			rotation.z = transformComp->getRoll();
+			rotation.z = transformComp->getRoll();*/
 		}
 
 		packet << position << rotation;

@@ -50,6 +50,7 @@ void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& trans
 
 void Renderer::pushRender(MeshComponent* meshComponent, int viewportId)
 {
+	// Render should not work with components
 	auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
 	if (transformComp)
 	{
@@ -75,7 +76,7 @@ void Renderer::render()
 
 		auto viewportSize = viewport.getSize();
 
-		auto camera = viewport.getCamera();
+		auto camera = viewport.getActiveCamera();
 		if (!camera)
 		{
 			continue;
@@ -123,11 +124,6 @@ void Renderer::setClearColor(const glm::vec4& color)
 const glm::vec4& Renderer::getClearColor() const
 {
 	return clearColor;
-}
-
-void Renderer::setCamera(Camera* camera)
-{
-	this->camera = camera;
 }
 
 void Renderer::createViewport(unsigned int id, glm::ivec2 pos /*= { 0, 0 }*/, glm::ivec2 size /*= { 0, 0 }*/)

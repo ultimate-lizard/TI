@@ -21,8 +21,8 @@ public:
 	void setSize(const glm::ivec2& size);
 	const glm::ivec2 getSize() const;
 
-	void setCamera(Camera* camera);
-	Camera* getCamera();
+	void setActiveCamera(Camera* camera);
+	Camera* getActiveCamera();
 
 	void setEnabled(bool enabled);
 	bool isEnabled() const;

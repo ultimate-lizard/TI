@@ -45,14 +45,14 @@ const glm::ivec2 Viewport::getSize() const
 	return size;
 }
 
-void Viewport::setCamera(Camera* camera)
+void Viewport::setActiveCamera(Camera* camera)
 {
 	this->camera = camera;
 
 	updateCameraPerspective();
 }
 
-Camera* Viewport::getCamera()
+Camera* Viewport::getActiveCamera()
 {
 	return camera;
 }

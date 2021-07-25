@@ -12,7 +12,7 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	initEntityTemplates();
+	createEntityTemplates();
 	createCubes();
 }
 
@@ -28,7 +28,7 @@ void LocalServer::update(float dt)
 
 void LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	spawnPlayerEntity(client->getName());
+	spawnEntity(client->getName(), "Player");
 	possesEntity(client->getName(), client);
 }
 
@@ -40,8 +40,8 @@ void LocalServer::ejectClient(Client* client)
 void LocalServer::createCubes()
 {
 	// TODO: Spawn() method
-	spawnedEntities.emplace("cube", createEntity("Cube", "cube"));
-	spawnedEntities.emplace("cube2", createEntity("Cube", "cube2"));
+	spawnEntity("Cube", "cube");
+	spawnEntity("Cube", "cube2");
 
 	auto& cubeEntity = spawnedEntities.at("cube");
 	auto& cube2Entity = spawnedEntities.at("cube2");

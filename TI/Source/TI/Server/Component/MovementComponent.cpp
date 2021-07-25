@@ -36,57 +36,59 @@ MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
 
 void MovementComponent::tick(float dt)
 {
-	if (entity)
+	if (!entity)
 	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
+		return;
+	}
+
+	auto transformComp = entity->findComponent<TransformComponent>();
+	if (transformComp)
+	{
+		glm::vec3 rotation = transformComp->getRotation();
+
+		rotation.x += pitchRate * dt;
+		rotation.y += yawRate * dt;
+
+		if (rotation.x > 89.0f)
 		{
-			float pitch = transformComp->getPitch();
-			float yaw = transformComp->getYaw();
-
-			pitch += pitchRate * dt;
-			yaw += yawRate * dt;
-
-			if (pitch > 89.0f)
-			{
-				pitch = 89.0f;
-			}
-			if (pitch < -89.0f)
-			{
-				pitch = -89.0f;
-			}
-
-			glm::vec3 newForward;
-			newForward.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-			newForward.y = sin(glm::radians(pitch));
-			newForward.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-
-			forward = glm::normalize(newForward);
-
-			right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-			up = glm::normalize(glm::cross(right, forward));
-
-			glm::vec3 position = transformComp->getPosition();
-			position += getVelocity().z * (speed * forward) * dt;
-			position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
-
-			transformComp->setPosition(position);
-			transformComp->setPitch(pitch);
-			transformComp->setYaw(yaw);
-
-			CameraComponent* cameraComp = entity->findComponent<CameraComponent>();
-			if (cameraComp)
-			{
-				Camera* camera = cameraComp->getCamera();
-				if (camera)
-				{
-					camera->setPosition(position);
-					camera->setForward(forward);
-					camera->setRight(right);
-					camera->setUp(up);
-				}
-			}
+			rotation.x = 89.0f;
 		}
+		if (rotation.x < -89.0f)
+		{
+			rotation.x = -89.0f;
+		}
+
+		glm::vec3 newForward;
+		newForward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+		newForward.y = sin(glm::radians(rotation.x));
+		newForward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+
+		forward = glm::normalize(newForward);
+
+		right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+		up = glm::normalize(glm::cross(right, forward));
+
+		glm::vec3 position = transformComp->getPosition();
+		position += getVelocity().z * (speed * forward) * dt;
+		position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+
+		//glm::vec3 rotation;
+		//rotation.x = pitch;
+		//rotation.y = yaw;
+
+		transformComp->setPosition(position);
+		transformComp->setRotation(rotation);
+
+		/*if (CameraComponent* cameraComp = entity->findComponent<CameraComponent>())
+		{
+			if (Camera* camera = cameraComp->getCamera())
+			{
+				camera->setPosition(position);
+				camera->setForward(forward);
+				camera->setRight(right);
+				camera->setUp(up);
+			}
+		}*/
 	}
 }
 
@@ -174,7 +176,10 @@ void MovementComponent::addHorizontalLook(float value)
 		auto transformComp = entity->findComponent<TransformComponent>();
 		if (transformComp)
 		{
-			transformComp->setYaw(transformComp->getYaw() + movement);
+			glm::vec3 rotation = transformComp->getRotation();
+			rotation.y = rotation.y + movement;
+			// transformComp->setYaw(transformComp->getYaw() + movement);
+			transformComp->setRotation(rotation);
 		}
 	}
 }
@@ -188,7 +193,10 @@ void MovementComponent::addVerticalLook(float value)
 		auto transformComp = entity->findComponent<TransformComponent>();
 		if (transformComp)
 		{
-			transformComp->setPitch(transformComp->getPitch() + movement);
+			// transformComp->setPitch(transformComp->getPitch() + movement);
+			glm::vec3 rotation = transformComp->getRotation();
+			rotation.x = rotation.x + movement;
+			transformComp->setRotation(rotation);
 		}
 	}
 }

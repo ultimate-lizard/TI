@@ -10,7 +10,7 @@ RemoteServer::RemoteServer(Application* app) :
 	Server(app),
 	state(RemoteServerState::Undefined)
 {
-	initEntityTemplates();
+	createEntityTemplates();
 }
 
 RemoteServer::~RemoteServer()
@@ -55,7 +55,7 @@ void RemoteServer::connectClient(Client* client, const std::string& ip, int port
 			waitForMessageThread = std::thread(&RemoteServer::waitForMessages, this);
 		}
 
-		spawnPlayerEntity(client->getName());
+		// spawnEntity(client->getName());
 		possesEntity(client->getName(), client);
 	}
 }
@@ -144,14 +144,14 @@ void RemoteServer::handleInitialEntitySync(NetworkPacket& packet)
 	packet >> id;
 	packet >> position >> rotation;
 
-	auto entity = createEntity(name, id);
+	auto entity = createEntityFromTemplate(name, id);
 	auto transformComp = entity->findComponent<TransformComponent>();
 	if (transformComp)
 	{
 		transformComp->setPosition(position);
-		transformComp->setPitch(rotation.x);
+		/*transformComp->setPitch(rotation.x);
 		transformComp->setYaw(rotation.y);
-		transformComp->setRoll(rotation.z);
+		transformComp->setRoll(rotation.z);*/
 	}
 
 	spawnedEntities.emplace(id, std::move(entity));
@@ -184,9 +184,9 @@ void RemoteServer::handleEntitySync(NetworkPacket& packet)
 				packet >> position >> rotation;
 
 				transformComp->setPosition(position);
-				transformComp->setPitch(rotation.x);
+				/*transformComp->setPitch(rotation.x);
 				transformComp->setYaw(rotation.y);
-				transformComp->setRoll(rotation.z);
+				transformComp->setRoll(rotation.z);*/
 			}
 		}
 	}
@@ -200,7 +200,7 @@ void RemoteServer::handleSpawnPlayerEntity(NetworkPacket& packet)
 
 	packet >> name >> position >> rotation;
 
-	spawnPlayerEntity(name);
+	// spawnEntity(name);
 
 	Entity* playerEntity = findEntity(name);
 	if (playerEntity)
@@ -209,9 +209,9 @@ void RemoteServer::handleSpawnPlayerEntity(NetworkPacket& packet)
 		if (transformComp)
 		{
 			transformComp->setPosition(position);
-			transformComp->setPitch(rotation.x);
+			/*transformComp->setPitch(rotation.x);
 			transformComp->setYaw(rotation.y);
-			transformComp->setRoll(rotation.z);
+			transformComp->setRoll(rotation.z);*/
 		}
 	}
 }
@@ -247,9 +247,9 @@ void RemoteServer::sendPlayerInfo(Client* client)
 	glm::vec3 position = transformComp->getPosition();
 
 	glm::vec3 rotation;
-	rotation.x = transformComp->getPitch();
+	/*rotation.x = transformComp->getPitch();
 	rotation.y = transformComp->getYaw();
-	rotation.z = transformComp->getRoll();
+	rotation.z = transformComp->getRoll();*/
 
 	NetworkPacket packet;
 	packet.setPacketId(PacketId::CPlayerSync);

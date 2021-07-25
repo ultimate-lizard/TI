@@ -1,89 +1,39 @@
 #include "TransformComponent.h"
 
+#include <iostream>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec3& rotation) :
-	position(position),
-	scale({1.0f, 1.0f, 1.0f}),
-	pitch(rotation.x),
-	yaw(rotation.y),
-	roll(rotation.z)
-{
+#include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Entity.h>
+#include <TI/Renderer/Camera.h>
 
-}
-
-TransformComponent::TransformComponent(const TransformComponent& otherTransformComp)
-{
-	position = otherTransformComp.position;
-	scale = otherTransformComp.scale;
-
-	pitch = otherTransformComp.pitch;
-	yaw = otherTransformComp.yaw;
-	roll = otherTransformComp.roll;
-}
-
-void TransformComponent::setPosition(const glm::vec3& position)
+TransformComponent::TransformComponent(const glm::vec3& position, const glm::vec3& rotation)
 {
 	this->position = position;
+	this->rotation = rotation;
+
+	updateTransform();
 }
 
-const glm::vec3& TransformComponent::getPosition()
+TransformComponent::TransformComponent(const TransformComponent& otherTransformComponent)
 {
-	return position;
+	position = otherTransformComponent.position;
+	rotation = otherTransformComponent.rotation;
+	scale = otherTransformComponent.scale;
+
+	parent = otherTransformComponent.parent;
+	children = otherTransformComponent.children;
+
+	updateTransform();
 }
 
-void TransformComponent::setPitch(float pitch)
+void TransformComponent::tick(float dt)
 {
-	this->pitch = pitch;
-}
-
-float TransformComponent::getPitch() const
-{
-	return pitch;
-}
-
-void TransformComponent::setYaw(float yaw)
-{
-	this->yaw = yaw;
-}
-
-float TransformComponent::getYaw() const
-{
-	return yaw;
-}
-
-void TransformComponent::setRoll(float roll)
-{
-	this->roll = roll;
-}
-
-float TransformComponent::getRoll() const
-{
-	return roll;
-}
-
-const glm::mat4 TransformComponent::getTransform() const
-{
-	glm::mat4 transform(1.0f);
-
-	transform = glm::translate(transform, position);
-	transform = glm::scale(transform, scale);
-	transform = glm::rotate(transform, -glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-	transform = glm::rotate(transform, glm::radians(pitch), glm::vec3(0.0f, 0.0f, 1.0f));
-	// TODO: rotate for roll
-
-	return transform;
-}
-
-void TransformComponent::setScale(const glm::vec3& scale)
-{
-	this->scale = scale;
-}
-
-const glm::vec3& TransformComponent::getScale() const
-{
-	return scale;
+	std::cout << "Entity pitch: " << rotation.x << std::endl;
+	std::cout << "Entity yaw: " << rotation.y << std::endl;
+	std::cout << "Entity roll: " << rotation.z << std::endl;
 }
 
 std::unique_ptr<Component> TransformComponent::clone() const
@@ -91,12 +41,14 @@ std::unique_ptr<Component> TransformComponent::clone() const
 	return std::make_unique<TransformComponent>(*this);
 }
 
-void TransformComponent::operator=(const TransformComponent& otherTransformComp)
+void TransformComponent::operator=(const TransformComponent& otherTransformComponent)
 {
-	position = otherTransformComp.position;
-	scale = otherTransformComp.scale;
+	position = otherTransformComponent.position;
+	rotation = otherTransformComponent.rotation;
+	scale = otherTransformComponent.scale;
 
-	pitch = otherTransformComp.pitch;
-	yaw = otherTransformComp.yaw;
-	roll = otherTransformComp.roll;
+	parent = otherTransformComponent.parent;
+	children = otherTransformComponent.children;
+
+	updateTransform();
 }

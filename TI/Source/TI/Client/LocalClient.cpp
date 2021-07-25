@@ -60,7 +60,7 @@ void LocalClient::possesEntity(Entity* entity)
 	auto viewport = renderer->getViewport(viewportId);
 	if (viewport)
 	{
-		viewport->setCamera(cameraComp->getCamera());
+		viewport->setActiveCamera(cameraComp->getCamera());
 	}
 }
 
@@ -86,10 +86,12 @@ void LocalClient::update(float dt)
 		if (meshComp)
 		{
 			// Don't render your entity as we play in first person
-			if (entity->getId() != name)
+			if (entity->getId() == name)
 			{
-				renderer->pushRender(meshComp, viewportId);
+				// continue;
 			}
+
+			renderer->pushRender(meshComp, viewportId);
 		}
 	}
 }

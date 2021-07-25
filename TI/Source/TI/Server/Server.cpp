@@ -11,29 +11,40 @@
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
 
-void Server::initEntityTemplates()
+void Server::createEntityTemplates()
 {
-	// Player
-	auto player = std::make_unique<Entity>();
-	player->setName("Player");
+	// Player ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	auto playerEntity = std::make_unique<Entity>();
+	auto camera = std::make_unique<Camera>();
+	{
+		playerEntity->setName("Player");
 
-	auto transformComp = player->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
+		auto playerTransformComponent = playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -90.0f, 0.0f));
+		playerTransformComponent->setScale({ 0.3f, 0.3f, 0.3f });
 
-	auto meshComp = player->addComponent<MeshComponent>(app->getModelManager());
-	meshComp->loadModel("player");
+		auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
+		meshComponent->loadModel("player");
 
-	entityTemplates.emplace(player->getName(), std::move(player));
+		
+		// Setup local coordinates for the camera
+		camera->setPosition({ -1.2f, 1.0f, -0.0f });
+		camera->setRotation({ 0.0f, 90.0f, 0.0f });
+		camera->setParent(playerTransformComponent);
 
-	// Cube
-	auto cube = std::make_unique<Entity>();
-	cube->setName("Cube");
+	}
+	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
+	cameraComponent->setCamera(std::move(camera));
+	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
-	cube->addComponent<TransformComponent>();
-	auto cubeMesh = cube->addComponent<MeshComponent>(app->getModelManager());
-	cubeMesh->loadModel("cube");
+	// Cube ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	auto cubeEntity = std::make_unique<Entity>();
+	cubeEntity->setName("Cube");
 
-	entityTemplates.emplace(cube->getName(), std::move(cube));
+	cubeEntity->addComponent<TransformComponent>();
+	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getModelManager());
+	cubeMeshComponent->loadModel("cube");
+	
+	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 }
 
 void Server::update(float dt)
@@ -78,24 +89,24 @@ const std::map<std::string, std::unique_ptr<Entity>>& Server::getEntities() cons
 	return spawnedEntities;
 }
 
-std::unique_ptr<Entity> Server::createEntity(const std::string& name, const std::string& id)
+std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name, const std::string& id)
 {
 	if (auto iter = entityTemplates.find(name); iter != entityTemplates.end())
 	{
 		auto newEntity = iter->second->clone();
 		newEntity->setId(id);
-
+		
 		return std::move(newEntity);
 	}
 	
 	throw std::exception();
 }
 
-void Server::spawnPlayerEntity(const std::string& name)
+void Server::spawnEntity(const std::string& templateName, const std::string& id)
 {
-	if (!findEntity(name))
+	if (!findEntity(id))
 	{
-		spawnedEntities.emplace(name, createEntity("Player", name));
+		spawnedEntities.emplace(id, createEntityFromTemplate(templateName, id));
 	}
 }
 
@@ -117,12 +128,7 @@ void Server::possesEntity(const std::string& entityName, Client* client)
 			auto localClient = dynamic_cast<LocalClient*>(client);
 			if (localClient)
 			{
-				auto camera = std::make_unique<Camera>();
-
-				possesedEntity->addComponent<CameraComponent>();
-
-				auto cameraComponent = possesedEntity->findComponent<CameraComponent>();
-				cameraComponent->setCamera(std::move(camera));
+				
 			}
 		}
 

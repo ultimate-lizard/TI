@@ -1,26 +1,20 @@
 #include "Camera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
-Camera::Camera(const glm::vec3& position) :
-	position(position),
-	forward(0.0f, 0.0f, -1.0f),
-	up(0.0f, 1.0f, 0.0f),
-	right(1.0f, 0.0f, 0.0f)
+#include <iostream>
+
+Camera::Camera(const glm::vec3& position)
 {
-
+	this->position = position;
 }
 
-Camera::Camera(const Camera& otherCamera)
+Camera::Camera(const Camera& otherCamera) :
+	SceneNode(otherCamera)
 {
 	projection = otherCamera.projection;
 	view = otherCamera.view;
-
-	position = otherCamera.position;
-
-	forward = otherCamera.forward;
-	up = otherCamera.up;
-	right = otherCamera.right;
 }
 
 void Camera::setPerspective(float fov, float aspect, float near, float far)
@@ -30,6 +24,20 @@ void Camera::setPerspective(float fov, float aspect, float near, float far)
 
 void Camera::updateView()
 {
+	glm::vec3 position;
+	glm::quat rotation;
+	glm::vec3 scale;
+	glm::vec3 scew;
+	glm::vec4 perspective;
+
+	glm::decompose(transform, scale, rotation, position, scew, perspective);
+	rotation = glm::conjugate(rotation);
+
+	glm::vec3 forward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 up = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
+
+	std::cout << "My parent is :" << parent << std::endl;
+
 	view = glm::lookAt(position, position + forward, up);
 }
 
@@ -43,56 +51,4 @@ const glm::mat4& Camera::getView()
 	updateView();
 
 	return view;
-}
-
-void Camera::setPosition(const glm::vec3& position)
-{
-	this->position = position;
-}
-
-const glm::vec3& Camera::getPosition() const
-{
-	return position;
-}
-
-void Camera::setForward(const glm::vec3& forward)
-{
-	this->forward = forward;
-}
-
-const glm::vec3& Camera::getForward() const
-{
-	return forward;
-}
-
-void Camera::setUp(const glm::vec3& up)
-{
-	this->up = up;
-}
-
-const glm::vec3& Camera::getUp() const
-{
-	return up;
-}
-
-void Camera::setRight(const glm::vec3& right)
-{
-	this->right = right;
-}
-
-const glm::vec3& Camera::getRight() const
-{
-	return right;
-}
-
-void Camera::operator=(const Camera& otherCamera)
-{
-	projection = otherCamera.projection;
-	view = otherCamera.view;
-
-	position = otherCamera.position;
-
-	forward = otherCamera.forward;
-	up = otherCamera.up;
-	right = otherCamera.right;
 }

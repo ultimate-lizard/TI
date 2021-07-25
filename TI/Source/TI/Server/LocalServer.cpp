@@ -2,7 +2,6 @@
 
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
-#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
@@ -13,7 +12,12 @@ LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
 	createEntityTemplates();
-	createCubes();
+
+	Entity* const cubeEntity = spawnEntity("Cube", "cube");
+	Entity* const cube2Entity = spawnEntity("Cube", "cube2");
+
+	cubeEntity->setPosition({ 0.0f, 0.0f, -1.0f });
+	cube2Entity->setPosition({ -2.0f, 0.0f, -1.0f });
 }
 
 void LocalServer::update(float dt)
@@ -28,8 +32,7 @@ void LocalServer::update(float dt)
 
 void LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	spawnEntity(client->getName(), "Player");
-	possesEntity(client->getName(), client);
+	spawnPlayer(client);
 }
 
 void LocalServer::ejectClient(Client* client)
@@ -37,25 +40,10 @@ void LocalServer::ejectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-void LocalServer::createCubes()
+void LocalServer::spawnPlayer(Client* const client)
 {
-	// TODO: Spawn() method
-	spawnEntity("Cube", "cube");
-	spawnEntity("Cube", "cube2");
-
-	auto& cubeEntity = spawnedEntities.at("cube");
-	auto& cube2Entity = spawnedEntities.at("cube2");
-
-	auto cubeTransform = cubeEntity->findComponent<TransformComponent>();
-	if (cubeTransform)
-	{
-		cubeTransform->setPosition({ 0.0f, 0.0f, -1.0f });
-	}
-
-	cubeTransform = cube2Entity->findComponent<TransformComponent>();
-	if (cubeTransform)
-	{
-		cubeTransform->setPosition({ -2.0f, 0.0f, -1.0f });
-	}
+	Entity* const player = spawnEntity(client->getName(), "Player");
+	player->setPosition({ 0.0f, 0.0f, 0.0f });
+	// player->findComponent<CameraComponent>()->getCamera()->setParent(player);
+	possesEntity(client->getName(), client);
 }
-

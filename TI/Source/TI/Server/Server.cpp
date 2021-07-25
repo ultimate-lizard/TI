@@ -3,7 +3,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
@@ -16,31 +15,30 @@ void Server::createEntityTemplates()
 	// Player ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto playerEntity = std::make_unique<Entity>();
 	auto camera = std::make_unique<Camera>();
-	{
-		playerEntity->setName("Player");
 
-		auto playerTransformComponent = playerEntity->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-		playerTransformComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	playerEntity->setName("Player");
+	playerEntity->setScale({ 0.3f, 0.3f, 0.3f });
+	playerEntity->setPosition({ 100.0f, 0.0f, 0.0f });
 
-		auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
-		meshComponent->loadModel("player");
+	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
+	meshComponent->loadModel("player");
+	meshComponent->setRotation({ 0.0f, 45.0f, 0.0f });
 
-		
-		// Setup local coordinates for the camera
-		camera->setPosition({ -1.2f, 1.0f, -0.0f });
-		camera->setRotation({ 0.0f, 90.0f, 0.0f });
-		camera->setParent(playerTransformComponent);
+	// Setup local coordinates for the camera
+	camera->setPosition({ -1.2f, 1.0f, -0.0f });
 
-	}
+	camera->setRotation({ 0.0f, 90.0f, 0.0f });
+	camera->setParentNode(playerEntity.get());
+
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
+
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
 	// Cube ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto cubeEntity = std::make_unique<Entity>();
 	cubeEntity->setName("Cube");
 
-	cubeEntity->addComponent<TransformComponent>();
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getModelManager());
 	cubeMeshComponent->loadModel("cube");
 	
@@ -67,7 +65,6 @@ void Server::shutdown()
 
 Entity* const Server::findEntity(const std::string& id)
 {
-	
 	if (auto iter = spawnedEntities.find(id); iter != spawnedEntities.end())
 	{
 		return iter->second.get();
@@ -102,15 +99,21 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 	throw std::exception();
 }
 
-void Server::spawnEntity(const std::string& templateName, const std::string& id)
+Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id)
 {
+	Entity* result = nullptr;
+
 	if (!findEntity(id))
 	{
-		spawnedEntities.emplace(id, createEntityFromTemplate(templateName, id));
+		std::unique_ptr<Entity> spawnedEntity = createEntityFromTemplate(templateName, id);
+		result = spawnedEntity.get();
+		spawnedEntities.emplace(id, std::move(spawnedEntity));
 	}
+
+	return result;
 }
 
-void Server::possesEntity(const std::string& entityName, Client* client)
+void Server::possesEntity(const std::string& entityName, Client* const client)
 {
 	if (!client)
 	{
@@ -122,21 +125,7 @@ void Server::possesEntity(const std::string& entityName, Client* client)
 		std::unique_ptr<Entity>& possesedEntity = spawnedEntities.at(entityName);
 		possesedEntity->addComponent<MovementComponent>();
 
-		if (Renderer* renderer = app->getRenderer())
-		{
-			// If the client is a human, add a camera to its entity
-			auto localClient = dynamic_cast<LocalClient*>(client);
-			if (localClient)
-			{
-				
-			}
-		}
-
+		
 		client->possesEntity(possesedEntity.get());
 	}
-}
-
-void Server::spawnPlayer(Client* client)
-{
-
 }

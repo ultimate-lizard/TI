@@ -4,7 +4,6 @@
 
 #include <TI/Application.h>
 #include <TI/Server/Server.h>
-#include <TI/Server/Component/TransformComponent.h>
 
 RemoteClient::RemoteClient(Application* app) :
 	Client(app)
@@ -76,8 +75,8 @@ void RemoteClient::handlePlayerSync(NetworkPacket& packet)
 	auto entity = server->findEntity(name);
 	if (entity)
 	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		transformComp->setPosition(position);
+		/*auto transformComp = entity->findComponent<TransformComponent>();
+		transformComp->setPosition(position);*/
 		/*transformComp->setPitch(rotation.x);
 		transformComp->setYaw(rotation.y);
 		transformComp->setRoll(rotation.z);*/

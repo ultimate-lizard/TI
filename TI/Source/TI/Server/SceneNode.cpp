@@ -29,17 +29,7 @@ SceneNode::SceneNode(const SceneNode& otherNode) :
 {
 }
 
-//SceneNode::SceneNode(SceneNode&& otherNode) :
-//	parent(otherNode.parent),
-//	transform(otherNode.transform),
-//	position(otherNode.position),
-//	rotation(otherNode.rotation),
-//	scale(otherNode.scale)
-//{
-//	otherNode.parent = nullptr;
-//}
-
-void SceneNode::setParent(SceneNode* parent)
+void SceneNode::setParentNode(SceneNode* const parent)
 {
 	this->parent = parent;
 	parent->addChild(this);

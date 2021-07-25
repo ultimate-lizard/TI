@@ -4,12 +4,19 @@
 #include <memory>
 #include <typeinfo>
 #include <string>
+#include <iostream>
 
 #include <TI/Server/Component/Component.h>
+#include <TI/Server/SceneNode.h>
 
-class Entity
+class Entity : public SceneNode
 {
 public:
+	Entity();
+
+	Entity(const Entity&);
+	Entity(Entity&& otherEntity) = delete;
+
 	template <class AddedComponent, typename ... Args>
 	inline AddedComponent* addComponent(Args&& ... args)
 	{

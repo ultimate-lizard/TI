@@ -34,9 +34,8 @@ public:
 
 protected:
 	void createEntityTemplates();
-	void spawnEntity(const std::string& id, const std::string& templateName);
-	void possesEntity(const std::string& entityName, Client* client);
-	void spawnPlayer(Client* client);
+	Entity* const spawnEntity(const std::string& id, const std::string& templateName);
+	void possesEntity(const std::string& entityName, Client* const client);
 
 protected:
 	Application* app;

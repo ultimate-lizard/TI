@@ -15,6 +15,8 @@ public:
 	void setCamera(std::unique_ptr<Camera> camera);
 	Camera* getCamera() const;
 
+	void setParentEntity(Entity* const entity) override;
+
 	void operator=(const CameraComponent& otherCameraComp);
 
 	std::unique_ptr<Component> clone() const override;

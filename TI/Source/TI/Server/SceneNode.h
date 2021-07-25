@@ -13,7 +13,7 @@ public:
 	SceneNode(const SceneNode&);
 	SceneNode(SceneNode&&) = delete;
 
-	void setParent(SceneNode* parent);
+	void setParentNode(SceneNode* const parent);
 	void addChild(SceneNode* child);
 
 	void updateTransform();

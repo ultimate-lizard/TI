@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <TI/Client/Client.h>
-#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Application.h>
 
 RemoteServer::RemoteServer(Application* app) :
@@ -145,14 +144,8 @@ void RemoteServer::handleInitialEntitySync(NetworkPacket& packet)
 	packet >> position >> rotation;
 
 	auto entity = createEntityFromTemplate(name, id);
-	auto transformComp = entity->findComponent<TransformComponent>();
-	if (transformComp)
-	{
-		transformComp->setPosition(position);
-		/*transformComp->setPitch(rotation.x);
-		transformComp->setYaw(rotation.y);
-		transformComp->setRoll(rotation.z);*/
-	}
+	entity->setPosition(position);
+	entity->setRotation(rotation);
 
 	spawnedEntities.emplace(id, std::move(entity));
 }
@@ -176,18 +169,12 @@ void RemoteServer::handleEntitySync(NetworkPacket& packet)
 		auto& entity = mapPair.second;
 		if (entity->getId() == id)
 		{
-			auto transformComp = entity->findComponent<TransformComponent>();
-			if (transformComp)
-			{
-				glm::vec3 position;
-				glm::vec3 rotation;
-				packet >> position >> rotation;
+			glm::vec3 position;
+			glm::vec3 rotation;
+			packet >> position >> rotation;
 
-				transformComp->setPosition(position);
-				/*transformComp->setPitch(rotation.x);
-				transformComp->setYaw(rotation.y);
-				transformComp->setRoll(rotation.z);*/
-			}
+			entity->setPosition(position);
+			entity->setRotation(rotation);
 		}
 	}
 }
@@ -205,14 +192,8 @@ void RemoteServer::handleSpawnPlayerEntity(NetworkPacket& packet)
 	Entity* playerEntity = findEntity(name);
 	if (playerEntity)
 	{
-		auto transformComp = playerEntity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			transformComp->setPosition(position);
-			/*transformComp->setPitch(rotation.x);
-			transformComp->setYaw(rotation.y);
-			transformComp->setRoll(rotation.z);*/
-		}
+		playerEntity->setPosition(position);
+		playerEntity->setRotation(rotation);
 	}
 }
 
@@ -237,19 +218,9 @@ void RemoteServer::sendPlayerInfo(Client* client)
 	{
 		return;
 	}
-
-	auto transformComp = entity->findComponent<TransformComponent>();
-	if (!transformComp)
-	{
-		return;
-	}
 		
-	glm::vec3 position = transformComp->getPosition();
-
-	glm::vec3 rotation;
-	/*rotation.x = transformComp->getPitch();
-	rotation.y = transformComp->getYaw();
-	rotation.z = transformComp->getRoll();*/
+	glm::vec3 position = entity->getPosition();
+	glm::vec3 rotation = entity->getRotation();
 
 	NetworkPacket packet;
 	packet.setPacketId(PacketId::CPlayerSync);

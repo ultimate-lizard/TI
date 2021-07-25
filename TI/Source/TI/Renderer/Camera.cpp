@@ -36,8 +36,6 @@ void Camera::updateView()
 	glm::vec3 forward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 up = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 
-	std::cout << "My parent is :" << parent << std::endl;
-
 	view = glm::lookAt(position, position + forward, up);
 }
 

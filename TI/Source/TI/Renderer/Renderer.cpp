@@ -11,7 +11,6 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Renderer/Model.h>
 #include <TI/Server/Component/MeshComponent.h>
-#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Entity.h>
 #include <TI/Window.h>
 
@@ -51,16 +50,13 @@ void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& trans
 void Renderer::pushRender(MeshComponent* meshComponent, int viewportId)
 {
 	// Render should not work with components
-	auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
-	if (transformComp)
-	{
-		auto model = meshComponent->getModel();
-		auto mesh = model->getMesh();
-		auto material = model->getMaterial();
-		auto transform = transformComp->getTransform();
+	// auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
+	auto model = meshComponent->getModel();
+	auto mesh = model->getMesh();
+	auto material = model->getMaterial();
+	auto transform = meshComponent->getTransform();
 
-		pushRender(mesh, material, transform, viewportId);
-	}
+	pushRender(mesh, material, transform, viewportId);
 }
 
 void Renderer::render()

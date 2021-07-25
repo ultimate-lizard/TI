@@ -4,7 +4,6 @@
 
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/CameraComponent.h>
-#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Renderer/Camera.h>
 
 MovementComponent::MovementComponent() :
@@ -41,55 +40,51 @@ void MovementComponent::tick(float dt)
 		return;
 	}
 
-	auto transformComp = entity->findComponent<TransformComponent>();
-	if (transformComp)
+	glm::vec3 rotation = entity->getRotation();
+
+	rotation.x += pitchRate * dt;
+	rotation.y += yawRate * dt;
+
+	if (rotation.x > 89.0f)
 	{
-		glm::vec3 rotation = transformComp->getRotation();
-
-		rotation.x += pitchRate * dt;
-		rotation.y += yawRate * dt;
-
-		if (rotation.x > 89.0f)
-		{
-			rotation.x = 89.0f;
-		}
-		if (rotation.x < -89.0f)
-		{
-			rotation.x = -89.0f;
-		}
-
-		glm::vec3 newForward;
-		newForward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-		newForward.y = sin(glm::radians(rotation.x));
-		newForward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-
-		forward = glm::normalize(newForward);
-
-		right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-		up = glm::normalize(glm::cross(right, forward));
-
-		glm::vec3 position = transformComp->getPosition();
-		position += getVelocity().z * (speed * forward) * dt;
-		position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
-
-		//glm::vec3 rotation;
-		//rotation.x = pitch;
-		//rotation.y = yaw;
-
-		transformComp->setPosition(position);
-		transformComp->setRotation(rotation);
-
-		/*if (CameraComponent* cameraComp = entity->findComponent<CameraComponent>())
-		{
-			if (Camera* camera = cameraComp->getCamera())
-			{
-				camera->setPosition(position);
-				camera->setForward(forward);
-				camera->setRight(right);
-				camera->setUp(up);
-			}
-		}*/
+		rotation.x = 89.0f;
 	}
+	if (rotation.x < -89.0f)
+	{
+		rotation.x = -89.0f;
+	}
+
+	glm::vec3 newForward;
+	newForward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+	newForward.y = sin(glm::radians(rotation.x));
+	newForward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+
+	forward = glm::normalize(newForward);
+
+	right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+	up = glm::normalize(glm::cross(right, forward));
+
+	glm::vec3 position = entity->getPosition();
+	position += getVelocity().z * (speed * forward) * dt;
+	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+
+	//glm::vec3 rotation;
+	//rotation.x = pitch;
+	//rotation.y = yaw;
+
+	entity->setPosition(position);
+	entity->setRotation(rotation);
+
+	/*if (CameraComponent* cameraComp = entity->findComponent<CameraComponent>())
+	{
+		if (Camera* camera = cameraComp->getCamera())
+		{
+			camera->setPosition(position);
+			camera->setForward(forward);
+			camera->setRight(right);
+			camera->setUp(up);
+		}
+	}*/
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)
@@ -173,14 +168,10 @@ void MovementComponent::addHorizontalLook(float value)
 
 	if (entity)
 	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			glm::vec3 rotation = transformComp->getRotation();
-			rotation.y = rotation.y + movement;
-			// transformComp->setYaw(transformComp->getYaw() + movement);
-			transformComp->setRotation(rotation);
-		}
+		glm::vec3 rotation = entity->getRotation();
+		rotation.y = rotation.y + movement;
+		// transformComp->setYaw(transformComp->getYaw() + movement);
+		entity->setRotation(rotation);
 	}
 }
 
@@ -190,13 +181,9 @@ void MovementComponent::addVerticalLook(float value)
 
 	if (entity)
 	{
-		auto transformComp = entity->findComponent<TransformComponent>();
-		if (transformComp)
-		{
-			// transformComp->setPitch(transformComp->getPitch() + movement);
-			glm::vec3 rotation = transformComp->getRotation();
-			rotation.x = rotation.x + movement;
-			transformComp->setRotation(rotation);
-		}
+		// transformComp->setPitch(transformComp->getPitch() + movement);
+		glm::vec3 rotation = entity->getRotation();
+		rotation.x = rotation.x + movement;
+		entity->setRotation(rotation);
 	}
 }

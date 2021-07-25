@@ -9,11 +9,14 @@ class Component
 	friend class Entity;
 
 public:
+	Component();
+	Component(const Component&);
 	virtual ~Component() = default;
 
 	virtual void tick(float dt) {}
 
-	inline Entity* getEntity() { return entity; }
+	virtual void setParentEntity(Entity* const);
+	inline Entity* getParentEntity() { return entity; }
 
 	virtual std::unique_ptr<Component> clone() const = 0;
 

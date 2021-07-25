@@ -55,7 +55,6 @@ Application::~Application()
 void Application::start()
 {
 	init();
-	initClients();
 
 	simulating = true;
 
@@ -134,7 +133,7 @@ std::vector<LocalClient*> Application::getLocalClients() const
 		}
 	}
 
-	return std::move(localClients);
+	return localClients;
 }
 
 const std::vector<std::unique_ptr<Client>>& Application::getClients() const
@@ -191,80 +190,19 @@ Input* const Application::getInput() const
 
 void Application::init()
 {
+	// parse args
+
 	renderer = std::make_unique<Renderer>(&window);
-	renderer->setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	modelManager = std::make_unique<ModelManager>();
 
 	input = std::make_unique<Input>(this);
 
-	if (args.size() >= 3)
-	{
-		if (args[1] == "client")
-		{
-			server = std::make_unique<RemoteServer>(this);
-		}
+	server = std::make_unique<LocalServer>(this);
 
-		if (args[1] == "server")
-		{
-			std::stringstream ss;
-			ss << args[2];
-			int port = 0;
-			ss >> port;
-			server = std::make_unique<ListenServer>(this, port);
-		}
-	}
-	else
-	{
-		server = std::make_unique<LocalServer>(this);
-	}
-}
+	clients.push_back(std::make_unique<LocalClient>(this));
 
-void Application::initClients()
-{
-	if (args.size() >= 2)
-	{
-		if (args[1] == "server")
-		{
-			auto player1 = std::make_unique<LocalClient>(this, args[0]);
-
-			auto player3 = std::make_unique<LocalClient>(this, "Player3");
-			player3->setViewportId(1);
-
-			splitScreenManager.setHost(player1.get());
-			splitScreenManager.addGuest(player3.get());
-
-			splitScreenManager.displayAll();
-
-			player1->connect("", 0);
-			player3->connect("", 0);
-
-			clients.push_back(std::move(player1));
-			clients.push_back(std::move(player3));
-		}
-	}
-
-	if (args.size() == 4)
-	{
-		if (args[1] == "client")
-		{
-			std::string ip = args[2];
-			int port = 0;
-			std::stringstream ss;
-			ss << args[3];
-			ss >> port;
-			auto player1 = std::make_unique<LocalClient>(this);
-			player1->setName(args[0]);
-			player1->connect(ip, port);
-			clients.push_back(std::move(player1));
-		}
-	}
-	else
-	{
-		auto player1 = std::make_unique<LocalClient>(this);
-		player1->connect("", 0);
-		clients.push_back(std::move(player1));
-	}
+	getLocalClients().at(0)->connect("", 0);
 }
 
 void Application::uninit()

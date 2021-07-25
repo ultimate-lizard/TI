@@ -59,24 +59,21 @@ enum ActionInputType
 	KeyRelease
 };
 
-class Application;
-class InputHandler;
-
 class Input
 {
 public:
-	Input(Application* app);
+	Input(class Application* app);
 	void handleInput();
 
 	void releaseMouse();
 
 private:
-	void handleMouseMotion(InputHandler* inputHandler);
-	void handleControllerAxisMotion(InputHandler* inputHandler);
+	void handleMouseMotion(class InputHandler* inputHandler);
+	void handleControllerAxisMotion(class InputHandler* inputHandler);
 	void handleWindowFocus(bool gained);
 	void handleWindowResized();
 
-	Application* app;
+	class Application* app;
 	SDL_Event event;
 
 	int lastX;

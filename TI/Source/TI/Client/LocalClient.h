@@ -9,7 +9,7 @@ class IController;
 class LocalClient : public Client
 {
 public:
-	LocalClient(Application* app, const std::string& name = "");
+	LocalClient(Application* app, const std::string& name = "Player");
 
 	void update(float dt) override;
 

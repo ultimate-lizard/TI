@@ -28,8 +28,7 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 void LocalClient::connect(const std::string& ip, int port)
 {
-	Server* server = app->getCurrentServer();
-	if (server)
+	if (Server* server = app->getCurrentServer())
 	{
 		server->connectClient(this, ip, port);
 	}

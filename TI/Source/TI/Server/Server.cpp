@@ -17,12 +17,10 @@ void Server::initEntityTemplates()
 	auto player = std::make_unique<Entity>();
 	player->setName("Player");
 
-	player->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
-	auto transformComp = player->findComponent<TransformComponent>();
+	auto transformComp = player->addComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -90.0f, 0.0f));
 	transformComp->setScale({ 0.3f, 0.3f, 0.3f });
 
-	player->addComponent<MeshComponent>(app->getModelManager());
-	auto meshComp = player->findComponent<MeshComponent>();
+	auto meshComp = player->addComponent<MeshComponent>(app->getModelManager());
 	meshComp->loadModel("player");
 
 	entityTemplates.emplace(player->getName(), std::move(player));
@@ -32,13 +30,8 @@ void Server::initEntityTemplates()
 	cube->setName("Cube");
 
 	cube->addComponent<TransformComponent>();
-	cube->addComponent<MeshComponent>(app->getModelManager());
-
-	auto cubeMesh = cube->findComponent<MeshComponent>();
-	if (cubeMesh)
-	{
-		cubeMesh->loadModel("cube");
-	}
+	auto cubeMesh = cube->addComponent<MeshComponent>(app->getModelManager());
+	cubeMesh->loadModel("cube");
 
 	entityTemplates.emplace(cube->getName(), std::move(cube));
 }
@@ -113,24 +106,31 @@ void Server::possesEntity(const std::string& entityName, Client* client)
 		return;
 	}
 
-	auto& playerEntity = spawnedEntities.at(entityName);
-	playerEntity->addComponent<MovementComponent>();
-
-	auto renderer = app->getRenderer();
-	if (renderer)
+	if (spawnedEntities.find(entityName) != spawnedEntities.end())
 	{
-		// If the client is a human, add a camera to its entity
-		auto localClient = dynamic_cast<LocalClient*>(client);
-		if (localClient)
+		std::unique_ptr<Entity>& possesedEntity = spawnedEntities.at(entityName);
+		possesedEntity->addComponent<MovementComponent>();
+
+		if (Renderer* renderer = app->getRenderer())
 		{
-			auto camera = std::make_unique<Camera>();
+			// If the client is a human, add a camera to its entity
+			auto localClient = dynamic_cast<LocalClient*>(client);
+			if (localClient)
+			{
+				auto camera = std::make_unique<Camera>();
 
-			playerEntity->addComponent<CameraComponent>();
+				possesedEntity->addComponent<CameraComponent>();
 
-			auto cameraComponent = playerEntity->findComponent<CameraComponent>();
-			cameraComponent->setCamera(std::move(camera));
+				auto cameraComponent = possesedEntity->findComponent<CameraComponent>();
+				cameraComponent->setCamera(std::move(camera));
+			}
 		}
-	}
 
-	client->possesEntity(playerEntity.get());
+		client->possesEntity(possesedEntity.get());
+	}
+}
+
+void Server::spawnPlayer(Client* client)
+{
+
 }

@@ -36,6 +36,7 @@ protected:
 	void initEntityTemplates();
 	void spawnPlayerEntity(const std::string& name);
 	void possesEntity(const std::string& entityName, Client* client);
+	void spawnPlayer(Client* client);
 
 protected:
 	Application* app;

@@ -5,8 +5,6 @@
 
 ModelManager::ModelManager()
 {
-	auto model = std::make_unique<Model>();
-
 	Mesh mesh;
 
 	mesh.setPositions({
@@ -99,6 +97,7 @@ ModelManager::ModelManager()
 
 	mesh.finalize();
 
+	auto model = std::make_unique<Model>();
 	model->setMesh(std::move(mesh));
 
 	Material mat;
@@ -108,11 +107,6 @@ ModelManager::ModelManager()
 	model->setMaterial(std::move(mat));
 
 	models.emplace("cube", std::move(model));
-
-
-
-
-	auto playerModel = std::make_unique<Model>();
 
 	Mesh playerMesh;
 
@@ -202,10 +196,11 @@ ModelManager::ModelManager()
 		glm::vec2(1.0f, 0.0f),
 		glm::vec2(0.0f, 0.0f),
 		glm::vec2(0.0f, 1.0f)
-		});
+	});
 
 	playerMesh.finalize();
 
+	auto playerModel = std::make_unique<Model>();
 	playerModel->setMesh(std::move(playerMesh));
 
 	Material playerMat;

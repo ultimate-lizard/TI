@@ -11,14 +11,18 @@ class Entity
 {
 public:
 	template <class AddedComponent, typename ... Args>
-	inline void addComponent(Args&& ... args)
+	inline AddedComponent* addComponent(Args&& ... args)
 	{
 		if (!findComponent<AddedComponent>())
 		{
 			auto component = std::make_unique<AddedComponent>(std::forward<Args>(args) ...);
 			component->entity = this;
 			components.push_back(std::move(component));
+
+			return static_cast<AddedComponent*>(components.back().get());
 		}
+
+		return nullptr;
 	}
 
 	template <class SearchedComponent>

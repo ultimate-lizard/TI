@@ -54,7 +54,7 @@ public:
 
 private:
 	void init();
-	void initClients();
+
 	void uninit();
 
 	const std::vector<std::string>& getArgs() const;

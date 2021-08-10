@@ -6,6 +6,7 @@
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
@@ -14,21 +15,23 @@ void Server::createEntityTemplates()
 {
 	// Player ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto playerEntity = std::make_unique<Entity>();
-	auto camera = std::make_unique<Camera>();
+	playerEntity->addComponent<TransformComponent>();
 
+	auto camera = std::make_unique<Camera>();
 	playerEntity->setName("Player");
-	playerEntity->setScale({ 0.3f, 0.3f, 0.3f });
-	playerEntity->setPosition({ 100.0f, 0.0f, 0.0f });
+
+	if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
+	{
+		transformComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	}
 
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
 	meshComponent->loadModel("player");
-	meshComponent->setRotation({ 0.0f, 45.0f, 0.0f });
 
 	// Setup local coordinates for the camera
-	camera->setPosition({ -1.2f, 1.0f, -0.0f });
-
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setParentNode(playerEntity.get());
+	camera->setPosition({ -1.2f, 1.0f, -0.0f });
+	// camera->setParentNode(playerEntity.get());
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
@@ -37,6 +40,8 @@ void Server::createEntityTemplates()
 
 	// Cube ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto cubeEntity = std::make_unique<Entity>();
+	cubeEntity->addComponent<TransformComponent>();
+
 	cubeEntity->setName("Cube");
 
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getModelManager());
@@ -123,8 +128,15 @@ void Server::possesEntity(const std::string& entityName, Client* const client)
 	if (spawnedEntities.find(entityName) != spawnedEntities.end())
 	{
 		std::unique_ptr<Entity>& possesedEntity = spawnedEntities.at(entityName);
-		possesedEntity->addComponent<MovementComponent>();
 
+		if (auto transformComponent = possesedEntity->findComponent<TransformComponent>())
+		{
+			possesedEntity->addComponent<MovementComponent>(transformComponent);
+		}
+		else
+		{
+			throw std::exception("Cannot posses entity without transform component");
+		}
 		
 		client->possesEntity(possesedEntity.get());
 	}

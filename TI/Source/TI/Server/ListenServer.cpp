@@ -6,6 +6,7 @@
 
 #include <TI/Client/RemoteClient.h>
 #include <TI/Application.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 ListenServer::ListenServer(Application* app, int port) :
 	LocalServer(app),
@@ -103,25 +104,28 @@ void ListenServer::broadcastEntitiesInfo()
 					continue;
 				}
 
-				glm::vec3 position = entity->getPosition();
-
-				glm::vec3 rotation;
-				/*rotation.x = transformComp->getPitch();
-				rotation.y = transformComp->getYaw();
-				rotation.z = transformComp->getRoll();*/
-
-				NetworkPacket packet;
-				packet.setPacketId(PacketId::SEntitySync);
-				packet << id << position << rotation;
-
-				try
+				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					client->getSocket().send(packet);
-				}
-				catch (std::exception&)
-				{
-					std::cout << "Lost connection to the remote client or an error occurred during package receipt" << std::endl;
-					client->shutdown();
+					glm::vec3 position = transformComponent->getPosition();
+
+					glm::vec3 rotation;
+					/*rotation.x = transformComp->getPitch();
+					rotation.y = transformComp->getYaw();
+					rotation.z = transformComp->getRoll();*/
+
+					NetworkPacket packet;
+					packet.setPacketId(PacketId::SEntitySync);
+					packet << id << position << rotation;
+
+					try
+					{
+						client->getSocket().send(packet);
+					}
+					catch (std::exception&)
+					{
+						std::cout << "Lost connection to the remote client or an error occurred during package receipt" << std::endl;
+						client->shutdown();
+					}
 				}
 			}
 		}
@@ -147,12 +151,15 @@ void ListenServer::broadcastPlayerEntitySpawn(Entity* entity)
 			rotation.y = transformComp->getYaw();
 			rotation.z = transformComp->getRoll();*/
 
-			packet << entity->getId() << entity->getPosition() << rotation;
-
-			// Broadcast only to NOT owners of the entity
-			if (client->getName() != entity->getId())
+			if (auto transformComponent = entity->findComponent<TransformComponent>())
 			{
-				client->getSocket().send(packet);
+				packet << entity->getId() << transformComponent->getPosition() << rotation;
+
+				// Broadcast only to NOT owners of the entity
+				if (client->getName() != entity->getId())
+				{
+					client->getSocket().send(packet);
+				}
 			}
 		}
 	}
@@ -244,20 +251,23 @@ void ListenServer::sendEntityInitialSync(RemoteClient* client)
 		glm::vec3 position;
 		glm::vec3 rotation;
 
-		position = entity->getPosition();
-		rotation = entity->getRotation();
-
-		packet << position << rotation;
-
-		try
+		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			client->getSocket().send(packet);
-		}
-		catch (std::exception&)
-		{
-			std::cout << "Exception during sending entity initial info" << std::endl;
-			ejectClient(client);
-			client->shutdown();
+			position = transformComponent->getPosition();
+			rotation = transformComponent->getRotation();
+
+			packet << position << rotation;
+
+			try
+			{
+				client->getSocket().send(packet);
+			}
+			catch (std::exception&)
+			{
+				std::cout << "Exception during sending entity initial info" << std::endl;
+				ejectClient(client);
+				client->shutdown();
+			}
 		}
 	}
 

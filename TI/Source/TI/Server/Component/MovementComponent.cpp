@@ -5,8 +5,10 @@
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
+#include <TI/Server/Component/TransformComponent.h>
 
-MovementComponent::MovementComponent() :
+MovementComponent::MovementComponent(TransformComponent* const transformComponent) :
+	transformComponent(transformComponent),
 	yawRate(0.0f),
 	pitchRate(0.0f),
 	speed(10.0f),
@@ -20,6 +22,8 @@ MovementComponent::MovementComponent() :
 
 MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
 {
+	transformComponent = otherMovementComp.transformComponent;
+
 	yawRate = otherMovementComp.yawRate;
 	pitchRate = otherMovementComp.pitchRate;
 
@@ -35,12 +39,12 @@ MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
 
 void MovementComponent::tick(float dt)
 {
-	if (!entity)
+	if (!transformComponent)
 	{
 		return;
 	}
 
-	glm::vec3 rotation = entity->getRotation();
+	glm::vec3 rotation = transformComponent->getRotation();
 
 	rotation.x += pitchRate * dt;
 	rotation.y += yawRate * dt;
@@ -64,7 +68,7 @@ void MovementComponent::tick(float dt)
 	right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
 	up = glm::normalize(glm::cross(right, forward));
 
-	glm::vec3 position = entity->getPosition();
+	glm::vec3 position = transformComponent->getPosition();
 	position += getVelocity().z * (speed * forward) * dt;
 	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
 
@@ -72,8 +76,8 @@ void MovementComponent::tick(float dt)
 	//rotation.x = pitch;
 	//rotation.y = yaw;
 
-	entity->setPosition(position);
-	entity->setRotation(rotation);
+	transformComponent->setPosition(position);
+	transformComponent->setRotation(rotation);
 
 	/*if (CameraComponent* cameraComp = entity->findComponent<CameraComponent>())
 	{
@@ -166,12 +170,12 @@ void MovementComponent::addHorizontalLook(float value)
 {
 	float movement = value * sensivity;
 
-	if (entity)
+	if (transformComponent)
 	{
-		glm::vec3 rotation = entity->getRotation();
+		glm::vec3 rotation = transformComponent->getRotation();
 		rotation.y = rotation.y + movement;
 		// transformComp->setYaw(transformComp->getYaw() + movement);
-		entity->setRotation(rotation);
+		transformComponent->setRotation(rotation);
 	}
 }
 
@@ -179,11 +183,11 @@ void MovementComponent::addVerticalLook(float value)
 {
 	float movement = value * sensivity;
 
-	if (entity)
+	if (transformComponent)
 	{
 		// transformComp->setPitch(transformComp->getPitch() + movement);
-		glm::vec3 rotation = entity->getRotation();
+		glm::vec3 rotation = transformComponent->getRotation();
 		rotation.x = rotation.x + movement;
-		entity->setRotation(rotation);
+		transformComponent->setRotation(rotation);
 	}
 }

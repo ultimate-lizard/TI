@@ -3,14 +3,12 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 
-Entity::Entity() :
-	SceneNode()
+Entity::Entity()
 {
 
 }
 
-Entity::Entity(const Entity& otherEntity) :
-	SceneNode(otherEntity)
+Entity::Entity(const Entity& otherEntity)
 {
 	for (const std::unique_ptr<Component>& component : otherEntity.components)
 	{

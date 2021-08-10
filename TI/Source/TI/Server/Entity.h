@@ -9,7 +9,7 @@
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
 
-class Entity : public SceneNode
+class Entity
 {
 public:
 	Entity();

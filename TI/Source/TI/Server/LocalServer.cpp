@@ -7,6 +7,7 @@
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Renderer/Renderer.h>
 #include <TI/Renderer/Camera.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 LocalServer::LocalServer(Application* app) :
 	Server(app)
@@ -16,8 +17,15 @@ LocalServer::LocalServer(Application* app) :
 	Entity* const cubeEntity = spawnEntity("Cube", "cube");
 	Entity* const cube2Entity = spawnEntity("Cube", "cube2");
 
-	cubeEntity->setPosition({ 0.0f, 0.0f, -1.0f });
-	cube2Entity->setPosition({ -2.0f, 0.0f, -1.0f });
+	if (auto transformComponent = cubeEntity->findComponent<TransformComponent>())
+	{
+		transformComponent->setPosition({ 0.0f, 0.0f, -1.0f });
+	}
+
+	if (auto transformComponent = cube2Entity->findComponent<TransformComponent>())
+	{
+		transformComponent->setPosition({ -2.0f, 0.0f, -1.0f });
+	}
 }
 
 void LocalServer::update(float dt)
@@ -43,7 +51,12 @@ void LocalServer::ejectClient(Client* client)
 void LocalServer::spawnPlayer(Client* const client)
 {
 	Entity* const player = spawnEntity(client->getName(), "Player");
-	player->setPosition({ 0.0f, 0.0f, 0.0f });
+
+	if (auto transformComponent = player->findComponent<TransformComponent>())
+	{
+		transformComponent->setPosition({ 0.0f, 0.0f, 0.0f });
+	}
+	
 	// player->findComponent<CameraComponent>()->getCamera()->setParent(player);
 	possesEntity(client->getName(), client);
 }

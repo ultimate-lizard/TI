@@ -2,6 +2,7 @@
 
 #include <TI/ModelManager.h>
 #include <TI/Server/Entity.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 MeshComponent::MeshComponent(ModelManager* modelManager) :
 	Component(),
@@ -24,7 +25,10 @@ void MeshComponent::setParentEntity(Entity* const entity)
 {
 	Component::setParentEntity(entity);
 
-	setParentNode(entity);
+	if (auto transformComponent = entity->findComponent<TransformComponent>())
+	{
+		setParentNode(transformComponent);
+	}
 }
 
 void MeshComponent::loadModel(const std::string& name)

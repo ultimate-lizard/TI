@@ -4,10 +4,12 @@
 
 #include <TI/Server/Component/Component.h>
 
+class TransformComponent;
+
 class MovementComponent : public Component
 {
 public:
-	MovementComponent();
+	MovementComponent(TransformComponent* const transformComponent);
 	MovementComponent(const MovementComponent& otherMovementComp);
 
 	void tick(float dt) override;
@@ -34,6 +36,8 @@ public:
 	std::unique_ptr<Component> clone() const override;
 
 private:
+	TransformComponent* transformComponent;
+
 	float yawRate;
 	float pitchRate;
 

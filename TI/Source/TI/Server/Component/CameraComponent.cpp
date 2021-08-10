@@ -2,6 +2,7 @@
 
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Entity.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 CameraComponent::CameraComponent()
 {
@@ -26,7 +27,10 @@ Camera* CameraComponent::getCamera() const
 void CameraComponent::setParentEntity(Entity* const entity)
 {
 	Component::setParentEntity(entity);
-	camera->setParentNode(entity);
+	if (auto transformComponent = entity->findComponent<TransformComponent>())
+	{
+		camera->setParentNode(transformComponent);
+	}
 }
 
 std::unique_ptr<Component> CameraComponent::clone() const

@@ -4,6 +4,7 @@
 
 #include <TI/Client/Client.h>
 #include <TI/Application.h>
+#include <TI/Server/Component/TransformComponent.h>
 
 RemoteServer::RemoteServer(Application* app) :
 	Server(app),
@@ -143,9 +144,13 @@ void RemoteServer::handleInitialEntitySync(NetworkPacket& packet)
 	packet >> id;
 	packet >> position >> rotation;
 
-	auto entity = createEntityFromTemplate(name, id);
-	entity->setPosition(position);
-	entity->setRotation(rotation);
+	std::unique_ptr<Entity> entity = createEntityFromTemplate(name, id);
+
+	if (auto transformComponent = entity->findComponent<TransformComponent>())
+	{
+		transformComponent->setPosition(position);
+		transformComponent->setRotation(rotation);
+	}
 
 	spawnedEntities.emplace(id, std::move(entity));
 }
@@ -173,8 +178,11 @@ void RemoteServer::handleEntitySync(NetworkPacket& packet)
 			glm::vec3 rotation;
 			packet >> position >> rotation;
 
-			entity->setPosition(position);
-			entity->setRotation(rotation);
+			if (auto transformComponent = entity->findComponent<TransformComponent>())
+			{
+				transformComponent->setPosition(position);
+				transformComponent->setRotation(rotation);
+			}
 		}
 	}
 }
@@ -192,8 +200,11 @@ void RemoteServer::handleSpawnPlayerEntity(NetworkPacket& packet)
 	Entity* playerEntity = findEntity(name);
 	if (playerEntity)
 	{
-		playerEntity->setPosition(position);
-		playerEntity->setRotation(rotation);
+		if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
+		{
+			transformComponent->setPosition(position);
+			transformComponent->setRotation(rotation);
+		}
 	}
 }
 
@@ -218,21 +229,24 @@ void RemoteServer::sendPlayerInfo(Client* client)
 	{
 		return;
 	}
-		
-	glm::vec3 position = entity->getPosition();
-	glm::vec3 rotation = entity->getRotation();
-
-	NetworkPacket packet;
-	packet.setPacketId(PacketId::CPlayerSync);
-	packet << client->getName() << position << rotation;
-
-	try
+	
+	if (auto transformComponent = entity->findComponent<TransformComponent>())
 	{
-		this->server.send(packet);
-	}
-	catch (std::exception&)
-	{
-		requestShutdown();
+		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 rotation = transformComponent->getRotation();
+
+		NetworkPacket packet;
+		packet.setPacketId(PacketId::CPlayerSync);
+		packet << client->getName() << position << rotation;
+
+		try
+		{
+			this->server.send(packet);
+		}
+		catch (std::exception&)
+		{
+			requestShutdown();
+		}
 	}
 }
 

@@ -14,7 +14,7 @@ public:
 	void update(float dt) override;
 
 	void connect(const std::string& ip, int port) override;
-	void possesEntity(Entity* entity) override;
+	void setPossesedEntity(Entity* entity) override;
 
 	InputHandler* const getInputHandler() const;
 	IController* const getController() const;

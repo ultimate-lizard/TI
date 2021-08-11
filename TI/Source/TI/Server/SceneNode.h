@@ -14,7 +14,7 @@ public:
 	SceneNode(SceneNode&&) = delete;
 
 	void setParentNode(SceneNode* const parent);
-	void addChild(SceneNode* child);
+	void addChildNode(SceneNode* child);
 
 	void updateTransform();
 

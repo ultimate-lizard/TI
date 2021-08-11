@@ -38,7 +38,7 @@ public:
 
 	Application* const getApplication() const;
 
-	virtual void possesEntity(Entity* entity);
+	virtual void setPossesedEntity(Entity* entity);
 
 	ClientState getState() const;
 

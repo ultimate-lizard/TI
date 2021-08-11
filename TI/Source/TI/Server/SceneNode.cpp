@@ -32,10 +32,13 @@ SceneNode::SceneNode(const SceneNode& otherNode) :
 void SceneNode::setParentNode(SceneNode* const parent)
 {
 	this->parent = parent;
-	parent->addChild(this);
+	if (parent)
+	{
+		parent->addChildNode(this);
+	}
 }
 
-void SceneNode::addChild(SceneNode* child)
+void SceneNode::addChildNode(SceneNode* child)
 {
 	children.push_back(child);
 }

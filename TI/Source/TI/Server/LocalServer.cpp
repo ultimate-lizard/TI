@@ -8,6 +8,7 @@
 #include <TI/Renderer/Renderer.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/SceneNode.h>
 
 LocalServer::LocalServer(Application* app) :
 	Server(app)
@@ -57,6 +58,5 @@ void LocalServer::spawnPlayer(Client* const client)
 		transformComponent->setPosition({ 0.0f, 0.0f, 0.0f });
 	}
 	
-	// player->findComponent<CameraComponent>()->getCamera()->setParent(player);
 	possesEntity(client->getName(), client);
 }

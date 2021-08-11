@@ -20,18 +20,17 @@ void Server::createEntityTemplates()
 	auto camera = std::make_unique<Camera>();
 	playerEntity->setName("Player");
 
-	if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
-	{
-		transformComponent->setScale({ 0.3f, 0.3f, 0.3f });
-	}
-
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
 	meshComponent->loadModel("player");
 
+	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
+	{
+		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	}
+
 	// Setup local coordinates for the camera
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -1.2f, 1.0f, -0.0f });
-	// camera->setParentNode(playerEntity.get());
+	camera->setPosition({ -0.5f, 0.3f, -0.2f });
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
@@ -138,6 +137,6 @@ void Server::possesEntity(const std::string& entityName, Client* const client)
 			throw std::exception("Cannot posses entity without transform component");
 		}
 		
-		client->possesEntity(possesedEntity.get());
+		client->setPossesedEntity(possesedEntity.get());
 	}
 }

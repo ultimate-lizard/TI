@@ -63,7 +63,7 @@ Application* const Client::getApplication() const
 	return app;
 }
 
-void Client::possesEntity(Entity* entity)
+void Client::setPossesedEntity(Entity* entity)
 {
 	possessedEntity = entity;
 }

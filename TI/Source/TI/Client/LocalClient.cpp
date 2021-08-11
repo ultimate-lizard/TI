@@ -34,9 +34,9 @@ void LocalClient::connect(const std::string& ip, int port)
 	}
 }
 
-void LocalClient::possesEntity(Entity* entity)
+void LocalClient::setPossesedEntity(Entity* entity)
 {
-	Client::possesEntity(entity);
+	Client::setPossesedEntity(entity);
 
 	playerController->posses(entity);
 

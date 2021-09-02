@@ -8,7 +8,8 @@
 class Model
 {
 public:
-	void setMesh(Mesh&& mesh);
+	void setMesh(Mesh mesh);
+
 	void setMaterial(Material&& material);
 
 	Mesh* const getMesh();

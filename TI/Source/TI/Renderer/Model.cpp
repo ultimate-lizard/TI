@@ -1,8 +1,8 @@
 #include "Model.h"
 
-void Model::setMesh(Mesh&& mesh)
+void Model::setMesh(Mesh mesh)
 {
-	this->mesh = std::move(mesh);
+	this->mesh = mesh;
 }
 
 void Model::setMaterial(Material&& material)

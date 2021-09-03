@@ -10,4 +10,6 @@ struct RenderCommand
 	Mesh* mesh;
 	Material* material;
 	glm::mat4 transform;
+	unsigned int renderMode;
+	float lineWidth = 1.0f;
 };

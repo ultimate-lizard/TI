@@ -12,6 +12,9 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Entity.h>
 #include <TI/Renderer/Renderer.h>
+#include <TI/Renderer/Material.h>
+#include <TI/Renderer/Mesh.h>
+#include <TI/ModelManager.h>
 
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
@@ -78,6 +81,25 @@ void LocalClient::update(float dt)
 		return;
 	}
 
+	if (debugMeshes.empty())
+	{
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 2.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 2.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 2.0f);
+	}
+
+	for (int i = 0; i < debugMeshes.size(); ++i)
+	{
+		DebugLine& debugLine = debugMeshes[i];
+
+		Model* model = app->getModelManager()->findModel("DebugMesh" + std::to_string(i));
+
+		if (model)
+		{
+			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, GL_LINES, debugLine.width);
+		}
+	}
+
 	for (auto& entityPair : server->getEntities())
 	{
 		auto& entity = entityPair.second;
@@ -121,6 +143,27 @@ void LocalClient::setViewportId(unsigned int id)
 unsigned int LocalClient::getViewportId() const
 {
 	return viewportId;
+}
+
+void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width)
+{
+	Material mat;
+	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat.setColor(color);
+
+	Mesh mesh;
+	mesh.setPositions({ start, end });
+	mesh.finalize();
+
+	auto model = std::make_unique<Model>();
+	model->setMesh(std::move(mesh));
+	model->setMaterial(std::move(mat));
+
+	std::string name = "DebugMesh" + std::to_string(debugMeshes.size());
+
+	app->getModelManager()->addModel(name, std::move(model));
+
+	debugMeshes.push_back({ name, color, width });
 }
 
 void LocalClient::loadConfig()

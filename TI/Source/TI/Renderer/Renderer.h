@@ -11,6 +11,10 @@
 #include <TI/Renderer/Shader.h>
 #include <TI/Renderer/Viewport.h>
 
+#include <glad/glad.h>
+
+#include <TI/Renderer/RenderCommand.h>
+
 class Shader;
 class Camera;
 class Model;
@@ -18,16 +22,14 @@ class Material;
 class MeshComponent;
 class Window;
 
-#include <TI/Renderer/RenderCommand.h>
-
 class Renderer
 {
 public:
 	Renderer(Window* window);
 	~Renderer();
 
-	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0);
-	void pushRender(MeshComponent* meshComponent, int viewportId = 0);
+	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES, float lineWidth = 1.0f);
+	void pushRender(MeshComponent* meshComponent, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES);
 
 	void render();
 
@@ -36,6 +38,8 @@ public:
 
 	void createViewport(unsigned int id, glm::ivec2 pos = { 0, 0 }, glm::ivec2 size = { 0, 0 });
 	Viewport* getViewport(unsigned int viewportId);
+
+	void setLineWidth(float width);
 
 private:
 	void createDefaultViewport(Window* window);
@@ -50,7 +54,5 @@ private:
 	// Viewport ID, Viewport
 	std::map<int, Viewport> viewportsMap;
 
-	// FrameBuffer framebuffer;
-	// Mesh screenMesh;
-	// Shader screenShader;
+	std::vector<Mesh*> debugMeshes;
 };

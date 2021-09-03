@@ -141,3 +141,8 @@ Model* const ModelManager::findModel(const std::string& name) const
 	
 	return nullptr;
 }
+
+void ModelManager::addModel(const std::string& name, std::unique_ptr<Model> model)
+{
+	models.emplace(name, std::move(model));
+}

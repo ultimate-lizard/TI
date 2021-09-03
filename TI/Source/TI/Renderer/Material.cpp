@@ -10,6 +10,11 @@ void Material::setTexture(const std::string& path)
 	texture.load(path);
 }
 
+void Material::setColor(const glm::vec4& color)
+{
+	this->color = color;
+}
+
 Shader* const Material::getShader()
 {
 	return &shader;
@@ -18,4 +23,9 @@ Shader* const Material::getShader()
 Texture* const Material::getTexture()
 {
 	return &texture;
+}
+
+const glm::vec4& Material::getColor() const
+{
+	return color;
 }

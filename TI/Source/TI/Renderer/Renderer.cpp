@@ -2,7 +2,6 @@
 
 #include <stdexcept>
 
-#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 
@@ -40,17 +39,17 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId)
+void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId, unsigned int renderMode, float lineWidth)
 {
 	if (auto iter = viewportsMap.find(viewportId); iter != viewportsMap.end())
 	{
 		if (!iter->second.isEnabled()) return;
 
-		iter->second.getRenderCommands().push_front({ mesh, material, transform });
+		iter->second.getRenderCommands().push_front({ mesh, material, transform, renderMode, lineWidth });
 	}
 }
 
-void Renderer::pushRender(MeshComponent* meshComponent, int viewportId)
+void Renderer::pushRender(MeshComponent* meshComponent, int viewportId, unsigned int renderMode)
 {
 	// Render should not work with components
 	// auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
@@ -59,7 +58,7 @@ void Renderer::pushRender(MeshComponent* meshComponent, int viewportId)
 	auto material = model->getMaterial();
 	auto transform = meshComponent->getTransform();
 
-	pushRender(mesh, material, transform, viewportId);
+	pushRender(mesh, material, transform, viewportId, renderMode);
 }
 
 void Renderer::render()
@@ -100,16 +99,20 @@ void Renderer::render()
 			shader->setMatrix("view", view);
 			shader->setMatrix("model", command.transform);
 
+			shader->setVector("color", command.material->getColor());
+
 			auto mesh = command.mesh;
+
+			glLineWidth(command.lineWidth);
 
 			glBindVertexArray(command.mesh->getVAO());
 			if (mesh->getIndices().empty())
 			{
-				glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mesh->getPositions().size()));
+				glDrawArrays(command.renderMode, 0, static_cast<int>(mesh->getPositions().size()));
 			}
 			else
 			{
-				glDrawElements(GL_TRIANGLES, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+				glDrawElements(command.renderMode, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
 			}
 		}
 	}
@@ -148,6 +151,11 @@ Viewport* Renderer::getViewport(unsigned int id)
 	}
 
 	return nullptr;
+}
+
+void Renderer::setLineWidth(float width)
+{
+	glLineWidth(width);
 }
 
 void Renderer::createDefaultViewport(Window* window)

@@ -1,10 +1,21 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <TI/Client/Client.h>
 #include <TI/Util/Config.h>
 
 class InputHandler;
 class IController;
+class Mesh;
+class Material;
+
+struct DebugLine
+{
+	std::string name;
+	glm::vec4 color;
+	float width;
+};
 
 class LocalClient : public Client
 {
@@ -24,6 +35,8 @@ public:
 	void setViewportId(unsigned int id);
 	unsigned int getViewportId() const;
 
+	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width);
+
 private:
 	void loadConfig();
 	void loadMappings();
@@ -34,4 +47,9 @@ private:
 	Config config;
 
 	unsigned int viewportId;
+
+	// Debug info rendering
+	// TODO: Maybe move to ModelManager?
+	std::vector<DebugLine> debugMeshes;
+	Material* debugMaterial;
 };

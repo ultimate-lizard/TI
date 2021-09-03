@@ -254,6 +254,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\Default.cfg" />
+    <None Include="Shaders\DebugShader.frag" />
     <None Include="Shaders\Framebuffer.frag" />
     <None Include="Shaders\Framebuffer.vert" />
     <None Include="Shaders\SampleShader.frag" />

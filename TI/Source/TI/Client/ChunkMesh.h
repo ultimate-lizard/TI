@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include <glm/glm.hpp>
 
@@ -29,6 +30,8 @@ private:
 	Mesh* mesh;
 	Material* material;
 
-	std::vector<glm::vec3> positions;
-	std::vector<glm::vec2> uvs;
+	/*std::vector<glm::vec3> positions;
+	std::vector<glm::vec2> uvs;*/
+
+	std::map<unsigned int, std::vector<float>> blocks;
 };

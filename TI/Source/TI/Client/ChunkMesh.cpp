@@ -37,15 +37,26 @@ ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 				int y = index / chunkSize;
 				int x = index % chunkSize;
 
-				if (y == 0)
-					setBlock(glm::ivec3(x, y, z));
+				// if (y == 0)
+					// setBlock(glm::ivec3(x, y, z));
 			}
 		}
 
-		/*setBlock(glm::vec3(0, 0, 0));
 		setBlock(glm::vec3(1, 0, 0));
-		setBlock(glm::vec3(2, 0, 0));*/
-		mesh->setBufferSubData(0, positions, uvs);
+		setBlock(glm::vec3(2, 0, 0));
+
+		std::vector<float> verticesToSend;
+		for (const auto& pair : this->blocks)
+		{
+			const std::vector<float>& vertices = pair.second;
+			for (float vertex : vertices)
+			{
+				verticesToSend.push_back(vertex);
+			}
+		}
+
+		mesh->setBufferSubData(0, verticesToSend);
+		mesh->setPositionsCount(this->blocks.size() * 36);
 	}
 }
 
@@ -103,7 +114,7 @@ void ChunkMesh::setBlock(const glm::ivec3 position)
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f
 	};
 
-	std::vector<glm::vec3> positions = {
+	/*std::vector<glm::vec3> positions = {
 		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
 		glm::vec3(0.0f + position.x, 1.0f + position.y, 1.0f + position.z),
 		glm::vec3(0.0f + position.x, 0.0f + position.y, 1.0f + position.z),
@@ -179,11 +190,22 @@ void ChunkMesh::setBlock(const glm::ivec3 position)
 		glm::vec2(1.0f, 1.0f),
 		glm::vec2(1.0f, 0.0f),
 		glm::vec2(0.0f, 0.0f)
-	};
+	};*/
 
-	unsigned int offset = (position.z * chunkSize * chunkSize) + (position.y * chunkSize) + position.x;
+	unsigned int index = (position.z * chunkSize * chunkSize) + (position.y * chunkSize) + position.x;
 
-	if (this->positions.size() < this->positions.size() + (offset * positions.size()) + positions.size())
+	blocks.emplace(index, cubeData);
+
+	/*for (size_t i = 0; i < positions.size(); ++i)
+	{
+		this->positions.push_back(positions[i]);
+	}*/
+	
+	// 1. Find this positions in the map
+	// 2. If there is no positions, just add this block
+	// 3. If there is position, replace data with the new block
+
+	/*if (this->positions.size() < this->positions.size() + (offset * positions.size()) + positions.size())
 	{
 		this->positions.resize(this->positions.size() + offset * positions.size() + positions.size());
 	}
@@ -194,7 +216,7 @@ void ChunkMesh::setBlock(const glm::ivec3 position)
 	}
 
 	std::copy(positions.begin(), positions.end(), this->positions.begin() + offset * positions.size());
-	std::copy(uvs.begin(), uvs.end(), this->uvs.begin() + offset * uvs.size());
+	std::copy(uvs.begin(), uvs.end(), this->uvs.begin() + offset * uvs.size());*/
 
 	// unsigned int offsetInBytes = offset * 180 * sizeof(float);
 

@@ -19,10 +19,13 @@ public:
 	void finalize();
 
 	const unsigned int getVAO() const;
-	const std::vector<unsigned int>& getIndices() const;
-	const std::vector<glm::vec3>& getPositions() const;
 
-	void setBufferSubData(unsigned int offset, const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& uvs);
+	unsigned int getPositionsCount() const;
+	unsigned int getIndicesCount() const;
+	void setPositionsCount(unsigned int positionsCount);
+
+	// void setBufferSubData(unsigned int offset, const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& uvs);
+	void setBufferSubData(unsigned int offset, const std::vector<float>& data);
 
 private:
 	unsigned int vbo;
@@ -32,6 +35,9 @@ private:
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned int> indices;
+
+	unsigned int positionsCount;
+	unsigned int indicesCount;
 
 	unsigned long long dynamicBufferSize;
 };

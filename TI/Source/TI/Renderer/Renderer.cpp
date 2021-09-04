@@ -106,13 +106,13 @@ void Renderer::render()
 			glLineWidth(command.lineWidth);
 
 			glBindVertexArray(command.mesh->getVAO());
-			if (mesh->getIndices().empty())
+			if (mesh->getIndicesCount())
 			{
-				glDrawArrays(command.renderMode, 0, static_cast<int>(mesh->getPositions().size()));
+				glDrawElements(command.renderMode, mesh->getIndicesCount(), GL_UNSIGNED_INT, 0);
 			}
 			else
 			{
-				glDrawElements(command.renderMode, static_cast<int>(mesh->getIndices().size()), GL_UNSIGNED_INT, 0);
+				glDrawArrays(command.renderMode, 0, mesh->getPositionsCount());
 			}
 		}
 	}

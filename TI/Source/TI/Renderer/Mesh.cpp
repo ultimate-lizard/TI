@@ -6,6 +6,8 @@ Mesh::Mesh() :
 	vbo(0),
 	vao(0),
 	ebo(0),
+	positionsCount(0),
+	indicesCount(0),
 	dynamicBufferSize(0)
 {
 }
@@ -14,6 +16,8 @@ Mesh::Mesh(unsigned long long dynamicBufferSize) :
 	vbo(0),
 	vao(0),
 	ebo(0),
+	positionsCount(0),
+	indicesCount(0),
 	dynamicBufferSize(dynamicBufferSize)
 {
 	if (dynamicBufferSize)
@@ -40,6 +44,8 @@ Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<unsigned int> indices) 
 	vbo(0),
 	vao(0),
 	ebo(0),
+	positionsCount(0),
+	indicesCount(0),
 	positions(positions),
 	indices(indices),
 	dynamicBufferSize(0)
@@ -51,6 +57,8 @@ Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::ve
 	vbo(0),
 	vao(0),
 	ebo(0),
+	positionsCount(0),
+	indicesCount(0),
 	positions(positions),
 	uvs(uvs),
 	indices(indices),
@@ -107,10 +115,14 @@ void Mesh::finalize()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
 
+	positionsCount = positions.size();
+
 	if (!indices.empty())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+		indicesCount = indices.size();
 	}
 
 	int offset = 0;
@@ -140,54 +152,65 @@ const unsigned int Mesh::getVAO() const
 	return vao;
 }
 
-const std::vector<unsigned int>& Mesh::getIndices() const
+unsigned int Mesh::getPositionsCount() const
 {
-	return indices;
+	return positionsCount;
 }
 
-const std::vector<glm::vec3>& Mesh::getPositions() const
+unsigned int Mesh::getIndicesCount() const
 {
-	return positions;
+	return indicesCount;
 }
 
-void Mesh::setBufferSubData(unsigned int subDataOffset, const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& uvs)
+void Mesh::setPositionsCount(unsigned int positionsCount)
 {
-	std::vector<float> data;
-	for (size_t i = 0; i < positions.size(); ++i)
-	{
-		data.push_back(positions[i].x);
-		data.push_back(positions[i].y);
-		data.push_back(positions[i].z);
+	this->positionsCount = positionsCount;
+}
 
-		if (!uvs.empty())
-		{
-			data.push_back(uvs[i].x);
-			data.push_back(uvs[i].y);
-		}
-	}
+//void Mesh::setBufferSubData(unsigned int subDataOffset, const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& uvs)
+//{
+//	std::vector<float> data;
+//	for (size_t i = 0; i < positions.size(); ++i)
+//	{
+//		data.push_back(positions[i].x);
+//		data.push_back(positions[i].y);
+//		data.push_back(positions[i].z);
+//
+//		if (!uvs.empty())
+//		{
+//			data.push_back(uvs[i].x);
+//			data.push_back(uvs[i].y);
+//		}
+//	}
+//
+//	if (this->positions.size() < subDataOffset + positions.size())
+//	{
+//		this->positions.resize(subDataOffset + positions.size());
+//	}
+//
+//	if (this->uvs.size() < subDataOffset + uvs.size())
+//	{
+//		this->uvs.resize(subDataOffset + uvs.size());
+//	}
+//
+//	int i = subDataOffset;
+//	for (const glm::vec3& position : positions)
+//	{
+//		this->positions[i++] = position;
+//	}
+//
+//	i = subDataOffset;
+//	for (const glm::vec2& uv : uvs)
+//	{
+//		this->uvs[i++] = uv;
+//	}
+//
+//	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//	glBufferSubData(GL_ARRAY_BUFFER, subDataOffset, data.size() * sizeof(float), data.data());
+//}
 
-	if (this->positions.size() < subDataOffset + positions.size())
-	{
-		this->positions.resize(subDataOffset + positions.size());
-	}
-
-	if (this->uvs.size() < subDataOffset + uvs.size())
-	{
-		this->uvs.resize(subDataOffset + uvs.size());
-	}
-
-	int i = subDataOffset;
-	for (const glm::vec3& position : positions)
-	{
-		this->positions[i++] = position;
-	}
-
-	i = subDataOffset;
-	for (const glm::vec2& uv : uvs)
-	{
-		this->uvs[i++] = uv;
-	}
-
+void Mesh::setBufferSubData(unsigned int offset, const std::vector<float>& data)
+{
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, subDataOffset, data.size() * sizeof(float), data.data());
+	glBufferSubData(GL_ARRAY_BUFFER, offset, data.size() * sizeof(float), data.data());
 }

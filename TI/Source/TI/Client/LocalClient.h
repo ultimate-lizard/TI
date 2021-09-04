@@ -9,6 +9,7 @@ class InputHandler;
 class IController;
 class Mesh;
 class Material;
+class ChunkMesh;
 
 struct DebugLine
 {
@@ -52,4 +53,6 @@ private:
 	// TODO: Maybe move to ModelManager?
 	std::vector<DebugLine> debugMeshes;
 	Material* debugMaterial;
+
+	ChunkMesh* chunkMesh;
 };

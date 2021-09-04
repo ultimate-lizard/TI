@@ -11,7 +11,7 @@ MovementComponent::MovementComponent(TransformComponent* const transformComponen
 	transformComponent(transformComponent),
 	yawRate(0.0f),
 	pitchRate(0.0f),
-	speed(10.0f),
+	speed(70.0f),
 	forward(0.0f, 0.0f, -1.0f),
 	up({ 0.0f, 1.0f, 0.0f }),
 	right({ 1.0f, 0.0f, 0.0f }),

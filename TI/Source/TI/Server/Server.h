@@ -9,12 +9,13 @@
 #include <TI/Server/Entity.h>
 
 class Application;
+class Plane;
 
 class Server
 {
 public:
-	Server(Application* app) : app(app), shuttingDown(false) {}
-	virtual ~Server() = default;
+	Server(Application* app);
+	virtual ~Server();
 
 	virtual void update(float dt);
 
@@ -32,6 +33,8 @@ public:
 
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
+	const Plane* const getPlane() const;
+
 protected:
 	void createEntityTemplates();
 	Entity* const spawnEntity(const std::string& id, const std::string& templateName);
@@ -44,4 +47,6 @@ protected:
 	std::map<std::string, std::unique_ptr<Entity>> entityTemplates;
 
 	std::atomic<bool> shuttingDown;
+
+	Plane* plane;
 };

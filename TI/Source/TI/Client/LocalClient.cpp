@@ -15,10 +15,13 @@
 #include <TI/Renderer/Material.h>
 #include <TI/Renderer/Mesh.h>
 #include <TI/ModelManager.h>
+#include <TI/Client/ChunkMesh.h>
+#include <TI/Server/Plane.h>
 
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
-	viewportId(0)
+	viewportId(0),
+	chunkMesh(nullptr)
 {
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
@@ -34,6 +37,12 @@ void LocalClient::connect(const std::string& ip, int port)
 	if (Server* server = app->getCurrentServer())
 	{
 		server->connectClient(this, ip, port);
+
+		const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
+		if (!chunks.empty())
+		{
+			chunkMesh = new ChunkMesh(&chunks.at(0));
+		}
 	}
 }
 
@@ -88,6 +97,7 @@ void LocalClient::update(float dt)
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 2.0f);
 	}
 
+	// Render debug stuff
 	for (int i = 0; i < debugMeshes.size(); ++i)
 	{
 		DebugLine& debugLine = debugMeshes[i];
@@ -100,6 +110,16 @@ void LocalClient::update(float dt)
 		}
 	}
 
+	// Render world
+	if (chunkMesh)
+	{
+		if (renderer)
+		{
+			renderer->pushRender(chunkMesh->getMesh(), chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
+		}
+	}
+
+	// Render entities
 	for (auto& entityPair : server->getEntities())
 	{
 		auto& entity = entityPair.second;

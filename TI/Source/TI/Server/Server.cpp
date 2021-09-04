@@ -10,6 +10,7 @@
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
+#include <TI/Server/Plane.h>
 
 void Server::createEntityTemplates()
 {
@@ -47,6 +48,20 @@ void Server::createEntityTemplates()
 	cubeMeshComponent->loadModel("cube");
 	
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
+}
+
+Server::Server(Application* app) :
+	app(app), shuttingDown(false), plane(nullptr)
+{
+	plane = new Plane;
+}
+
+Server::~Server()
+{
+	if (plane)
+	{
+		delete plane;
+	}
 }
 
 void Server::update(float dt)
@@ -101,6 +116,11 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 	}
 	
 	throw std::exception();
+}
+
+const Plane* const Server::getPlane() const
+{
+	return plane;
 }
 
 Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id)

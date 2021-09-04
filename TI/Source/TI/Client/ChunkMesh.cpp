@@ -37,12 +37,15 @@ ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 				int y = index / chunkSize;
 				int x = index % chunkSize;
 
-				setBlock(glm::vec3(x, y, z));
-
-				if (i > 32)
-					break;
+				if (y == 0)
+					setBlock(glm::ivec3(x, y, z));
 			}
 		}
+
+		/*setBlock(glm::vec3(0, 0, 0));
+		setBlock(glm::vec3(1, 0, 0));
+		setBlock(glm::vec3(2, 0, 0));*/
+		mesh->setBufferSubData(0, positions, uvs);
 	}
 }
 
@@ -61,51 +64,82 @@ ChunkMesh::~ChunkMesh()
 
 void ChunkMesh::setBlock(const glm::ivec3 position)
 {
-	// Copy block to mesh data.
-	// Start: (position.z * size * size) + (position.y * size) + position.x
-	// End block.size()
+	std::vector<float> cubeData = {
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f
+	};
 
 	std::vector<glm::vec3> positions = {
-		// verticies, uvs
-		// front
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-
-		glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-
-		glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z)
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 1.0f + position.y, 1.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(1.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 1.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z)
 	};
 
 	std::vector<glm::vec2> uvs = {
@@ -147,10 +181,24 @@ void ChunkMesh::setBlock(const glm::ivec3 position)
 		glm::vec2(0.0f, 0.0f)
 	};
 
-	
 	unsigned int offset = (position.z * chunkSize * chunkSize) + (position.y * chunkSize) + position.x;
-	offset *= 180 * sizeof(float);
-	mesh->setBufferSubData(offset, positions, uvs);
+
+	if (this->positions.size() < this->positions.size() + (offset * positions.size()) + positions.size())
+	{
+		this->positions.resize(this->positions.size() + offset * positions.size() + positions.size());
+	}
+
+	if (this->uvs.size() < this->uvs.size() + (offset * uvs.size()) + uvs.size())
+	{
+		this->uvs.resize(this->uvs.size() + offset * uvs.size() + uvs.size());
+	}
+
+	std::copy(positions.begin(), positions.end(), this->positions.begin() + offset * positions.size());
+	std::copy(uvs.begin(), uvs.end(), this->uvs.begin() + offset * uvs.size());
+
+	// unsigned int offsetInBytes = offset * 180 * sizeof(float);
+
+	// mesh->setBufferSubData(offset, positions, uvs);
 }
 
 Mesh* ChunkMesh::getMesh()

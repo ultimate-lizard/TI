@@ -28,4 +28,7 @@ private:
 
 	Mesh* mesh;
 	Material* material;
+
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec2> uvs;
 };

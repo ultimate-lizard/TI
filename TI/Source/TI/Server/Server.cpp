@@ -21,17 +21,17 @@ void Server::createEntityTemplates()
 	auto camera = std::make_unique<Camera>();
 	playerEntity->setName("Player");
 
-	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
+	/*auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
 	meshComponent->loadModel("player");
 
 	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
 	{
 		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
-	}
+	}*/
 
 	// Setup local coordinates for the camera
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -0.5f, 0.3f, -0.2f });
+	// camera->setPosition({ -0.5f, 0.3f, -0.2f });
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));

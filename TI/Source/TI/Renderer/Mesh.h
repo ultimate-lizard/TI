@@ -6,38 +6,58 @@
 
 class Mesh
 {
+	friend class MeshBuilder;
+
 public:
-	Mesh();
-	Mesh(unsigned long long dynamicBufferSize);
-	Mesh(std::vector<glm::vec3> positions, std::vector<unsigned int> indices);
-	Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
-
-	void setPositions(std::vector<glm::vec3> positions);
-	void setUVs(std::vector<glm::vec2> uvs);
-	void setIndices(std::vector<unsigned int> indices);
-
-	void finalize();
+	Mesh() = default;
+	Mesh(const Mesh&) = default;
+	Mesh(Mesh&&) = default;
+	Mesh& operator=(const Mesh&) = default;
 
 	const unsigned int getVAO() const;
 
-	unsigned int getPositionsCount() const;
-	unsigned int getIndicesCount() const;
-	void setPositionsCount(unsigned int positionsCount);
+	void setPositionsCount(size_t count);
+	void setIndicesCount(size_t count);
 
-	// void setBufferSubData(unsigned int offset, const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& uvs);
+	size_t getPositionsCount() const;
+	size_t getIndicesCount() const;
+
+	bool isDynamic() const;
+	unsigned long long getSize() const;
+
 	void setBufferSubData(unsigned int offset, const std::vector<float>& data);
+
+private:
+	Mesh(unsigned long long size);
+	Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
 
 private:
 	unsigned int vbo;
 	unsigned int vao;
 	unsigned int ebo;
 
+	size_t positionsCount;
+	size_t indicesCount;
+
+	unsigned long long size;
+};
+
+class MeshBuilder
+{
+public:
+	MeshBuilder() = default;
+	MeshBuilder(const Mesh&) = delete;
+	MeshBuilder(MeshBuilder&&) = delete;
+
+	void setPositions(std::vector<glm::vec3> positions);
+	void setUVs(std::vector<glm::vec2> uvs);
+	void setIndices(std::vector<unsigned int> indices);
+
+	Mesh build();
+	Mesh buildDyanmic(unsigned long long size);
+
+private:
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec2> uvs;
 	std::vector<unsigned int> indices;
-
-	unsigned int positionsCount;
-	unsigned int indicesCount;
-
-	unsigned long long dynamicBufferSize;
 };

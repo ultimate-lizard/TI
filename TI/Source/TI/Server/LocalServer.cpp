@@ -13,7 +13,7 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	createEntityTemplates();
+	initEntityTemplates();
 
 	Entity* const cubeEntity = spawnEntity("Cube", "cube");
 	Entity* const cube2Entity = spawnEntity("Cube", "cube2");
@@ -55,7 +55,7 @@ void LocalServer::spawnPlayer(Client* const client)
 
 	if (auto transformComponent = player->findComponent<TransformComponent>())
 	{
-		transformComponent->setPosition({ 0.0f, 2.8f, 0.0f });
+		transformComponent->setPosition({ -1.0f, 0.0f, 0.0f });
 	}
 	
 	possesEntity(client->getName(), client);

@@ -10,7 +10,7 @@ RemoteServer::RemoteServer(Application* app) :
 	Server(app),
 	state(RemoteServerState::Undefined)
 {
-	createEntityTemplates();
+	initEntityTemplates();
 }
 
 RemoteServer::~RemoteServer()

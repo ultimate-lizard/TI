@@ -92,9 +92,9 @@ void LocalClient::update(float dt)
 
 	if (debugMeshes.empty())
 	{
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 2.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 2.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 2.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
 	}
 
 	// Render debug stuff
@@ -115,7 +115,7 @@ void LocalClient::update(float dt)
 	{
 		if (renderer)
 		{
-			renderer->pushRender(chunkMesh->getMesh(), chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
+			// renderer->pushRender(chunkMesh->getMesh(), chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
 		}
 	}
 
@@ -171,9 +171,10 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
 	mat.setColor(color);
 
-	Mesh mesh;
-	mesh.setPositions({ start, end });
-	mesh.finalize();
+	MeshBuilder meshBuilder;
+	meshBuilder.setPositions({ start, end });
+
+	Mesh mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
 	model->setMesh(std::move(mesh));

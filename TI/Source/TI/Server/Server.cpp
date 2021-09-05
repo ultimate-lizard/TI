@@ -12,7 +12,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Plane.h>
 
-void Server::createEntityTemplates()
+void Server::initEntityTemplates()
 {
 	// Player ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto playerEntity = std::make_unique<Entity>();

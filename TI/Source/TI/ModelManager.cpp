@@ -5,9 +5,9 @@
 
 ModelManager::ModelManager()
 {
-	Mesh mesh;
+	MeshBuilder meshBuilder;
 
-	mesh.setPositions({
+	meshBuilder.setPositions({
 		// front
 		glm::vec3(0.5f,  0.5f,  0.5f),
 		glm::vec3(-0.5f,  0.5f,  0.5f),
@@ -56,7 +56,7 @@ ModelManager::ModelManager()
 		glm::vec3(-0.5f, -0.5f,  -0.5f),
 		});
 
-	mesh.setUVs({
+	meshBuilder.setUVs({
 		// front
 		glm::vec2(1.0f, 1.0f),
 		glm::vec2(0.0f, 1.0f),
@@ -106,7 +106,7 @@ ModelManager::ModelManager()
 		glm::vec2(0.0f, 0.0f),
 	});
 
-	mesh.finalize();
+	Mesh mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
 	model->setMesh(mesh);

@@ -58,13 +58,14 @@ void Window::swap()
 	SDL_GL_SwapWindow(sdlWindow);
 }
 
-const glm::ivec2& Window::getSize() const
+glm::ivec2 Window::getSize() const
 {
 	int x = 0;
 	int y = 0;
 
 	SDL_GetWindowSize(sdlWindow, &x, &y);
-	return {x, y};
+
+	return glm::ivec2(x, y);
 }
 
 bool Window::hasFocus() const

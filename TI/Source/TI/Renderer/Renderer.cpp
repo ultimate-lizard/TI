@@ -26,10 +26,14 @@ Renderer::Renderer(Window* window) :
 	}
 
 	setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+
 	glEnable(GL_DEPTH_TEST);
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+
+	SDL_GL_SetSwapInterval(0);
 
 	createDefaultViewport(window);
 }
@@ -108,11 +112,11 @@ void Renderer::render()
 			glBindVertexArray(command.mesh->getVAO());
 			if (mesh->getIndicesCount())
 			{
-				glDrawElements(command.renderMode, mesh->getIndicesCount(), GL_UNSIGNED_INT, 0);
+				glDrawElements(command.renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
 			}
 			else
 			{
-				glDrawArrays(command.renderMode, 0, mesh->getPositionsCount());
+				glDrawArrays(command.renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
 			}
 		}
 	}

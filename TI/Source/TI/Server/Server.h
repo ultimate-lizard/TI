@@ -36,7 +36,7 @@ public:
 	const Plane* const getPlane() const;
 
 protected:
-	void createEntityTemplates();
+	void initEntityTemplates();
 	Entity* const spawnEntity(const std::string& id, const std::string& templateName);
 	void possesEntity(const std::string& entityName, Client* const client);
 

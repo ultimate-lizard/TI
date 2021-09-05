@@ -23,7 +23,7 @@ public:
 
 	void swap();
 
-	const glm::ivec2& getSize() const;
+	glm::ivec2 getSize() const;
 
 	bool hasFocus() const;
 

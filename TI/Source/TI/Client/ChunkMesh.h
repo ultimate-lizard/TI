@@ -23,8 +23,9 @@ public:
 	Mesh& getMesh();
 	Material& getMaterial();
 
-private:
 	void rebuildMesh();
+
+private:
 	bool isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition);
 
 private:
@@ -34,4 +35,6 @@ private:
 	Material material;
 
 	std::vector<float> data;
+
+	const Chunk* const chunk;
 };

@@ -17,3 +17,24 @@ const std::vector<Chunk>& Plane::getChunks() const
 {
 	return chunks;
 }
+
+void Plane::spawnRandomBlock()
+{
+	if (!chunks.empty())
+	{
+		bool done = false;
+		size_t tries = 0;
+		while (!done || tries >= 10)
+		{
+			Chunk& chunk = chunks[0];
+			unsigned int random = rand() % (chunkSize * chunkSize * chunkSize);
+			if (chunk.getBlock(random) == 0)
+			{
+				done = true;
+				chunk.setBlock(random, 1);
+			}
+
+			++tries;
+		}
+	}
+}

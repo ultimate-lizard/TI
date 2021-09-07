@@ -19,6 +19,9 @@ public:
 	const glm::vec3& getPosition() const;
 	unsigned int getSize() const;
 
+	void setBlock(unsigned int index, unsigned int blockType);
+	void setBlock(const glm::uvec3& position, unsigned int blockType);
+
 private:
 	const unsigned int size;
 	glm::vec3 pos;

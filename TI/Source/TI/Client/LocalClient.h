@@ -38,6 +38,9 @@ public:
 
 	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width);
 
+	// TODO: This is a temporary method
+	ChunkMesh* getChunkMesh();
+
 private:
 	void loadConfig();
 	void loadMappings();

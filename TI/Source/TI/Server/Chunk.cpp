@@ -5,7 +5,7 @@ Chunk::Chunk(unsigned int size, const glm::vec3& pos) :
 	pos(pos)
 {
 	unsigned long long longSize = size;
-	blocks.resize(longSize * longSize * longSize, 1);
+	blocks.resize(longSize * longSize * longSize, 0);
 }
 
 unsigned int Chunk::getBlock(const glm::uvec3& pos)
@@ -31,4 +31,14 @@ const glm::vec3& Chunk::getPosition() const
 unsigned int Chunk::getSize() const
 {
 	return size;
+}
+
+void Chunk::setBlock(unsigned int index, unsigned int blockType)
+{
+	blocks[index] = blockType;
+}
+
+void Chunk::setBlock(const glm::uvec3& position, unsigned int blockType)
+{
+	blocks[(position.z * size * size) + (position.y * size) + position.x] = blockType;
 }

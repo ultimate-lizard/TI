@@ -7,37 +7,13 @@
 // TODO: Change chunk pointer to reference
 ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 	chunkSize(0),
-	mesh()
+	mesh(),
+	chunk(chunk)
 {
 	material.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
 	material.setTexture("../Textures/dirt.jpg");
 
-	if (chunk)
-	{
-		chunkSize = chunk->getSize();
-
-		const std::vector<unsigned int>& blocks = chunk->getBlocks();
-
-		for (unsigned int i = 0; i < blocks.size(); ++i)
-		{
-			int index = i;
-			int z = index / (chunkSize * chunkSize);
-			index -= (z * chunkSize * chunkSize);
-			int y = index / chunkSize;
-			int x = index % chunkSize;
-
-			if (blocks[i] != 0) // if block is not air
-			{
-				glm::ivec3 position = { x, y, z };
-				if (!isBlockSurroundedBySolidBlocks(chunk, position))
-				{
-					setBlock(position);
-				}
-			}
-		}
-
-		rebuildMesh();
-	}
+	rebuildMesh();
 }
 
 void ChunkMesh::setBlock(const glm::ivec3 position)
@@ -96,15 +72,42 @@ Material& ChunkMesh::getMaterial()
 
 void ChunkMesh::rebuildMesh()
 {
-	if (!mesh.isDynamic())
-	{
-		MeshBuilder builder;
-		unsigned long long s = (chunkSize * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
-		mesh = builder.buildDyanmic(s);
-	}
+	data.clear();
 
-	mesh.setBufferSubData(0, data);
-	mesh.setPositionsCount((data.size() / 5) * 3);
+	if (chunk)
+	{
+		chunkSize = chunk->getSize();
+
+		const std::vector<unsigned int>& blocks = chunk->getBlocks();
+
+		for (unsigned int i = 0; i < blocks.size(); ++i)
+		{
+			int index = i;
+			int z = index / (chunkSize * chunkSize);
+			index -= (z * chunkSize * chunkSize);
+			int y = index / chunkSize;
+			int x = index % chunkSize;
+
+			if (blocks[i] != 0) // if block is not air
+			{
+				glm::ivec3 position = { x, y, z };
+				if (!isBlockSurroundedBySolidBlocks(chunk, position))
+				{
+					setBlock(position);
+				}
+			}
+		}
+
+		if (!mesh.isDynamic())
+		{
+			MeshBuilder builder;
+			unsigned long long s = (chunkSize * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
+			mesh = builder.buildDyanmic(s);
+		}
+
+		mesh.setBufferSubData(0, data);
+		mesh.setPositionsCount((data.size() / 5) * 3);
+	}
 }
 
 bool ChunkMesh::isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition)

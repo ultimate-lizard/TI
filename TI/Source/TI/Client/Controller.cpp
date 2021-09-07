@@ -7,8 +7,12 @@
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/MovementComponent.h>
+#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Client/Client.h>
+#include <TI/Client/LocalClient.h>
 #include <TI/Application.h>
+#include <TI/Server/Plane.h>
+#include <TI/Client/ChunkMesh.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
@@ -96,6 +100,25 @@ void PlayerController::releaseMouse()
 	app->getInput()->releaseMouse();
 }
 
+void PlayerController::spawnRandomBlock()
+{
+	if (entity)
+	{
+		if (auto transformComponent = entity->findComponent<TransformComponent>())
+		{
+			if (Plane* plane = transformComponent->getPlane())
+			{
+				plane->spawnRandomBlock();
+				// TODO: Find better way to do this
+				if (auto localClient = dynamic_cast<LocalClient*>(client))
+				{
+					localClient->getChunkMesh()->rebuildMesh();
+				}
+			}			
+		}
+	}
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -111,5 +134,7 @@ void PlayerController::setupInputHandler()
 
 		inputHandler->bindKey("QuitGame", ActionInputType::KeyPress, std::bind(&PlayerController::quitGame, this));
 		inputHandler->bindKey("ReleaseMouse", ActionInputType::KeyPress, std::bind(&PlayerController::releaseMouse, this));
+
+		inputHandler->bindKey("SpawnBlock", ActionInputType::KeyPress, std::bind(&PlayerController::spawnRandomBlock, this));
 	}
 }

@@ -184,6 +184,11 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 	debugMeshes.push_back({ name, color, width });
 }
 
+ChunkMesh* LocalClient::getChunkMesh()
+{
+	return chunkMesh;
+}
+
 void LocalClient::loadConfig()
 {
 	std::string configFolderPath = CONFIG_FOLDER + std::string("Players/");

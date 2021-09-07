@@ -39,6 +39,8 @@ private:
 	void quitGame();
 	void releaseMouse();
 
+	void spawnRandomBlock();
+
 	InputHandler* inputHandler;
 	MovementComponent* movementComp;
 	Client* client;

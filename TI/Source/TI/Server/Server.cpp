@@ -131,6 +131,15 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 	{
 		std::unique_ptr<Entity> spawnedEntity = createEntityFromTemplate(templateName, id);
 		result = spawnedEntity.get();
+
+		if (plane)
+		{
+			if (auto transformComponent = result->findComponent<TransformComponent>())
+			{
+				transformComponent->setPlane(plane);
+			}
+		}
+
 		spawnedEntities.emplace(id, std::move(spawnedEntity));
 	}
 

@@ -33,6 +33,7 @@ enum Key
 	X,
 	Y,
 	Z,
+	Enter = SDL_SCANCODE_RETURN,
 	Escape = SDL_SCANCODE_ESCAPE,
 	LeftCtrl = SDL_SCANCODE_LCTRL,
 	ControllerButtonB = SDL_CONTROLLER_BUTTON_B,

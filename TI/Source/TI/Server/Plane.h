@@ -15,6 +15,8 @@ public:
 
 	const std::vector<Chunk>& getChunks() const;
 
+	void spawnRandomBlock();
+
 private:
 	glm::vec3 pos;
 	const unsigned int chunkSize;

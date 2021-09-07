@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 
-// TODO: Switch pointer to reference
+// TODO: Change chunk pointer to reference
 ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 	chunkSize(0),
 	mesh()
@@ -26,9 +26,13 @@ ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 			int y = index / chunkSize;
 			int x = index % chunkSize;
 
-			if (blocks[i])
+			if (blocks[i] != 0) // if block is not air
 			{
-				setBlock({ x, y, z });
+				glm::ivec3 position = { x, y, z };
+				if (!isBlockSurroundedBySolidBlocks(chunk, position))
+				{
+					setBlock(position);
+				}
 			}
 		}
 
@@ -100,5 +104,68 @@ void ChunkMesh::rebuildMesh()
 	}
 
 	mesh.setBufferSubData(0, data);
-	mesh.setPositionsCount((chunkSize * chunkSize * chunkSize) * 108);
+	mesh.setPositionsCount((data.size() / 5) * 3);
+}
+
+bool ChunkMesh::isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition)
+{
+	size_t count = 0;
+
+	const std::vector<unsigned int>& blocks = chunk->getBlocks();
+
+	if (blockPosition.x < chunkSize - 1)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize) + blockPosition.x + 1;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	if (blockPosition.x > 0)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize) + blockPosition.x - 1;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	if (blockPosition.y < chunkSize - 1)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize + 1) + blockPosition.x;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	if (blockPosition.y > 0)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize - 1) + blockPosition.x;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	if (blockPosition.z < chunkSize - 1)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize + 1) + (blockPosition.y * chunkSize) + blockPosition.x;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	if (blockPosition.z > 0)
+	{
+		unsigned int index = (blockPosition.z * chunkSize * chunkSize - 1) + (blockPosition.y * chunkSize) + blockPosition.x;
+		if (blocks[index] != 0)
+		{
+			++count;
+		}
+	}
+
+	return count == 6;
 }

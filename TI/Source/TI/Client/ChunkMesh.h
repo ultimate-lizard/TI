@@ -25,6 +25,7 @@ public:
 
 private:
 	void rebuildMesh();
+	bool isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition);
 
 private:
 	unsigned long long chunkSize;

@@ -20,9 +20,17 @@ public:
 
 	void setBlock(const glm::ivec3 position);
 
+	Mesh& getMesh();
+	Material& getMaterial();
+
 private:
-	unsigned int chunkSize;
+	void rebuildMesh();
+
+private:
+	unsigned long long chunkSize;
 
 	Mesh mesh;
 	Material material;
+
+	std::vector<float> data;
 };

@@ -43,6 +43,10 @@ void LocalClient::connect(const std::string& ip, int port)
 		{
 			chunkMesh = new ChunkMesh(&chunks.at(0));
 		}
+
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
 	}
 }
 
@@ -90,13 +94,6 @@ void LocalClient::update(float dt)
 		return;
 	}
 
-	if (debugMeshes.empty())
-	{
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
-	}
-
 	// Render debug stuff
 	for (int i = 0; i < debugMeshes.size(); ++i)
 	{
@@ -115,7 +112,7 @@ void LocalClient::update(float dt)
 	{
 		if (renderer)
 		{
-			// renderer->pushRender(chunkMesh->getMesh(), chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
+			renderer->pushRender(&chunkMesh->getMesh(), &chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
 		}
 	}
 

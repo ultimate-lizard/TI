@@ -4,6 +4,8 @@
 
 #include <glad/glad.h>
 
+#include <iostream>
+
 // TODO: Change chunk pointer to reference
 ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 	chunkSize(0),
@@ -106,7 +108,9 @@ void ChunkMesh::rebuildMesh()
 		}
 
 		mesh.setBufferSubData(0, data);
-		mesh.setPositionsCount((data.size() / 5) * 3);
+		mesh.setPositionsCount(data.size() / 5);
+		
+		std::cout << "Mesh draw count: " << data.size() / 5 << std::endl;
 	}
 }
 

@@ -33,7 +33,7 @@ Renderer::Renderer(Window* window) :
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
 
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 
 	createDefaultViewport(window);
 }
@@ -112,6 +112,7 @@ void Renderer::render()
 			glBindVertexArray(command.mesh->getVAO());
 			if (mesh->getIndicesCount())
 			{
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
 				glDrawElements(command.renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
 			}
 			else

@@ -35,6 +35,8 @@ private:
 	Material material;
 
 	std::vector<float> data;
+	std::vector<unsigned int> elements;
+	size_t elementsCount;
 
 	const Chunk* const chunk;
 };

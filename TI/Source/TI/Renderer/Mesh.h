@@ -16,6 +16,7 @@ public:
 	Mesh& operator=(const Mesh&) = default;
 
 	const unsigned int getVAO() const;
+	const unsigned int getEBO() const;
 
 	void setPositionsCount(size_t count);
 	void setIndicesCount(size_t count);
@@ -24,12 +25,12 @@ public:
 	size_t getIndicesCount() const;
 
 	bool isDynamic() const;
-	unsigned long long getSize() const;
 
 	void setBufferSubData(unsigned int offset, const std::vector<float>& data);
+	void setElementsSubData(unsigned int offset, const std::vector<unsigned int>& data);
 
 private:
-	Mesh(unsigned long long size);
+	Mesh(unsigned long long vboSize, unsigned long long eboSize);
 	Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);
 
 private:
@@ -40,7 +41,7 @@ private:
 	size_t positionsCount;
 	size_t indicesCount;
 
-	unsigned long long size;
+	bool dynamic;
 };
 
 class MeshBuilder
@@ -55,7 +56,7 @@ public:
 	void setIndices(std::vector<unsigned int> indices);
 
 	Mesh build();
-	Mesh buildDyanmic(unsigned long long size);
+	Mesh buildDyanmic(unsigned long long vboSize, unsigned long long eboSize);
 
 private:
 	std::vector<glm::vec3> positions;

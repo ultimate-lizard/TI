@@ -10,7 +10,8 @@
 ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 	chunkSize(0),
 	mesh(),
-	chunk(chunk)
+	chunk(chunk),
+	elementsCount(0)
 {
 	material.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
 	material.setTexture("../Textures/dirt.jpg");
@@ -24,42 +25,64 @@ void ChunkMesh::setBlock(const glm::ivec3 position)
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 	};
 
+	std::vector<unsigned int> blockIndices = {
+		0, 1, 2,
+		0, 2, 3,
+
+		4, 5, 6,
+		4, 6, 7,
+
+		8, 9, 10,
+		8, 10, 11,
+
+		12, 13, 14,
+		12, 14, 15,
+
+		16, 17, 18,
+		16, 18, 19,
+
+		20, 21, 22,
+		20, 22, 23
+	};
+
+	for (unsigned int& index : blockIndices)
+	{
+		if (elements.size())
+		{
+			index += elements.size() / 36 * 24;
+		}
+	}
+
 	data.insert(data.end(), cubeData.begin(), cubeData.end());
+	elements.insert(elements.end(), blockIndices.begin(), blockIndices.end());
 }
 
 Mesh& ChunkMesh::getMesh()
@@ -75,6 +98,8 @@ Material& ChunkMesh::getMaterial()
 void ChunkMesh::rebuildMesh()
 {
 	data.clear();
+	elements.clear();
+	elementsCount = 0;
 
 	if (chunk)
 	{
@@ -96,6 +121,7 @@ void ChunkMesh::rebuildMesh()
 				if (!isBlockSurroundedBySolidBlocks(chunk, position))
 				{
 					setBlock(position);
+					elementsCount++;
 				}
 			}
 		}
@@ -104,13 +130,18 @@ void ChunkMesh::rebuildMesh()
 		{
 			MeshBuilder builder;
 			unsigned long long s = (chunkSize * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
-			mesh = builder.buildDyanmic(s);
+			unsigned long long e = (chunkSize * chunkSize * chunkSize) * 3 * sizeof(unsigned int) * 36;
+			mesh = builder.buildDyanmic(s, e);
 		}
 
 		mesh.setBufferSubData(0, data);
+		mesh.setElementsSubData(0, elements);
+
 		mesh.setPositionsCount(data.size() / 5);
+		mesh.setIndicesCount(elements.size());
 		
-		std::cout << "Mesh draw count: " << data.size() / 5 << std::endl;
+		std::cout << "Mesh  vertex  draw count: " << data.size() / 5 << std::endl;
+		std::cout << "Mesh elements draw count: " << elements.size() << std::endl;
 	}
 }
 

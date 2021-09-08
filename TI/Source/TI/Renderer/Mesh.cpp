@@ -2,13 +2,13 @@
 
 #include <glad/glad.h>
 
-Mesh::Mesh(unsigned long long size) :
+Mesh::Mesh(unsigned long long vboSize, unsigned long long eboSize) :
 	vbo(0),
 	vao(0),
 	ebo(0),
 	positionsCount(0),
 	indicesCount(0),
-	size(size)
+	dynamic(true)
 {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -16,13 +16,16 @@ Mesh::Mesh(unsigned long long size) :
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vboSize, nullptr, GL_DYNAMIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, eboSize, nullptr, GL_DYNAMIC_DRAW);
 
 	glBindVertexArray(0);
 }
@@ -33,7 +36,7 @@ Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::ve
 	ebo(0),
 	positionsCount(positions.size()),
 	indicesCount(indices.size()),
-	size(0)
+	dynamic(false)
 {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -90,6 +93,11 @@ const unsigned int Mesh::getVAO() const
 	return vao;
 }
 
+const unsigned int Mesh::getEBO() const
+{
+	return ebo;
+}
+
 void Mesh::setPositionsCount(size_t count)
 {
 	positionsCount = count;
@@ -112,12 +120,7 @@ size_t Mesh::getIndicesCount() const
 
 bool Mesh::isDynamic() const
 {
-	return size != 0;
-}
-
-unsigned long long Mesh::getSize() const
-{
-	return size;
+	return dynamic == true;
 }
 
 void Mesh::setBufferSubData(unsigned int offset, const std::vector<float>& data)
@@ -125,6 +128,13 @@ void Mesh::setBufferSubData(unsigned int offset, const std::vector<float>& data)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, offset, data.size() * sizeof(float), data.data());
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Mesh::setElementsSubData(unsigned int offset, const std::vector<unsigned int>& data)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, data.size() * sizeof(unsigned int), data.data());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void MeshBuilder::setPositions(std::vector<glm::vec3> positions)
@@ -147,7 +157,7 @@ Mesh MeshBuilder::build()
 	return Mesh(std::move(positions), std::move(uvs), std::move(indices));
 }
 
-Mesh MeshBuilder::buildDyanmic(unsigned long long size)
+Mesh MeshBuilder::buildDyanmic(unsigned long long vboSize, unsigned long long eboSize)
 {
-	return Mesh(size);
+	return Mesh(vboSize, eboSize);
 }

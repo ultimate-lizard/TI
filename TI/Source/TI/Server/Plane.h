@@ -16,6 +16,7 @@ public:
 	const std::vector<Chunk>& getChunks() const;
 
 	void spawnRandomBlock();
+	void spawnBlock(glm::ivec3 position);
 
 private:
 	glm::vec3 pos;

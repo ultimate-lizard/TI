@@ -22,19 +22,20 @@ void Plane::spawnRandomBlock()
 {
 	if (!chunks.empty())
 	{
-		bool done = false;
-		size_t tries = 0;
-		while (!done || tries >= 10)
+		Chunk& chunk = chunks[0];
+		unsigned int random = rand() % (chunkSize * chunkSize * chunkSize);
+		if (chunk.getBlock(random) != 0)
 		{
-			Chunk& chunk = chunks[0];
-			unsigned int random = rand() % (chunkSize * chunkSize * chunkSize);
-			if (chunk.getBlock(random) == 0)
-			{
-				done = true;
-				chunk.setBlock(random, 1);
-			}
-
-			++tries;
+			chunk.setBlock(random, 0);
 		}
+	}
+}
+
+void Plane::spawnBlock(glm::ivec3 position)
+{
+	if (!chunks.empty())
+	{
+		Chunk& chunk = chunks[0];
+		chunk.setBlock(position, 1);
 	}
 }

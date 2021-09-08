@@ -118,10 +118,24 @@ void ChunkMesh::rebuildMesh()
 			if (blocks[i] != 0) // if block is not air
 			{
 				glm::ivec3 position = { x, y, z };
-				if (!isBlockSurroundedBySolidBlocks(chunk, position))
+				//if (!isBlockSurroundedBySolidBlocks(position))
+				//{
+				//	setBlock(position);
+				//	elementsCount++;
+				//}
+
+				for (int i = 0; i < 6; ++i)
 				{
-					setBlock(position);
-					elementsCount++;
+					Face face = static_cast<Face>(i);
+					if (isFaceNextToAir(face, position))
+					{
+						setFace(face, position);
+						++elementsCount;
+					}
+					else
+					{
+						// std::cout << "My " << i << " side is next to air"
+					}
 				}
 			}
 		}
@@ -145,7 +159,191 @@ void ChunkMesh::rebuildMesh()
 	}
 }
 
-bool ChunkMesh::isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition)
+bool ChunkMesh::isFaceNextToAir(Face face, const glm::ivec3& blockPosition)
+{
+	if (!chunk)
+	{
+		return true;
+	}
+
+	const std::vector<unsigned int>& blocks = chunk->getBlocks();
+
+	switch (face)
+	{
+	case Face::Front:
+		if (blockPosition.z < chunkSize - 1)
+		{
+			glm::ivec3 position = blockPosition;
+			position.z++;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Face::Back:
+		if (blockPosition.z > 0)
+		{
+			glm::ivec3 position = blockPosition;
+			position.z--;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Face::Left:
+		if (blockPosition.x > 0)
+		{
+			glm::ivec3 position = blockPosition;
+			position.x--;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Face::Right:
+		if (blockPosition.x < chunkSize - 1)
+		{
+			glm::ivec3 position = blockPosition;
+			position.x++;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Face::Top:
+		if (blockPosition.y < chunkSize - 1)
+		{
+			glm::ivec3 position = blockPosition;
+			position.y++;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+
+	case Face::Bottom:
+		if (blockPosition.y > 0)
+		{
+			glm::ivec3 position = blockPosition;
+			position.y--;
+			if (chunk->getBlock(position) != 0)
+			{
+				return false;
+			}
+		}
+		break;
+	}
+
+	return true;
+}
+
+void ChunkMesh::setFace(Face face, glm::ivec3 position)
+{
+	std::vector<float> frontData = {
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+	};
+
+	std::vector<float> backData = {
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+	};
+
+	std::vector<float> leftData = {
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+	};
+
+	std::vector<float> rightData = {
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+	};
+
+	std::vector<float> topData = {
+		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+	};
+
+	std::vector<float> bottomData = {
+		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
+		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
+		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
+		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
+	};
+
+	std::vector<unsigned int> faceIndices = {
+		0, 1, 2,
+		0, 2, 3,
+
+		//4, 5, 6,
+		//4, 6, 7,
+
+		//8, 9, 10,
+		//8, 10, 11,
+
+		//12, 13, 14,
+		//12, 14, 15,
+
+		//16, 17, 18,
+		//16, 18, 19,
+
+		//20, 21, 22,
+		//20, 22, 23
+	};
+
+	for (unsigned int& index : faceIndices)
+	{
+		if (elements.size())
+		{
+			index += elements.size() / 6 * 4;
+		}
+	}
+
+	switch (face)
+	{
+	case ChunkMesh::Face::Front:
+		data.insert(data.end(), frontData.begin(), frontData.end());
+		break;
+	case ChunkMesh::Face::Back:
+		data.insert(data.end(), backData.begin(), backData.end());
+		break;
+	case ChunkMesh::Face::Left:
+		data.insert(data.end(), leftData.begin(), leftData.end());
+		break;
+	case ChunkMesh::Face::Right:
+		data.insert(data.end(), rightData.begin(), rightData.end());
+		break;
+	case ChunkMesh::Face::Top:
+		data.insert(data.end(), topData.begin(), topData.end());
+		break;
+	case ChunkMesh::Face::Bottom:
+		data.insert(data.end(), bottomData.begin(), bottomData.end());
+		break;
+	}
+
+	elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
+}
+
+bool ChunkMesh::isBlockSurroundedBySolidBlocks(glm::ivec3 blockPosition)
 {
 	size_t count = 0;
 

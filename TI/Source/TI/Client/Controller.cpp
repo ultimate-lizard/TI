@@ -109,6 +109,7 @@ void PlayerController::spawnRandomBlock()
 			if (Plane* plane = transformComponent->getPlane())
 			{
 				plane->spawnRandomBlock();
+				// plane->spawnBlock(transformComponent->getPosition());
 				// TODO: Find better way to do this
 				if (auto localClient = dynamic_cast<LocalClient*>(client))
 				{

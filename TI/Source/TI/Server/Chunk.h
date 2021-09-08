@@ -11,8 +11,8 @@ class Chunk
 public:
 	Chunk(unsigned int size = DEFAULT_CHUNK_SIZE, const glm::vec3& pos = glm::vec3(0.0f));
 
-	unsigned int getBlock(const glm::uvec3& pos);
-	unsigned int getBlock(unsigned int index);
+	unsigned int getBlock(const glm::uvec3& pos) const;
+	unsigned int getBlock(unsigned int index) const;
 
 	const std::vector<unsigned int>& getBlocks() const;
 

@@ -12,6 +12,16 @@ class Chunk;
 
 class ChunkMesh
 {
+	enum class Face
+	{
+		Front,
+		Back,
+		Left,
+		Right,
+		Top,
+		Bottom
+	};
+
 public:
 	ChunkMesh(const Chunk* const chunk);
 
@@ -26,7 +36,10 @@ public:
 	void rebuildMesh();
 
 private:
-	bool isBlockSurroundedBySolidBlocks(const Chunk* const chunk, glm::ivec3 blockPosition);
+	bool isBlockSurroundedBySolidBlocks(glm::ivec3 blockPosition);
+	bool isFaceNextToAir(Face face, const glm::ivec3& blockPosition);
+
+	void setFace(Face face, glm::ivec3 position);
 
 private:
 	unsigned long long chunkSize;

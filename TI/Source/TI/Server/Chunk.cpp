@@ -5,15 +5,15 @@ Chunk::Chunk(unsigned int size, const glm::vec3& pos) :
 	pos(pos)
 {
 	unsigned long long longSize = size;
-	blocks.resize(longSize * longSize * longSize, 0);
+	blocks.resize(longSize * longSize * longSize, 1);
 }
 
-unsigned int Chunk::getBlock(const glm::uvec3& pos)
+unsigned int Chunk::getBlock(const glm::uvec3& pos) const
 {
 	return blocks[(pos.z * size * size) + (pos.y * size) + pos.x];
 }
 
-unsigned int Chunk::getBlock(unsigned int index)
+unsigned int Chunk::getBlock(unsigned int index) const
 {
 	return blocks[index];
 }

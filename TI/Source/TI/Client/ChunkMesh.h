@@ -28,15 +28,12 @@ public:
 	ChunkMesh(const ChunkMesh&) = delete;
 	ChunkMesh(ChunkMesh&&) = delete;
 
-	void setBlock(const glm::ivec3 position);
-
 	Mesh& getMesh();
 	Material& getMaterial();
 
 	void rebuildMesh();
 
 private:
-	bool isBlockSurroundedBySolidBlocks(glm::ivec3 blockPosition);
 	bool isFaceNextToAir(Face face, const glm::ivec3& blockPosition);
 
 	void setFace(Face face, glm::ivec3 position);

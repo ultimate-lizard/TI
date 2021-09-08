@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 #include <iostream>
+#include <array>
 
 // TODO: Change chunk pointer to reference
 ChunkMesh::ChunkMesh(const Chunk* const chunk) :
@@ -17,72 +18,6 @@ ChunkMesh::ChunkMesh(const Chunk* const chunk) :
 	material.setTexture("../Textures/dirt.jpg");
 
 	rebuildMesh();
-}
-
-void ChunkMesh::setBlock(const glm::ivec3 position)
-{
-	std::vector<float> cubeData = {
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-	};
-
-	std::vector<unsigned int> blockIndices = {
-		0, 1, 2,
-		0, 2, 3,
-
-		4, 5, 6,
-		4, 6, 7,
-
-		8, 9, 10,
-		8, 10, 11,
-
-		12, 13, 14,
-		12, 14, 15,
-
-		16, 17, 18,
-		16, 18, 19,
-
-		20, 21, 22,
-		20, 22, 23
-	};
-
-	for (unsigned int& index : blockIndices)
-	{
-		if (elements.size())
-		{
-			index += elements.size() / 36 * 24;
-		}
-	}
-
-	data.insert(data.end(), cubeData.begin(), cubeData.end());
-	elements.insert(elements.end(), blockIndices.begin(), blockIndices.end());
 }
 
 Mesh& ChunkMesh::getMesh()
@@ -118,11 +53,6 @@ void ChunkMesh::rebuildMesh()
 			if (blocks[i] != 0) // if block is not air
 			{
 				glm::ivec3 position = { x, y, z };
-				//if (!isBlockSurroundedBySolidBlocks(position))
-				//{
-				//	setBlock(position);
-				//	elementsCount++;
-				//}
 
 				for (int i = 0; i < 6; ++i)
 				{
@@ -131,10 +61,6 @@ void ChunkMesh::rebuildMesh()
 					{
 						setFace(face, position);
 						++elementsCount;
-					}
-					else
-					{
-						// std::cout << "My " << i << " side is next to air"
 					}
 				}
 			}
@@ -248,66 +174,51 @@ bool ChunkMesh::isFaceNextToAir(Face face, const glm::ivec3& blockPosition)
 
 void ChunkMesh::setFace(Face face, glm::ivec3 position)
 {
-	std::vector<float> frontData = {
+	const std::array<float, 20> FRONT_DATA {
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 	};
 
-	std::vector<float> backData = {
+	const std::array<float, 20> BACK_DATA = {
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 	};
 
-	std::vector<float> leftData = {
+	const std::array<float, 20> LEFT_DATA = {
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 	};
 
-	std::vector<float> rightData = {
+	const std::array<float, 20> RIGHT_DATA = {
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 	};
 
-	std::vector<float> topData = {
+	const std::array<float, 20> TOP_DATA = {
 		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 	};
 
-	std::vector<float> bottomData = {
+	const std::array<float, 20> BOTTOM_DATA = {
 		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
 		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
 		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
 	};
 
-	std::vector<unsigned int> faceIndices = {
+	std::array<unsigned int, 6> faceIndices = {
 		0, 1, 2,
 		0, 2, 3,
-
-		//4, 5, 6,
-		//4, 6, 7,
-
-		//8, 9, 10,
-		//8, 10, 11,
-
-		//12, 13, 14,
-		//12, 14, 15,
-
-		//16, 17, 18,
-		//16, 18, 19,
-
-		//20, 21, 22,
-		//20, 22, 23
 	};
 
 	for (unsigned int& index : faceIndices)
@@ -318,90 +229,30 @@ void ChunkMesh::setFace(Face face, glm::ivec3 position)
 		}
 	}
 
+	const std::array<float, 20>* faceData = nullptr;
+
 	switch (face)
 	{
 	case ChunkMesh::Face::Front:
-		data.insert(data.end(), frontData.begin(), frontData.end());
+		faceData = &FRONT_DATA;
 		break;
 	case ChunkMesh::Face::Back:
-		data.insert(data.end(), backData.begin(), backData.end());
+		faceData = &BACK_DATA;
 		break;
 	case ChunkMesh::Face::Left:
-		data.insert(data.end(), leftData.begin(), leftData.end());
+		faceData = &LEFT_DATA;
 		break;
 	case ChunkMesh::Face::Right:
-		data.insert(data.end(), rightData.begin(), rightData.end());
+		faceData = &RIGHT_DATA;
 		break;
 	case ChunkMesh::Face::Top:
-		data.insert(data.end(), topData.begin(), topData.end());
+		faceData = &TOP_DATA;
 		break;
 	case ChunkMesh::Face::Bottom:
-		data.insert(data.end(), bottomData.begin(), bottomData.end());
+		faceData = &BOTTOM_DATA;
 		break;
 	}
 
+	data.insert(data.end(), faceData->begin(), faceData->end());
 	elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
-}
-
-bool ChunkMesh::isBlockSurroundedBySolidBlocks(glm::ivec3 blockPosition)
-{
-	size_t count = 0;
-
-	const std::vector<unsigned int>& blocks = chunk->getBlocks();
-
-	if (blockPosition.x < chunkSize - 1)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize) + blockPosition.x + 1;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	if (blockPosition.x > 0)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize) + blockPosition.x - 1;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	if (blockPosition.y < chunkSize - 1)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize + 1) + blockPosition.x;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	if (blockPosition.y > 0)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize) + (blockPosition.y * chunkSize - 1) + blockPosition.x;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	if (blockPosition.z < chunkSize - 1)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize + 1) + (blockPosition.y * chunkSize) + blockPosition.x;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	if (blockPosition.z > 0)
-	{
-		unsigned int index = (blockPosition.z * chunkSize * chunkSize - 1) + (blockPosition.y * chunkSize) + blockPosition.x;
-		if (blocks[index] != 0)
-		{
-			++count;
-		}
-	}
-
-	return count == 6;
 }

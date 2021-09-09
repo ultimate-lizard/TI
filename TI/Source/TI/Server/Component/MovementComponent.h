@@ -35,6 +35,8 @@ public:
 
 	std::unique_ptr<Component> clone() const override;
 
+	const glm::vec3& getForward() const;
+
 private:
 	TransformComponent* transformComponent;
 

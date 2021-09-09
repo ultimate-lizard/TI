@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <SDL.h>
+#include <glad/glad.h>
 
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Renderer/Camera.h>
@@ -13,6 +14,7 @@
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/ChunkMesh.h>
+#include <TI/Renderer/Renderer.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
@@ -100,7 +102,7 @@ void PlayerController::releaseMouse()
 	app->getInput()->releaseMouse();
 }
 
-void PlayerController::spawnRandomBlock()
+void PlayerController::castRayWithCollision()
 {
 	if (entity)
 	{
@@ -108,14 +110,101 @@ void PlayerController::spawnRandomBlock()
 		{
 			if (Plane* plane = transformComponent->getPlane())
 			{
-				plane->spawnRandomBlock();
-				// plane->spawnBlock(transformComponent->getPosition());
+				// Trace function here
+				if (auto localClient = dynamic_cast<LocalClient*>(client))
+				{
+					if (auto movementComponent = entity->findComponent<MovementComponent>())
+					{
+						const float COLLISION_PRECISION = 0.01f;
+
+						glm::vec3 start = transformComponent->getPosition();
+
+						float distance = 10.0f;
+						glm::vec3 end = start + movementComponent->getForward() * distance;
+
+						bool found = false;
+
+						for (float i = 0.0f; i < distance; i += COLLISION_PRECISION)
+						{
+							glm::vec3 cur = start + movementComponent->getForward() * i;
+
+							if (plane->getBlock(cur) != 0)
+							{
+								localClient->drawDebugPoint(cur, { 1.0f, 0.0f, 0.0f, 1.0f }, 20.0f);
+								localClient->drawDebugLine(start, cur, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
+
+								found = true;
+
+								break;
+							}
+						}
+
+						if (!found)
+						{
+							localClient->drawDebugLine(start, end, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
+						}
+					}
+				}
+
+				plane->getBlock(transformComponent->getPosition());
+
 				// TODO: Find better way to do this
 				if (auto localClient = dynamic_cast<LocalClient*>(client))
 				{
 					localClient->getChunkMesh()->rebuildMesh();
 				}
 			}			
+		}
+	}
+}
+
+void PlayerController::destroyBlock()
+{
+	if (entity)
+	{
+		if (auto transformComponent = entity->findComponent<TransformComponent>())
+		{
+			if (Plane* plane = transformComponent->getPlane())
+			{
+				if (auto localClient = dynamic_cast<LocalClient*>(client))
+				{
+					if (auto movementComponent = entity->findComponent<MovementComponent>())
+					{
+						float distance = 2.0f;
+						glm::vec3 start = transformComponent->getPosition();
+
+						for (float i = 0.0f; i < distance; i += 0.01f)
+						{
+							glm::vec3 cur = start + movementComponent->getForward() * i;
+							if (plane->getBlock(cur) != 0)
+							{
+								plane->spawnBlock(cur, 0);
+								break;
+							}
+						}
+					}
+				}
+
+				// TODO: Find better way to do this
+				if (auto localClient = dynamic_cast<LocalClient*>(client))
+				{
+					localClient->getChunkMesh()->rebuildMesh();
+				}
+			}
+		}
+	}
+}
+
+void PlayerController::togglePolygonMode()
+{
+	static bool polygon = false;
+
+	if (client)
+	{
+		if (Renderer* renderer = client->getApplication()->getRenderer())
+		{
+			polygon = !polygon;
+			renderer->setPolygonMode(polygon ? GL_LINE : GL_FILL);
 		}
 	}
 }
@@ -136,6 +225,9 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("QuitGame", ActionInputType::KeyPress, std::bind(&PlayerController::quitGame, this));
 		inputHandler->bindKey("ReleaseMouse", ActionInputType::KeyPress, std::bind(&PlayerController::releaseMouse, this));
 
-		inputHandler->bindKey("SpawnBlock", ActionInputType::KeyPress, std::bind(&PlayerController::spawnRandomBlock, this));
+		inputHandler->bindKey("SpawnBlock", ActionInputType::KeyPress, std::bind(&PlayerController::castRayWithCollision, this));
+		inputHandler->bindKey("DestroyBlock", ActionInputType::KeyPress, std::bind(&PlayerController::destroyBlock, this));
+
+		inputHandler->bindKey("TogglePolygonMode", ActionInputType::KeyPress, std::bind(&PlayerController::togglePolygonMode, this));
 	}
 }

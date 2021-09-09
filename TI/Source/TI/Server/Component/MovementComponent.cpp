@@ -151,6 +151,11 @@ std::unique_ptr<Component> MovementComponent::clone() const
 	return std::make_unique<MovementComponent>(*this);
 }
 
+const glm::vec3& MovementComponent::getForward() const
+{
+	return forward;
+}
+
 void MovementComponent::operator=(const MovementComponent& otherMovementComp)
 {
 	yawRate = otherMovementComp.yawRate;

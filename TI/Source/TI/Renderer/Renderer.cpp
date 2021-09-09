@@ -108,6 +108,7 @@ void Renderer::render()
 			auto mesh = command.mesh;
 
 			glLineWidth(command.lineWidth);
+			glPointSize(command.lineWidth);
 
 			glBindVertexArray(command.mesh->getVAO());
 			if (mesh->getIndicesCount())
@@ -161,6 +162,11 @@ Viewport* Renderer::getViewport(unsigned int id)
 void Renderer::setLineWidth(float width)
 {
 	glLineWidth(width);
+}
+
+void Renderer::setPolygonMode(int mode)
+{
+	glPolygonMode(GL_FRONT, mode);
 }
 
 void Renderer::createDefaultViewport(Window* window)

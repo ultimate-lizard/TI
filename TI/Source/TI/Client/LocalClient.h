@@ -11,11 +11,12 @@ class Mesh;
 class Material;
 class ChunkMesh;
 
-struct DebugLine
+struct DebugMeshInfo
 {
 	std::string name;
 	glm::vec4 color;
 	float width;
+	int meshType;
 };
 
 class LocalClient : public Client
@@ -37,6 +38,7 @@ public:
 	unsigned int getViewportId() const;
 
 	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width);
+	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width);
 
 	// TODO: This is a temporary method
 	ChunkMesh* getChunkMesh();
@@ -54,7 +56,7 @@ private:
 
 	// Debug info rendering
 	// TODO: Maybe move to ModelManager?
-	std::vector<DebugLine> debugMeshes;
+	std::vector<DebugMeshInfo> debugMeshes;
 	Material* debugMaterial;
 
 	ChunkMesh* chunkMesh;

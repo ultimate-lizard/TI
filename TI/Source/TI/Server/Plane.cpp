@@ -31,11 +31,39 @@ void Plane::spawnRandomBlock()
 	}
 }
 
-void Plane::spawnBlock(glm::ivec3 position)
+void Plane::spawnBlock(glm::ivec3 position, unsigned int blockType)
 {
 	if (!chunks.empty())
 	{
 		Chunk& chunk = chunks[0];
-		chunk.setBlock(position, 1);
+		chunk.setBlock(position, blockType);
 	}
+}
+
+unsigned int Plane::getBlock(const glm::vec3& pos) const
+{
+	if (pos.x < 0.f || pos.y < 0.f || pos.z < 0.f)
+	{
+		return 0;
+	}
+
+	int cx = pos.x / chunkSize; // + (pos.x % chunkSize);
+	int cy = pos.y / chunkSize; // + (pos.y % chunkSize);
+	int cz = pos.z / chunkSize; // + (pos.z % chunkSize);
+
+	long long index = (cz * 4 * 4) + (cy * 4) + cx;
+
+	if (chunks.size() - 1 >= index)
+	{
+		glm::ivec3 positive = pos;
+		positive.x = cx + positive.x % chunkSize;
+		positive.y = cy + positive.y % chunkSize;
+		positive.z = cz + positive.z % chunkSize;
+
+		// make sure we're getting the right block from chunk
+		
+		return chunks[index].getBlock(positive);
+	}
+
+	return 0;
 }

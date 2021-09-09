@@ -39,7 +39,11 @@ private:
 	void quitGame();
 	void releaseMouse();
 
-	void spawnRandomBlock();
+	void castRayWithCollision();
+
+	void destroyBlock();
+
+	void togglePolygonMode();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComp;

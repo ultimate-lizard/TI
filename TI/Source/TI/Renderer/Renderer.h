@@ -41,6 +41,8 @@ public:
 
 	void setLineWidth(float width);
 
+	void setPolygonMode(int mode);
+
 private:
 	void createDefaultViewport(Window* window);
 

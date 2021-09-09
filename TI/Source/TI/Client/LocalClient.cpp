@@ -97,13 +97,13 @@ void LocalClient::update(float dt)
 	// Render debug stuff
 	for (int i = 0; i < debugMeshes.size(); ++i)
 	{
-		DebugLine& debugLine = debugMeshes[i];
+		DebugMeshInfo& debugMeshInfo = debugMeshes[i];
 
 		Model* model = app->getModelManager()->findModel("DebugMesh" + std::to_string(i));
 
 		if (model)
 		{
-			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, GL_LINES, debugLine.width);
+			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width);
 		}
 	}
 
@@ -181,7 +181,29 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width });
+	debugMeshes.push_back({ name, color, width, GL_LINES });
+}
+
+void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width)
+{
+	Material mat;
+	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat.setColor(color);
+
+	MeshBuilder meshBuilder;
+	meshBuilder.setPositions({ position });
+
+	Mesh mesh = meshBuilder.build();
+
+	auto model = std::make_unique<Model>();
+	model->setMesh(std::move(mesh));
+	model->setMaterial(std::move(mat));
+
+	std::string name = "DebugMesh" + std::to_string(debugMeshes.size());
+
+	app->getModelManager()->addModel(name, std::move(model));
+
+	debugMeshes.push_back({ name, color, width, GL_POINTS });
 }
 
 ChunkMesh* LocalClient::getChunkMesh()

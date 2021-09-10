@@ -2,6 +2,8 @@
 
 #include <filesystem>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <TI/Client/ClientConnectionRequest.h>
 #include <TI/Server/Server.h>
 #include <TI/Application.h>
@@ -20,8 +22,7 @@
 
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
-	viewportId(0),
-	chunkMesh(nullptr)
+	viewportId(0)
 {
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
@@ -32,6 +33,19 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	loadMappings();
 }
 
+LocalClient::~LocalClient()
+{
+	for (auto& mesh : chunkMeshes)
+	{
+		if (mesh)
+		{
+			delete mesh;
+		}
+	}
+
+	chunkMeshes.clear();
+}
+
 void LocalClient::connect(const std::string& ip, int port)
 {
 	if (Server* server = app->getCurrentServer())
@@ -39,9 +53,9 @@ void LocalClient::connect(const std::string& ip, int port)
 		server->connectClient(this, ip, port);
 
 		const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
-		if (!chunks.empty())
+		for (unsigned int i = 0; i < chunks.size(); ++i)
 		{
-			chunkMesh = new ChunkMesh(&chunks.at(0));
+			chunkMeshes.push_back(new ChunkMesh(&chunks[i]));
 		}
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
@@ -108,13 +122,15 @@ void LocalClient::update(float dt)
 	}
 
 	// Render world
-	if (chunkMesh)
+	if (renderer)
 	{
-		if (renderer)
+		for (ChunkMesh* chunkMesh : chunkMeshes)
 		{
-			renderer->pushRender(&chunkMesh->getMesh(), &chunkMesh->getMaterial(), glm::mat4(1.0f), viewportId);
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMesh->getPosition());
+			renderer->pushRender(&chunkMesh->getMesh(), &chunkMesh->getMaterial(), transform, viewportId);
 		}
 	}
+	
 
 	// Render entities
 	for (auto& entityPair : server->getEntities())
@@ -206,9 +222,9 @@ void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& col
 	debugMeshes.push_back({ name, color, width, GL_POINTS });
 }
 
-ChunkMesh* LocalClient::getChunkMesh()
+std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()
 {
-	return chunkMesh;
+	return chunkMeshes;
 }
 
 void LocalClient::loadConfig()

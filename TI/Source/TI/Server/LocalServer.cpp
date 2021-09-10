@@ -9,6 +9,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/SceneNode.h>
+#include <TI/Server/Plane.h>
 
 LocalServer::LocalServer(Application* app) :
 	Server(app)
@@ -53,9 +54,14 @@ void LocalServer::spawnPlayer(Client* const client)
 {
 	Entity* const player = spawnEntity(client->getName(), "Player");
 
-	if (auto transformComponent = player->findComponent<TransformComponent>())
+	if (plane)
 	{
-		transformComponent->setPosition({ -1.0f, 0.0f, 0.0f });
+		glm::ivec3 planeSize = plane->getSize();
+
+		if (auto transformComponent = player->findComponent<TransformComponent>())
+		{
+			transformComponent->setPosition({ -1.0f, planeSize.y* plane->getChunkSize() + 2.0f, 0.0f });
+		}
 	}
 	
 	possesEntity(client->getName(), client);

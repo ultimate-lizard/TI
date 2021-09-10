@@ -36,6 +36,8 @@ void ChunkMesh::rebuildMesh()
 	elements.clear();
 	elementsCount = 0;
 
+	std::cout << "Rebuilding chunk: " << chunk->getPosition().x << " " << chunk->getPosition().y << " " << chunk->getPosition().z << std::endl;
+
 	if (chunk)
 	{
 		chunkSize = chunk->getSize();
@@ -83,6 +85,11 @@ void ChunkMesh::rebuildMesh()
 		std::cout << "Mesh  vertex  draw count: " << data.size() / 5 << std::endl;
 		std::cout << "Mesh elements draw count: " << elements.size() << std::endl;
 	}
+}
+
+const glm::vec3& ChunkMesh::getPosition() const
+{
+	return chunk->getPosition();
 }
 
 bool ChunkMesh::isFaceNextToAir(Face face, const glm::ivec3& blockPosition)

@@ -110,7 +110,6 @@ void PlayerController::castRayWithCollision()
 		{
 			if (Plane* plane = transformComponent->getPlane())
 			{
-				// Trace function here
 				if (auto localClient = dynamic_cast<LocalClient*>(client))
 				{
 					if (auto movementComponent = entity->findComponent<MovementComponent>())
@@ -145,14 +144,6 @@ void PlayerController::castRayWithCollision()
 						}
 					}
 				}
-
-				plane->getBlock(transformComponent->getPosition());
-
-				// TODO: Find better way to do this
-				if (auto localClient = dynamic_cast<LocalClient*>(client))
-				{
-					localClient->getChunkMesh()->rebuildMesh();
-				}
 			}			
 		}
 	}
@@ -170,7 +161,7 @@ void PlayerController::destroyBlock()
 				{
 					if (auto movementComponent = entity->findComponent<MovementComponent>())
 					{
-						float distance = 2.0f;
+						float distance = 3.0f;
 						glm::vec3 start = transformComponent->getPosition();
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
@@ -179,16 +170,13 @@ void PlayerController::destroyBlock()
 							if (plane->getBlock(cur) != 0)
 							{
 								plane->spawnBlock(cur, 0);
+								unsigned int chunkIndex = plane->planePositionToChunkIndex(cur);
+								localClient->getChunkMeshes()[chunkIndex]->rebuildMesh();
+
 								break;
 							}
 						}
 					}
-				}
-
-				// TODO: Find better way to do this
-				if (auto localClient = dynamic_cast<LocalClient*>(client))
-				{
-					localClient->getChunkMesh()->rebuildMesh();
 				}
 			}
 		}

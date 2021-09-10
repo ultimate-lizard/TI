@@ -33,6 +33,8 @@ public:
 
 	void rebuildMesh();
 
+	const glm::vec3& getPosition() const;
+
 private:
 	bool isFaceNextToAir(Face face, const glm::ivec3& blockPosition);
 

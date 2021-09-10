@@ -1,16 +1,32 @@
 #include "Plane.h"
 
-Plane::Plane(const glm::vec3& pos, unsigned int chunkSize) :
-	pos(pos),
+#include <iostream>
+
+Plane::Plane(const glm::vec3& pos, const glm::ivec3& size, unsigned int chunkSize) :
+	position(pos),
+	size(size),
 	chunkSize(chunkSize)
 {
-	for (int i = 0; i < 1; ++i)
+	for (int z = 0; z < size.z; ++z)
 	{
-		for (int y = 0; y < 1; ++y)
+		for (int y = 0; y < size.y; ++y)
 		{
-			chunks.emplace_back(chunkSize, glm::vec3(static_cast<float>(i * chunkSize), static_cast<float>(y * chunkSize), 0.0f));
+			for (int x = 0; x < size.x; ++x)
+			{
+				chunks.emplace_back(chunkSize, glm::vec3(static_cast<float>(x * chunkSize), static_cast<float>(y * chunkSize), static_cast<float>(z * chunkSize)));
+			}
 		}
 	}
+}
+
+const glm::ivec3& Plane::getSize() const
+{
+	return size;
+}
+
+unsigned int Plane::getChunkSize() const
+{
+	return chunkSize;
 }
 
 const std::vector<Chunk>& Plane::getChunks() const
@@ -31,39 +47,46 @@ void Plane::spawnRandomBlock()
 	}
 }
 
-void Plane::spawnBlock(glm::ivec3 position, unsigned int blockType)
+void Plane::spawnBlock(const glm::vec3& position, unsigned int blockType)
 {
-	if (!chunks.empty())
+	if (!isPositionInPlaneBounds(position) || chunks.empty())
 	{
-		Chunk& chunk = chunks[0];
-		chunk.setBlock(position, blockType);
+		return;
 	}
+
+
+	Chunk& chunk = chunks[planePositionToChunkIndex(position)];
+	std::cout << "Spawning at chunk: " << chunk.getPosition().x << " " << chunk.getPosition().y << " " << chunk.getPosition().z << std::endl;
+	chunk.setBlock(position, blockType);
 }
 
 unsigned int Plane::getBlock(const glm::vec3& pos) const
 {
-	if (pos.x < 0.f || pos.y < 0.f || pos.z < 0.f)
+	if (!isPositionInPlaneBounds(pos) || chunks.empty())
 	{
 		return 0;
 	}
 
-	int cx = pos.x / chunkSize; // + (pos.x % chunkSize);
-	int cy = pos.y / chunkSize; // + (pos.y % chunkSize);
-	int cz = pos.z / chunkSize; // + (pos.z % chunkSize);
+	const Chunk& chunk = chunks[planePositionToChunkIndex(pos)];
+	return chunk.getBlock(chunk.planePositionToBlockIndex(pos));
+}
 
-	long long index = (cz * 4 * 4) + (cy * 4) + cx;
+unsigned long long Plane::planePositionToChunkIndex(const glm::vec3& position) const
+{
+	unsigned long long z = (static_cast<unsigned long long>(position.z) / chunkSize) * size.x * size.y;
+	unsigned long long y = (static_cast<unsigned long long>(position.y) / chunkSize) * size.x;
+	unsigned long long x = static_cast<unsigned long long>(position.x) / chunkSize;
 
-	if (chunks.size() - 1 >= index)
+	return x + y + z;
+}
+
+bool Plane::isPositionInPlaneBounds(const glm::vec3& position) const
+{
+	if (position.x < 0.0f || position.y < 0.0f || position.z < 0.0f ||
+		position.x >= size.x * chunkSize || position.y >= size.y * chunkSize || position.z >= size.z * chunkSize)
 	{
-		glm::ivec3 positive = pos;
-		positive.x = cx + positive.x % chunkSize;
-		positive.y = cy + positive.y % chunkSize;
-		positive.z = cz + positive.z % chunkSize;
-
-		// make sure we're getting the right block from chunk
-		
-		return chunks[index].getBlock(positive);
+		return false;
 	}
 
-	return 0;
+	return true;
 }

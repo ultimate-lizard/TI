@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <glm/glm.hpp>
 
 #include <TI/Client/Client.h>
@@ -23,6 +25,7 @@ class LocalClient : public Client
 {
 public:
 	LocalClient(Application* app, const std::string& name = "Player");
+	~LocalClient();
 
 	void update(float dt) override;
 
@@ -41,7 +44,7 @@ public:
 	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width);
 
 	// TODO: This is a temporary method
-	ChunkMesh* getChunkMesh();
+	std::vector<ChunkMesh*>& getChunkMeshes();
 
 private:
 	void loadConfig();
@@ -59,5 +62,5 @@ private:
 	std::vector<DebugMeshInfo> debugMeshes;
 	Material* debugMaterial;
 
-	ChunkMesh* chunkMesh;
+	std::vector<ChunkMesh*> chunkMeshes;
 };

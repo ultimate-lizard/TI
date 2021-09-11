@@ -55,7 +55,7 @@ void LocalClient::connect(const std::string& ip, int port)
 		const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
 		for (unsigned int i = 0; i < chunks.size(); ++i)
 		{
-			chunkMeshes.push_back(new ChunkMesh(&chunks[i]));
+			chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
 		}
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);

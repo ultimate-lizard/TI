@@ -22,6 +22,7 @@ public:
 	void spawnBlock(const glm::vec3& position, unsigned int blockType);
 
 	unsigned int getBlock(const glm::vec3& pos) const;
+	const Chunk* getChunk(const glm::vec3& pos) const;
 
 	unsigned long long planePositionToChunkIndex(const glm::vec3& position) const;
 

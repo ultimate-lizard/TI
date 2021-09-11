@@ -1,18 +1,20 @@
 #include "ChunkMesh.h"
 
-#include <TI/Server/Chunk.h>
-
-#include <glad/glad.h>
-
 #include <iostream>
 #include <array>
 
+#include <glad/glad.h>
+
+#include <TI/Server/Chunk.h>
+#include <TI/Server/Plane.h>
+
 // TODO: Change chunk pointer to reference
-ChunkMesh::ChunkMesh(const Chunk* const chunk) :
+ChunkMesh::ChunkMesh(const Chunk* const chunk, const Plane* plane) :
 	chunkSize(0),
 	mesh(),
 	chunk(chunk),
-	elementsCount(0)
+	elementsCount(0),
+	plane(plane)
 {
 	material.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
 	material.setTexture("../Textures/dirt.jpg");
@@ -35,8 +37,6 @@ void ChunkMesh::rebuildMesh()
 	data.clear();
 	elements.clear();
 	elementsCount = 0;
-
-	std::cout << "Rebuilding chunk: " << chunk->getPosition().x << " " << chunk->getPosition().y << " " << chunk->getPosition().z << std::endl;
 
 	if (chunk)
 	{
@@ -81,9 +81,6 @@ void ChunkMesh::rebuildMesh()
 
 		mesh.setPositionsCount(data.size() / 5);
 		mesh.setIndicesCount(elements.size());
-		
-		std::cout << "Mesh  vertex  draw count: " << data.size() / 5 << std::endl;
-		std::cout << "Mesh elements draw count: " << elements.size() << std::endl;
 	}
 }
 
@@ -94,86 +91,32 @@ const glm::vec3& ChunkMesh::getPosition() const
 
 bool ChunkMesh::isFaceNextToAir(Face face, const glm::ivec3& blockPosition)
 {
-	if (!chunk)
+	if (!chunk || !plane)
 	{
 		return true;
 	}
 
 	const std::vector<unsigned int>& blocks = chunk->getBlocks();
 
+	glm::ivec3 position = blockPosition;
+
+	position.x += chunk->getPosition().x;
+	position.y += chunk->getPosition().y;
+	position.z += chunk->getPosition().z;
+
 	switch (face)
 	{
-	case Face::Front:
-		if (blockPosition.z < chunkSize - 1)
-		{
-			glm::ivec3 position = blockPosition;
-			position.z++;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
+		case Face::Front: position.z++; break;
+		case Face::Back: position.z--; break;
+		case Face::Left: position.x--; break;
+		case Face::Right: position.x++; break;
+		case Face::Top: position.y++; break;
+		case Face::Bottom: position.y--; break;
+	}
 
-	case Face::Back:
-		if (blockPosition.z > 0)
-		{
-			glm::ivec3 position = blockPosition;
-			position.z--;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case Face::Left:
-		if (blockPosition.x > 0)
-		{
-			glm::ivec3 position = blockPosition;
-			position.x--;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case Face::Right:
-		if (blockPosition.x < chunkSize - 1)
-		{
-			glm::ivec3 position = blockPosition;
-			position.x++;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case Face::Top:
-		if (blockPosition.y < chunkSize - 1)
-		{
-			glm::ivec3 position = blockPosition;
-			position.y++;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
-
-	case Face::Bottom:
-		if (blockPosition.y > 0)
-		{
-			glm::ivec3 position = blockPosition;
-			position.y--;
-			if (chunk->getBlock(position) != 0)
-			{
-				return false;
-			}
-		}
-		break;
+	if (plane->getBlock(position) != 0)
+	{
+		return false;
 	}
 
 	return true;

@@ -54,9 +54,7 @@ void Plane::spawnBlock(const glm::vec3& position, unsigned int blockType)
 		return;
 	}
 
-
 	Chunk& chunk = chunks[planePositionToChunkIndex(position)];
-	std::cout << "Spawning at chunk: " << chunk.getPosition().x << " " << chunk.getPosition().y << " " << chunk.getPosition().z << std::endl;
 	chunk.setBlock(position, blockType);
 }
 
@@ -69,6 +67,16 @@ unsigned int Plane::getBlock(const glm::vec3& pos) const
 
 	const Chunk& chunk = chunks[planePositionToChunkIndex(pos)];
 	return chunk.getBlock(chunk.planePositionToBlockIndex(pos));
+}
+
+const Chunk* Plane::getChunk(const glm::vec3& pos) const
+{
+	if (!isPositionInPlaneBounds(pos))
+	{
+		return nullptr;
+	}
+
+	return &chunks[planePositionToChunkIndex(pos)];
 }
 
 unsigned long long Plane::planePositionToChunkIndex(const glm::vec3& position) const

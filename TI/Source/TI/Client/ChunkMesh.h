@@ -9,6 +9,7 @@
 #include <TI/Renderer/Material.h>
 
 class Chunk;
+class Plane;
 
 class ChunkMesh
 {
@@ -23,7 +24,7 @@ class ChunkMesh
 	};
 
 public:
-	ChunkMesh(const Chunk* const chunk);
+	ChunkMesh(const Chunk* const chunk, const Plane* plane);
 
 	ChunkMesh(const ChunkMesh&) = delete;
 	ChunkMesh(ChunkMesh&&) = delete;
@@ -51,4 +52,5 @@ private:
 	size_t elementsCount;
 
 	const Chunk* const chunk;
+	const Plane* plane;
 };

@@ -170,8 +170,14 @@ void PlayerController::destroyBlock()
 							if (plane->getBlock(cur) != 0)
 							{
 								plane->spawnBlock(cur, 0);
-								unsigned int chunkIndex = plane->planePositionToChunkIndex(cur);
-								localClient->getChunkMeshes()[chunkIndex]->rebuildMesh();
+
+								/*unsigned int chunkIndex = plane->planePositionToChunkIndex(cur);
+								localClient->getChunkMeshes()[chunkIndex]->rebuildMesh();*/
+
+								for (ChunkMesh* mesh : localClient->getChunkMeshes())
+								{
+									mesh->rebuildMesh();
+								}
 
 								break;
 							}

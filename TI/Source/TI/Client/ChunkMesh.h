@@ -32,6 +32,7 @@ public:
 	Mesh& getMesh();
 	Material& getMaterial();
 
+	// TODO: Refactor this. This is a very slow function and can't be called when a player places blocks
 	void rebuildMesh();
 
 	const glm::vec3& getPosition() const;

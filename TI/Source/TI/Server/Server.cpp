@@ -159,7 +159,11 @@ void Server::possesEntity(const std::string& entityName, Client* const client)
 
 		if (auto transformComponent = possesedEntity->findComponent<TransformComponent>())
 		{
-			possesedEntity->addComponent<MovementComponent>(transformComponent);
+			auto movementComponent = possesedEntity->addComponent<MovementComponent>(transformComponent);
+			if (!app->getLocalClients().empty())
+			{
+				movementComponent->getParentEntity()->setLocalClient(app->getLocalClients()[0]);
+			}
 		}
 		else
 		{

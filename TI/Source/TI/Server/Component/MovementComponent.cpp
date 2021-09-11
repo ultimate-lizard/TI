@@ -6,6 +6,10 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Plane.h>
+#include <TI/Client/LocalClient.h>
+
+float maxVelocity = 100.0f;
 
 MovementComponent::MovementComponent(TransformComponent* const transformComponent) :
 	transformComponent(transformComponent),
@@ -69,26 +73,108 @@ void MovementComponent::tick(float dt)
 	up = glm::normalize(glm::cross(right, forward));
 
 	glm::vec3 position = transformComponent->getPosition();
+
+	// COLLISION DETECTION
+	glm::vec3 playerMin = position;
+	playerMin.x -= 0.5f;
+	playerMin.y -= 1.8f;
+	playerMin.z -= 0.5f;
+
+	glm::vec3 playerMax = position;
+	playerMax.x += 0.5f;
+	playerMax.y += 0.2f;
+	playerMax.z += 0.5f;
+
+	std::vector<std::pair<glm::uvec3, glm::uvec3>> blocksAround;
+
+	const Plane* plane = transformComponent->getPlane();
+
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -2; y <= 2; ++y)
+		{
+			for (int z = -1; z <= 1; ++z)
+			{
+				glm::vec3 playerPos = position;
+				playerPos.x += x;
+				playerPos.y += y;
+				playerPos.z += z;
+
+				if (plane->getBlock(playerPos) != 0)
+				{
+					glm::uvec3 blockMin;
+					glm::uvec3 blockMax;
+
+					blockMin = playerPos;
+					blockMax = playerPos;
+
+					blockMax.x += 1;
+					blockMax.y += 1;
+					blockMax.z += 1;
+
+					// entity->getLocalClient()->drawDebugLine(blockMin, blockMax, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f);
+
+					blocksAround.push_back({ blockMin, blockMax });
+				}
+			}
+		}
+	}
+
+	bool collidedX = false;
+	bool collidedY = false;
+	bool collidedZ = false;
+	for (const auto& pair : blocksAround)
+	{
+		const glm::uvec3 blockMin = pair.first;
+		const glm::uvec3 blockMax = pair.second;
+
+		if (playerMin.y <= blockMax.y && playerMax.y >= blockMin.y)
+		{
+			collidedY = true;
+		}
+
+		if (playerMin.x <= blockMax.x && playerMax.x >= blockMin.x)
+		{
+			collidedX = true;
+		}
+
+		if (playerMin.z <= blockMax.z && playerMax.z >= blockMin.z)
+		{
+			collidedZ = true;
+		}
+	}
+
 	position += getVelocity().z * (speed * forward) * dt;
 	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
 
-	//glm::vec3 rotation;
-	//rotation.x = pitch;
-	//rotation.y = yaw;
+	// GRAVITY
+	static float adjuster = 0.0f;
 
-	transformComponent->setPosition(position);
-	transformComponent->setRotation(rotation);
-
-	/*if (CameraComponent* cameraComp = entity->findComponent<CameraComponent>())
+	if (velocity.x || velocity.y || velocity.z)
 	{
-		if (Camera* camera = cameraComp->getCamera())
+		adjuster = 0.0f;
+	}
+	else
+	{
+		adjuster += dt * 0.15f;
+		if (adjuster > maxVelocity)
 		{
-			camera->setPosition(position);
-			camera->setForward(forward);
-			camera->setRight(right);
-			camera->setUp(up);
+			adjuster = maxVelocity;
 		}
-	}*/
+
+		if (collidedY)
+		{
+			adjuster = 0.0f;
+		}
+		else
+		{
+			// apply gravity
+			position += glm::vec3(0.0f, -1.0f, 0.0f) * adjuster;
+		}
+	}
+
+	transformComponent->setRotation(rotation);
+	transformComponent->setPosition(position);
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)

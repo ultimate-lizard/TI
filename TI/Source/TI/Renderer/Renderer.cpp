@@ -33,7 +33,7 @@ Renderer::Renderer(Window* window) :
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
 
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 
 	createDefaultViewport(window);
 }

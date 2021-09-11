@@ -60,7 +60,7 @@ void LocalServer::spawnPlayer(Client* const client)
 
 		if (auto transformComponent = player->findComponent<TransformComponent>())
 		{
-			transformComponent->setPosition({ -1.0f, planeSize.y* plane->getChunkSize() + 2.0f, 0.0f });
+			transformComponent->setPosition({ planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y* plane->getChunkSize() + 2.0f, planeSize.z * plane->getChunkSize() / 2.0f });
 		}
 	}
 	

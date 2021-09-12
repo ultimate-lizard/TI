@@ -12,4 +12,5 @@ struct RenderCommand
 	glm::mat4 transform;
 	unsigned int renderMode;
 	float lineWidth = 1.0f;
+	bool wireframe = false;
 };

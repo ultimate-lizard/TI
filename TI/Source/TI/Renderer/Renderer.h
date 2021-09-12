@@ -28,7 +28,7 @@ public:
 	Renderer(Window* window);
 	~Renderer();
 
-	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES, float lineWidth = 1.0f);
+	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES, float lineWidth = 1.0f, bool wireframe = false);
 	void pushRender(MeshComponent* meshComponent, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES);
 
 	void render();

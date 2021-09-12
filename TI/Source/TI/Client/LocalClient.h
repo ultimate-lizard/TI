@@ -20,6 +20,7 @@ struct DebugMeshInfo
 	float width;
 	int meshType;
 	bool persistent;
+	bool wireframe = true;
 };
 
 class LocalClient : public Client

@@ -127,7 +127,7 @@ void LocalClient::update(float dt)
 
 		if (model)
 		{
-			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width);
+			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width, debugMeshInfo.wireframe);
 		}
 
 		if (!debugMeshInfo.persistent)
@@ -207,7 +207,7 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 	model->setMesh(std::move(mesh));
 	model->setMaterial(std::move(mat));
 
-	std::string name = "DebugMesh" + random_string(10);
+	std::string name = "DebugMesh_" + random_string(10);
 
 	app->getModelManager()->addModel(name, std::move(model));
 
@@ -229,7 +229,7 @@ void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& col
 	model->setMesh(std::move(mesh));
 	model->setMaterial(std::move(mat));
 
-	std::string name = "DebugMesh" + random_string(10);
+	std::string name = "DebugMesh_" + random_string(10);
 
 	app->getModelManager()->addModel(name, std::move(model));
 
@@ -241,88 +241,48 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 	Material mat;
 	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
 	mat.setColor(color);
+	mat.setTexture("../Textures/container.jpg");
 
 	MeshBuilder meshBuilder;
 
 	meshBuilder.setPositions({
-		// front
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
-		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
-		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
-		glm::vec3(0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f,  0.5f,  0.5f),
-		glm::vec3(-0.5f, -0.5f,  0.5f),
-		glm::vec3(0.5f, -0.5f,  0.5f),
-
-		// back
-		glm::vec3(-0.5f,  0.5f,  -0.5f),
-		glm::vec3(0.5f,  0.5f,   -0.5f),
-		glm::vec3(0.5f, -0.5f,   -0.5f),
-		glm::vec3(-0.5f, -0.5f,  -0.5f),
-
-		// left
-		glm::vec3(-0.5f,  0.5f,   0.5f),
-		glm::vec3(-0.5f,  0.5f,  -0.5f),
-		glm::vec3(-0.5f, -0.5f,  -0.5f),
-		glm::vec3(-0.5f, -0.5f,   0.5f),
-
-		// right
-		glm::vec3(0.5f,  0.5f,  -0.5f),
-		glm::vec3(0.5f,  0.5f,   0.5f),
-		glm::vec3(0.5f, -0.5f,   0.5f),
-		glm::vec3(0.5f, -0.5f,  -0.5f),
-
-		// top
-		glm::vec3(0.5f, 0.5f,   0.5f),
-		glm::vec3(0.5f, 0.5f,  -0.5f),
-		glm::vec3(-0.5f, 0.5f,  -0.5f),
-		glm::vec3(-0.5f, 0.5f,   0.5f),
-
-		// bottom
-		glm::vec3(0.5f,  -0.5f,  -0.5f),
-		glm::vec3(0.5f,  -0.5f,   0.5f),
-		glm::vec3(-0.5f, -0.5f,   0.5f),
-		glm::vec3(-0.5f, -0.5f,  -0.5f),
-
-		});
+		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+	});
 
 	meshBuilder.setIndices({
 		0, 1, 2,
 		0, 2, 3,
-
 		4, 5, 6,
 		4, 6, 7,
-
 		8, 9, 10,
 		8, 10, 11,
-
 		12, 13, 14,
 		12, 14, 15,
-
 		16, 17, 18,
 		16, 18, 19,
-
 		20, 21, 22,
 		20, 22, 23
 	});
@@ -333,11 +293,11 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 	model->setMesh(std::move(mesh));
 	model->setMaterial(std::move(mat));
 
-	std::string name = "DebugMesh" + random_string(10);
+	std::string name = "DebugMesh_" + random_string(10);
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_LINES, persistent });
+	debugMeshes.push_back({ name, color, width, GL_TRIANGLES, persistent, true });
 }
 
 std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()

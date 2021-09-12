@@ -43,13 +43,13 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId, unsigned int renderMode, float lineWidth)
+void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId, unsigned int renderMode, float lineWidth, bool wireframe)
 {
 	if (auto iter = viewportsMap.find(viewportId); iter != viewportsMap.end())
 	{
 		if (!iter->second.isEnabled()) return;
 
-		iter->second.getRenderCommands().push_front({ mesh, material, transform, renderMode, lineWidth });
+		iter->second.getRenderCommands().push_front({ mesh, material, transform, renderMode, lineWidth, wireframe });
 	}
 }
 
@@ -109,6 +109,7 @@ void Renderer::render()
 
 			glLineWidth(command.lineWidth);
 			glPointSize(command.lineWidth);
+			setPolygonMode(command.wireframe ? GL_LINE : GL_FILL);
 
 			glBindVertexArray(command.mesh->getVAO());
 			if (mesh->getIndicesCount())

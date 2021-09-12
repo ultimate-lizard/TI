@@ -15,7 +15,7 @@ Texture::Texture(const std::string& path) :
 
 Texture::~Texture()
 {
-
+	glDeleteTextures(1, &id);
 }
 
 void Texture::create(int width, int height)

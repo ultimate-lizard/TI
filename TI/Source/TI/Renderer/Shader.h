@@ -16,6 +16,7 @@ class Shader
 public:
 	Shader() : id(0) {}
 	Shader(const std::string& vertexCodePath, const std::string& fragmentCodePath);
+	~Shader();
 
 	void load(const std::string& vertexCodePath, const std::string& fragmentCodePath);
 	void use();

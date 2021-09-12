@@ -15,7 +15,8 @@
 
 Renderer::Renderer(Window* window) :
 	glContext(nullptr),
-	camera(nullptr)
+	camera(nullptr),
+	wireframe(false)
 {
 	glContext = SDL_GL_CreateContext(window->getSdlWindow());
 
@@ -29,9 +30,9 @@ Renderer::Renderer(Window* window) :
 
 	glEnable(GL_DEPTH_TEST);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	//glFrontFace(GL_CCW);
 
 	SDL_GL_SetSwapInterval(0);
 
@@ -109,7 +110,8 @@ void Renderer::render()
 
 			glLineWidth(command.lineWidth);
 			glPointSize(command.lineWidth);
-			setPolygonMode(command.wireframe ? GL_LINE : GL_FILL);
+
+			glPolygonMode(GL_FRONT_AND_BACK, command.wireframe || wireframe ? GL_LINE : GL_FILL);
 
 			if (command.cullFaces)
 			{
@@ -174,9 +176,9 @@ void Renderer::setLineWidth(float width)
 	glLineWidth(width);
 }
 
-void Renderer::setPolygonMode(int mode)
+void Renderer::setWireframe(bool flag)
 {
-	glPolygonMode(GL_FRONT_AND_BACK, mode);
+	wireframe = flag;
 }
 
 void Renderer::createDefaultViewport(Window* window)

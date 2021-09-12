@@ -12,6 +12,11 @@ Shader::Shader(const std::string& vertexCodePath, const std::string& fragmentCod
 	load(vertexCodePath, fragmentCodePath);
 }
 
+Shader::~Shader()
+{
+	glDeleteProgram(id);
+}
+
 void Shader::load(const std::string& vertexCodePath, const std::string& fragmentCodePath)
 {
 	unsigned int vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
@@ -53,6 +58,9 @@ void Shader::load(const std::string& vertexCodePath, const std::string& fragment
 	glAttachShader(id, vertexShaderId);
 	glAttachShader(id, fragmentShaderId);
 	glLinkProgram(id);
+
+	glDeleteShader(vertexShaderId);
+	glDeleteShader(fragmentShaderId);
 
 	int uniformCount = 0;
 	glGetProgramiv(id, GL_ACTIVE_UNIFORMS, &uniformCount);

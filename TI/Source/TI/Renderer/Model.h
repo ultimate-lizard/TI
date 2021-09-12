@@ -1,9 +1,13 @@
 #pragma once
 
+#include <iostream>
+
 #include <glm/glm.hpp>
 
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Material.h>
+
+
 
 class Model
 {
@@ -19,3 +23,4 @@ private:
 	Mesh mesh;
 	Material material;
 };
+

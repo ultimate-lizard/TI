@@ -79,7 +79,7 @@ void MovementComponent::tick(float dt)
 	playerMax.y += 0.5f;
 	playerMax.z += 0.5f;
 
-	// entity->getLocalClient()->drawDebugBox(playerMin, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+	entity->getLocalClient()->drawDebugBox(playerMin, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
 
 	position += getVelocity().z * (speed * forward) * dt;
 	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;

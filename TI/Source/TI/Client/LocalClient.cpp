@@ -63,8 +63,6 @@ void LocalClient::connect(const std::string& ip, int port)
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
-
-		drawDebugBox(glm::vec3(-1.0f), { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, true);
 	}
 }
 
@@ -248,30 +246,6 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 	MeshBuilder meshBuilder;
 
 	meshBuilder.setPositions({
-		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
 		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
 		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
 		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
@@ -321,7 +295,7 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 
 	std::string name = "DebugMesh_" + random_string(10);
 
-	app->getModelManager()->addModel(name, std::move(model));
+	 app->getModelManager()->addModel(name, std::move(model));
 
 	debugMeshes.push_back({ name, color, width, GL_TRIANGLES, persistent, true });
 }

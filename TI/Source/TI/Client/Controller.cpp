@@ -198,7 +198,7 @@ void PlayerController::togglePolygonMode()
 		if (Renderer* renderer = client->getApplication()->getRenderer())
 		{
 			polygon = !polygon;
-			renderer->setPolygonMode(polygon ? GL_LINE : GL_FILL);
+			renderer->setWireframe(polygon);
 		}
 	}
 }

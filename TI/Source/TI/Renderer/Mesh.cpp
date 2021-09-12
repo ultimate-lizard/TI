@@ -88,6 +88,11 @@ Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::ve
 	glBindVertexArray(0);
 }
 
+Mesh::~Mesh()
+{
+
+}
+
 const unsigned int Mesh::getVAO() const
 {
 	return vao;

@@ -14,6 +14,7 @@ public:
 	Mesh(const Mesh&) = default;
 	Mesh(Mesh&&) = default;
 	Mesh& operator=(const Mesh&) = default;
+	~Mesh();
 
 	const unsigned int getVAO() const;
 	const unsigned int getEBO() const;

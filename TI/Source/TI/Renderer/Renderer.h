@@ -41,7 +41,7 @@ public:
 
 	void setLineWidth(float width);
 
-	void setPolygonMode(int mode);
+	void setWireframe(bool flag);
 
 private:
 	void createDefaultViewport(Window* window);
@@ -57,4 +57,6 @@ private:
 	std::map<int, Viewport> viewportsMap;
 
 	std::vector<Mesh*> debugMeshes;
+
+	bool wireframe;
 };

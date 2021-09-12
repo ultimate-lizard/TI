@@ -98,14 +98,6 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	for (int i : meshesToErase)
-	{
-		app->getModelManager()->removeModel(debugMeshes[i].name);
-		debugMeshes.erase(debugMeshes.begin() + i);
-	}
-
-	meshesToErase.clear();
-
 	Renderer* const renderer = app->getRenderer();
 	if (!renderer)
 	{
@@ -129,11 +121,6 @@ void LocalClient::update(float dt)
 		{
 			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width, debugMeshInfo.wireframe, false);
 		}
-
-		if (!debugMeshInfo.persistent)
-		{
-			meshesToErase.push_back(i);
-		}
 	}
 
 	// Render world
@@ -142,7 +129,7 @@ void LocalClient::update(float dt)
 		for (ChunkMesh* chunkMesh : chunkMeshes)
 		{
 			glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMesh->getPosition());
-			renderer->pushRender(&chunkMesh->getMesh(), &chunkMesh->getMaterial(), transform, viewportId);
+			renderer->pushRender(chunkMesh->getMesh(), chunkMesh->getMaterial(), transform, viewportId);
 		}
 	}
 	
@@ -192,16 +179,16 @@ unsigned int LocalClient::getViewportId() const
 	return viewportId;
 }
 
-void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent)
+void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width)
 {
-	Material mat;
-	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	mat.setColor(color);
+	auto mat = std::make_unique<Material>();
+	mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat->setColor(color);
 
 	MeshBuilder meshBuilder;
 	meshBuilder.setPositions({ start, end });
 
-	Mesh mesh = meshBuilder.build();
+	std::unique_ptr<Mesh> mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
 	model->setMesh(std::move(mesh));
@@ -211,19 +198,19 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_LINES, persistent });
+	debugMeshes.push_back({ name, color, width, GL_LINES });
 }
 
 void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width)
 {
-	Material mat;
-	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	mat.setColor(color);
+	auto mat = std::make_unique<Material>();
+	mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat->setColor(color);
 
 	MeshBuilder meshBuilder;
 	meshBuilder.setPositions({ position });
 
-	Mesh mesh = meshBuilder.build();
+	std::unique_ptr<Mesh> mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
 	model->setMesh(std::move(mesh));
@@ -233,15 +220,14 @@ void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& col
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_POINTS, true });
+	debugMeshes.push_back({ name, color, width, GL_POINTS });
 }
 
-void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent)
+void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width)
 {
-	Material mat;
-	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	mat.setColor(color);
-	mat.setTexture("../Textures/container.jpg");
+	auto mat = std::make_unique<Material>();
+	mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat->setColor(color);
 
 	MeshBuilder meshBuilder;
 
@@ -287,7 +273,7 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 		20, 22, 23
 	});
 
-	Mesh mesh = meshBuilder.build();
+	std::unique_ptr<Mesh> mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
 	model->setMesh(std::move(mesh));
@@ -297,7 +283,7 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 
 	 app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_TRIANGLES, persistent, true });
+	debugMeshes.push_back({ name, color, width, GL_TRIANGLES, true });
 }
 
 std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()

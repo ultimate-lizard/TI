@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include <glm/glm.hpp>
 
@@ -11,9 +12,8 @@ class Mesh
 
 public:
 	Mesh() = default;
-	Mesh(const Mesh&) = default;
-	Mesh(Mesh&&) = default;
-	Mesh& operator=(const Mesh&) = default;
+	Mesh(const Mesh&) = delete;
+	Mesh(Mesh&&) = delete;
 	~Mesh();
 
 	const unsigned int getVAO() const;
@@ -56,8 +56,8 @@ public:
 	void setUVs(std::vector<glm::vec2> uvs);
 	void setIndices(std::vector<unsigned int> indices);
 
-	Mesh build();
-	Mesh buildDyanmic(unsigned long long vboSize, unsigned long long eboSize);
+	std::unique_ptr<Mesh> build();
+	std::unique_ptr<Mesh> buildDyanmic(unsigned long long vboSize, unsigned long long eboSize);
 
 private:
 	std::vector<glm::vec3> positions;

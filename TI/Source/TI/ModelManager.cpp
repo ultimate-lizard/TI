@@ -103,14 +103,14 @@ ModelManager::ModelManager()
 		glm::vec2(0.0f, 0.0f),
 	});
 
-	Mesh mesh = meshBuilder.build();
+	std::unique_ptr<Mesh> mesh = meshBuilder.build();
 
 	auto model = std::make_unique<Model>();
-	model->setMesh(mesh);
+	model->setMesh(std::move(mesh));
 
-	Material mat;
-	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	mat.setTexture("../Textures/container.jpg");
+	auto mat = std::make_unique<Material>();
+	mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat->setTexture("../Textures/container.jpg");
 
 	model->setMaterial(std::move(mat));
 
@@ -119,9 +119,9 @@ ModelManager::ModelManager()
 	auto playerModel = std::make_unique<Model>();
 	playerModel->setMesh(std::move(mesh));
 
-	Material playerMat;
-	playerMat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	playerMat.setTexture("../Textures/player.jpg");
+	auto playerMat = std::make_unique<Material>();
+	playerMat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	playerMat->setTexture("../Textures/player.jpg");
 
 	playerModel->setMaterial(std::move(playerMat));
 

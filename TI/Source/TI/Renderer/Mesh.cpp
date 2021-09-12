@@ -157,12 +157,14 @@ void MeshBuilder::setIndices(std::vector<unsigned int> indices)
 	this->indices = indices;
 }
 
-Mesh MeshBuilder::build()
+std::unique_ptr<Mesh> MeshBuilder::build()
 {
-	return Mesh(std::move(positions), std::move(uvs), std::move(indices));
+	Mesh* mesh = new Mesh(std::move(positions), std::move(uvs), std::move(indices));
+	return std::unique_ptr<Mesh>(mesh);
 }
 
-Mesh MeshBuilder::buildDyanmic(unsigned long long vboSize, unsigned long long eboSize)
+std::unique_ptr<Mesh> MeshBuilder::buildDyanmic(unsigned long long vboSize, unsigned long long eboSize)
 {
-	return Mesh(vboSize, eboSize);
+	Mesh* mesh = new Mesh(vboSize, eboSize);
+	return std::unique_ptr<Mesh>(mesh);
 }

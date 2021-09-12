@@ -11,25 +11,26 @@
 // TODO: Change chunk pointer to reference
 ChunkMesh::ChunkMesh(const Chunk* const chunk, const Plane* plane) :
 	chunkSize(0),
-	mesh(),
 	chunk(chunk),
 	elementsCount(0),
-	plane(plane)
+	plane(plane),
+	mesh(std::make_unique<Mesh>()),
+	material(std::make_unique<Material>())
 {
-	material.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	material.setTexture("../Textures/dirt.jpg");
+	material->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	material->setTexture("../Textures/dirt.jpg");
 
 	rebuildMesh();
 }
 
-Mesh& ChunkMesh::getMesh()
+Mesh* ChunkMesh::getMesh()
 {
-	return mesh;
+	return mesh.get();
 }
 
-Material& ChunkMesh::getMaterial()
+Material* ChunkMesh::getMaterial()
 {
-	return material;
+	return material.get();
 }
 
 void ChunkMesh::rebuildMesh()
@@ -68,7 +69,7 @@ void ChunkMesh::rebuildMesh()
 			}
 		}
 
-		if (!mesh.isDynamic())
+		if (!mesh->isDynamic())
 		{
 			MeshBuilder builder;
 			unsigned long long s = (chunkSize * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
@@ -76,11 +77,11 @@ void ChunkMesh::rebuildMesh()
 			mesh = builder.buildDyanmic(s, e);
 		}
 
-		mesh.setBufferSubData(0, data);
-		mesh.setElementsSubData(0, elements);
+		mesh->setBufferSubData(0, data);
+		mesh->setElementsSubData(0, elements);
 
-		mesh.setPositionsCount(data.size() / 5);
-		mesh.setIndicesCount(elements.size());
+		mesh->setPositionsCount(data.size() / 5);
+		mesh->setIndicesCount(elements.size());
 	}
 }
 

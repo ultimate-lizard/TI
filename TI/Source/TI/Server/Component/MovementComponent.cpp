@@ -70,20 +70,18 @@ void MovementComponent::tick(float dt)
 	glm::vec3 position = transformComponent->getPosition();
 
 	glm::vec3 playerMin = position;
-	playerMin.x -= 0.5f;
-	playerMin.y -= 0.5f;
-	playerMin.z -= 0.5f;
+	playerMin.x -= 0.1f;
+	playerMin.y -= 0.1f;
+	playerMin.z -= 0.1f;
 
 	glm::vec3 playerMax = position;
-	playerMax.x += 0.5f;
-	playerMax.y += 0.5f;
-	playerMax.z += 0.5f;
-
-	entity->getLocalClient()->drawDebugBox(playerMin, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+	playerMax.x += 0.1f;
+	playerMax.y += 0.1f;
+	playerMax.z += 0.1f;
 
 	position += getVelocity().z * (speed * forward) * dt;
 	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
-		
+	
 	transformComponent->setRotation(rotation);
 	transformComponent->setPosition(position);
 }

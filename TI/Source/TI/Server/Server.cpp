@@ -31,7 +31,7 @@ void Server::initEntityTemplates()
 
 	// Setup local coordinates for the camera
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	// camera->setPosition({ -0.5f, 0.3f, -0.2f });
+	camera->setPosition({ -0.5f, 0.3f, -0.2f });
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));

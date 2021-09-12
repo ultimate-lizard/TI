@@ -29,8 +29,8 @@ public:
 	ChunkMesh(const ChunkMesh&) = delete;
 	ChunkMesh(ChunkMesh&&) = delete;
 
-	Mesh& getMesh();
-	Material& getMaterial();
+	Mesh* getMesh();
+	Material* getMaterial();
 
 	// TODO: Refactor this. This is a very slow function and can't be called when a player places blocks
 	void rebuildMesh();
@@ -45,8 +45,8 @@ private:
 private:
 	unsigned long long chunkSize;
 
-	Mesh mesh;
-	Material material;
+	std::unique_ptr<Mesh> mesh;
+	std::unique_ptr<Material> material;
 
 	std::vector<float> data;
 	std::vector<unsigned int> elements;

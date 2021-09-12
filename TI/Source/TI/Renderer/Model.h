@@ -1,26 +1,22 @@
 #pragma once
 
-#include <iostream>
-
 #include <glm/glm.hpp>
 
 #include <TI/Renderer/Mesh.h>
 #include <TI/Renderer/Material.h>
 
-
-
 class Model
 {
 public:
-	void setMesh(Mesh mesh);
+	Model();
 
-	void setMaterial(Material&& material);
+	void setMesh(std::unique_ptr<Mesh> mesh);
+	void setMaterial(std::unique_ptr<Material> material);
 
 	Mesh* const getMesh();
 	Material* const getMaterial();
 
 private:
-	Mesh mesh;
-	Material material;
+	std::unique_ptr<Mesh> mesh;
+	std::unique_ptr<Material> material;
 };
-

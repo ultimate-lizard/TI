@@ -1,28 +1,29 @@
 #pragma once
 
-#include <memory>
+#include <glm/glm.hpp>
 
-#include <TI/Renderer/Texture.h>
-#include <TI/Renderer/Shader.h>
+class Shader;
+class Texture;
 
 class Material
 {
 public:
-	Material();
+	Material(Shader* shader, Texture* texture, const glm::vec4& color = glm::vec4(0.0f));
 
-	void setShader(const std::string& vertShaderSrc, const std::string& fragShaderSrc);
-	void setTexture(const std::string& path);
+	void setShader(Shader* shader);
+	void setTexture(Texture* texture);
+
 	void setColor(const glm::vec4& color);
 
 	Material(const Material&) = delete;
 	Material(Material&&) = delete;
 
-	Shader* const getShader();
-	Texture* const getTexture();
+	Shader* getShader() const;
+	Texture* getTexture() const;
 	const glm::vec4& getColor() const;
 
 private:
-	std::unique_ptr<Shader> shader;
-	std::unique_ptr<Texture> texture;
+	Shader* shader;
+	Texture* texture;
 	glm::vec4 color;
 };

@@ -60,8 +60,10 @@ private:
 	unsigned int viewportId;
 
 	std::vector<DebugMeshInfo> debugMeshes;
+	// std::unique_ptr<Material> debugMeshMaterial;
 
-	Material* debugMaterial;
+	// Material* debugMaterial;
 
 	std::vector<ChunkMesh*> chunkMeshes;
+	Material* chunkMaterial;
 };

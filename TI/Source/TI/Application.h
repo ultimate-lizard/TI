@@ -17,7 +17,7 @@ class Server;
 class Client;
 class Entity;
 class LocalClient;
-class ModelManager;
+class ResourceManager;
 
 struct SDL_Window;
 
@@ -41,8 +41,8 @@ public:
 	std::vector<LocalClient*> getLocalClients() const;
 	const std::vector<std::unique_ptr<Client>>& getClients() const;
 
-	Renderer* const getRenderer() const;
-	ModelManager* const getModelManager() const;
+	Renderer* getRenderer() const;
+	ResourceManager* getResourceManager() const;
 
 	void addClient(std::unique_ptr<Client> client);
 	void removeClient(const std::string& name);
@@ -65,7 +65,7 @@ private:
 	Window window;
 
 	std::unique_ptr<Renderer> renderer;
-	std::unique_ptr<ModelManager> modelManager;
+	std::unique_ptr<ResourceManager> modelManager;
 
 	std::unique_ptr<Input> input;
 

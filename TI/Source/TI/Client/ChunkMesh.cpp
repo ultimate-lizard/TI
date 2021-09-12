@@ -14,23 +14,14 @@ ChunkMesh::ChunkMesh(const Chunk* const chunk, const Plane* plane) :
 	chunk(chunk),
 	elementsCount(0),
 	plane(plane),
-	mesh(std::make_unique<Mesh>()),
-	material(std::make_unique<Material>())
+	mesh(std::make_unique<Mesh>())
 {
-	material->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	material->setTexture("../Textures/dirt.jpg");
-
 	rebuildMesh();
 }
 
-Mesh* ChunkMesh::getMesh()
+Mesh& ChunkMesh::getMesh()
 {
-	return mesh.get();
-}
-
-Material* ChunkMesh::getMaterial()
-{
-	return material.get();
+	return *mesh.get();
 }
 
 void ChunkMesh::rebuildMesh()

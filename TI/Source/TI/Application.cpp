@@ -10,7 +10,7 @@
 #include <TI/Server/ListenServer.h>
 #include <TI/Server/RemoteServer.h>
 #include <TI/Client/LocalClient.h>
-#include <TI/ModelManager.h>
+#include <TI/ResourceManager.h>
 
 static const char* GAME_TITLE = "TI";
 
@@ -141,12 +141,12 @@ const std::vector<std::unique_ptr<Client>>& Application::getClients() const
 	return clients;
 }
 
-Renderer* const Application::getRenderer() const
+Renderer* Application::getRenderer() const
 {
 	return renderer.get();
 }
 
-ModelManager* const Application::getModelManager() const
+ResourceManager* Application::getResourceManager() const
 {
 	return modelManager.get();
 }
@@ -194,7 +194,7 @@ void Application::init()
 
 	renderer = std::make_unique<Renderer>(&window);
 
-	modelManager = std::make_unique<ModelManager>();
+	modelManager = std::make_unique<ResourceManager>();
 
 	input = std::make_unique<Input>(this);
 

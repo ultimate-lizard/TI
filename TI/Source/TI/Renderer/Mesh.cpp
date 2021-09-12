@@ -159,7 +159,7 @@ void MeshBuilder::setIndices(std::vector<unsigned int> indices)
 
 std::unique_ptr<Mesh> MeshBuilder::build()
 {
-	Mesh* mesh = new Mesh(std::move(positions), std::move(uvs), std::move(indices));
+	Mesh* mesh = new Mesh(positions, uvs, indices);
 	return std::unique_ptr<Mesh>(mesh);
 }
 

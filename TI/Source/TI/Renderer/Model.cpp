@@ -1,27 +1,25 @@
 #include "Model.h"
 
-Model::Model() :
-	mesh(std::make_unique<Mesh>()),
-	material(std::make_unique<Material>())
+#include <TI/Renderer/Mesh.h>
+
+Model::Model(std::unique_ptr<Mesh> mesh, Material* material) :
+	mesh(std::move(mesh)),
+	material(material)
 {
+
 }
 
-void Model::setMesh(std::unique_ptr<Mesh> mesh)
+void Model::setMaterial(Material* material)
 {
-	this->mesh = std::move(mesh);
+	this->material = material;
 }
 
-void Model::setMaterial(std::unique_ptr<Material> material)
-{
-	this->material = std::move(material);
-}
-
-Mesh* const Model::getMesh()
+Mesh* Model::getMesh()
 {
 	return mesh.get();
 }
 
-Material* const Model::getMaterial()
+Material* Model::getMaterial()
 {
-	return material.get();
+	return material;
 }

@@ -79,11 +79,12 @@ void MovementComponent::tick(float dt)
 	playerMax.y += 0.1f;
 	playerMax.z += 0.1f;
 
-	position += getVelocity().z * (speed * forward) * dt;
-	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+	// TODO: Use acceleration in collision checks
+	glm::vec3 acceleration = getVelocity().z * (speed * forward) * dt;
+	acceleration += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
 	
 	transformComponent->setRotation(rotation);
-	transformComponent->setPosition(position);
+	transformComponent->setPosition(position + acceleration);
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)

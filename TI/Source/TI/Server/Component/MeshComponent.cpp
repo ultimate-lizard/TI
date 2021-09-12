@@ -1,10 +1,10 @@
 #include "MeshComponent.h"
 
-#include <TI/ModelManager.h>
+#include <TI/ResourceManager.h>
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/TransformComponent.h>
 
-MeshComponent::MeshComponent(ModelManager* modelManager) :
+MeshComponent::MeshComponent(ResourceManager* modelManager) :
 	Component(),
 	SceneNode(),
 	modelManager(modelManager),
@@ -35,7 +35,7 @@ void MeshComponent::loadModel(const std::string& name)
 {
 	if (modelManager)
 	{
-		Model* const model = modelManager->findModel(name);
+		Model* const model = modelManager->getModel(name);
 		this->model = model;
 	}
 }

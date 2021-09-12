@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-// TODO: Right now the dynamic mesh has hardcoded layout. Implement passing layouts to mesh in the future
+// TODO: Right now the dynamic mesh has hardcoded layout. Implement passing layouts to mesh in the future?
 class Mesh
 {
 	friend class MeshBuilder;

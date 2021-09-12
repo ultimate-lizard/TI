@@ -189,7 +189,7 @@
     <ClCompile Include="Source\TI\Renderer\Material.cpp" />
     <ClCompile Include="Source\TI\Renderer\Mesh.cpp" />
     <ClCompile Include="Source\TI\Renderer\Model.cpp" />
-    <ClCompile Include="Source\TI\ModelManager.cpp" />
+    <ClCompile Include="Source\TI\ResourceManager.cpp" />
     <ClCompile Include="Source\TI\Renderer\Renderer.cpp" />
     <ClCompile Include="Source\TI\Renderer\Shader.cpp" />
     <ClCompile Include="Source\TI\Renderer\Texture.cpp" />
@@ -231,7 +231,7 @@
     <ClInclude Include="Source\TI\Renderer\Material.h" />
     <ClInclude Include="Source\TI\Renderer\Mesh.h" />
     <ClInclude Include="Source\TI\Renderer\Model.h" />
-    <ClInclude Include="Source\TI\ModelManager.h" />
+    <ClInclude Include="Source\TI\ResourceManager.h" />
     <ClInclude Include="Source\TI\Renderer\RenderCommand.h" />
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />

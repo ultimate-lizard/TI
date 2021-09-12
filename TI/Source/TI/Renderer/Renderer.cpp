@@ -6,9 +6,11 @@
 #include <glm/glm.hpp>
 
 #include <TI/Renderer/Mesh.h>
+#include <TI/Renderer/Model.h>
 #include <TI/Renderer/Shader.h>
 #include <TI/Renderer/Camera.h>
-#include <TI/Renderer/Model.h>
+#include <TI/Renderer/Texture.h>
+#include <TI/Renderer/Material.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Entity.h>
 #include <TI/Window.h>
@@ -30,10 +32,6 @@ Renderer::Renderer(Window* window) :
 
 	glEnable(GL_DEPTH_TEST);
 
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	//glFrontFace(GL_CCW);
-
 	SDL_GL_SetSwapInterval(0);
 
 	createDefaultViewport(window);
@@ -54,10 +52,10 @@ void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& trans
 	}
 }
 
+// Render should not work with components
+// TODO: Remove this method
 void Renderer::pushRender(MeshComponent* meshComponent, int viewportId, unsigned int renderMode)
 {
-	// Render should not work with components
-	// auto transformComp = meshComponent->getEntity()->findComponent<TransformComponent>();
 	auto model = meshComponent->getModel();
 	auto mesh = model->getMesh();
 	auto material = model->getMaterial();
@@ -73,41 +71,49 @@ void Renderer::render()
 
 	for (auto& viewportIter : viewportsMap)
 	{
-		auto& viewport = viewportIter.second;
+		Viewport& viewport = viewportIter.second;
 
 		viewport.bind();
 
-		auto viewportSize = viewport.getSize();
-
-		auto camera = viewport.getActiveCamera();
+		Camera* camera = viewport.getActiveCamera();
 		if (!camera)
 		{
 			continue;
 		}
 
-		auto& renderCommands = viewport.getRenderCommands();
-
-		const auto& projection = camera->getProjection();
-		const auto& view = camera->getView();
+		std::list<RenderCommand>& renderCommands = viewport.getRenderCommands();
 
 		while (!renderCommands.empty())
 		{
 			auto command = renderCommands.back();
 			renderCommands.pop_back();
 
-			command.material->getTexture()->bind();
+			if (!command.mesh)
+			{
+				continue;
+			}
 
-			auto shader = command.material->getShader();
-			shader->use();
+			if (command.material)
+			{
+				if (Texture* texture = command.material->getTexture())
+				{
+					texture->bind();
+				}
 
-			shader->setMatrix("projection", projection);
-			shader->setMatrix("view", view);
-			shader->setMatrix("model", command.transform);
+				Shader* shader = command.material->getShader();
+				// assert
+				shader->use();
 
-			shader->setVector("color", command.material->getColor());
+				const glm::mat4& projection = camera->getProjection();
+				const glm::mat4& view = camera->getView();
 
-			auto mesh = command.mesh;
+				shader->setMatrix("projection", projection);
+				shader->setMatrix("view", view);
+				shader->setMatrix("model", command.transform);
 
+				shader->setVector("color", command.material->getColor());
+			}
+			
 			glLineWidth(command.lineWidth);
 			glPointSize(command.lineWidth);
 
@@ -123,6 +129,8 @@ void Renderer::render()
 			}
 
 			glBindVertexArray(command.mesh->getVAO());
+
+			Mesh* mesh = command.mesh;
 			if (mesh->getIndicesCount())
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());

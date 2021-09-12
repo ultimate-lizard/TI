@@ -1,23 +1,16 @@
 #pragma once
 
-#include <list>
 #include <map>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <SDL.h>
-
-#include <TI/Renderer/FrameBuffer.h>
-#include <TI/Renderer/Mesh.h>
-#include <TI/Renderer/Shader.h>
-#include <TI/Renderer/Viewport.h>
-
 #include <glad/glad.h>
 
+#include <TI/Renderer/Viewport.h>
 #include <TI/Renderer/RenderCommand.h>
 
-class Shader;
 class Camera;
-class Model;
 class Material;
 class MeshComponent;
 class Window;

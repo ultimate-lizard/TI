@@ -14,39 +14,32 @@
 
 void Server::initEntityTemplates()
 {
-	// Player ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto playerEntity = std::make_unique<Entity>();
 	playerEntity->addComponent<TransformComponent>();
 
 	auto camera = std::make_unique<Camera>();
-	playerEntity->setName("Player");
-
-	/*auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getModelManager());
-	meshComponent->loadModel("player");
-
-	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
-	{
-		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
-	}*/
-
-	// Setup local coordinates for the camera
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
 	camera->setPosition({ -0.5f, 0.3f, -0.2f });
 
+	playerEntity->setName("Player");
+
+	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
+	meshComponent->loadModel("Player");
+	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
+	{
+		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	}
+
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
-
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
-	// Cube ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto cubeEntity = std::make_unique<Entity>();
 	cubeEntity->addComponent<TransformComponent>();
-
 	cubeEntity->setName("Cube");
 
-	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getModelManager());
-	cubeMeshComponent->loadModel("cube");
-	
+	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
+	cubeMeshComponent->loadModel("Cube");
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 }
 

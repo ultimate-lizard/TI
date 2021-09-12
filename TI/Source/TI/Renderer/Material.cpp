@@ -1,19 +1,20 @@
 #include "Material.h"
 
-Material::Material() :
-	shader(std::make_unique<Shader>()),
-	texture(std::make_unique<Texture>())
+Material::Material(Shader* shader, Texture* texture, const glm::vec4& color) :
+	shader(shader),
+	texture(texture),
+	color(color)
 {
 }
 
-void Material::setShader(const std::string& vertShaderSrc, const std::string& fragShaderSrc)
+void Material::setShader(Shader* shader)
 {
-	shader->load(vertShaderSrc, fragShaderSrc);
+	this->shader = shader;
 }
 
-void Material::setTexture(const std::string& path)
+void Material::setTexture(Texture* texture)
 {
-	texture->load(path);
+	this->texture = texture;
 }
 
 void Material::setColor(const glm::vec4& color)
@@ -21,14 +22,14 @@ void Material::setColor(const glm::vec4& color)
 	this->color = color;
 }
 
-Shader* const Material::getShader()
+Shader* Material::getShader() const
 {
-	return shader.get();
+	return shader;
 }
 
-Texture* const Material::getTexture()
+Texture* Material::getTexture() const
 {
-	return texture.get();
+	return texture;
 }
 
 const glm::vec4& Material::getColor() const

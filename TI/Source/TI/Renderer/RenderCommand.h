@@ -13,4 +13,5 @@ struct RenderCommand
 	unsigned int renderMode;
 	float lineWidth = 1.0f;
 	bool wireframe = false;
+	bool cullFaces = true;
 };

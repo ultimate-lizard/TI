@@ -63,6 +63,8 @@ void LocalClient::connect(const std::string& ip, int port)
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+
+		drawDebugBox(glm::vec3(-1.0f), { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, true);
 	}
 }
 
@@ -127,7 +129,7 @@ void LocalClient::update(float dt)
 
 		if (model)
 		{
-			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width, debugMeshInfo.wireframe);
+			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width, debugMeshInfo.wireframe, false);
 		}
 
 		if (!debugMeshInfo.persistent)
@@ -246,30 +248,54 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 	MeshBuilder meshBuilder;
 
 	meshBuilder.setPositions({
-		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
-		glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
-		glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
-		glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y, 0.0f + position.z),
+		//glm::vec3(0.0f + position.x,  size.y + position.y,  size.z + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y, 0.0f + position.z),
+		//glm::vec3( size.x + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y,  size.z + position.z),
+		//glm::vec3(0.0f + position.x, 0.0f + position.y, 0.0f + position.z),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
+		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
+		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
+		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
 	});
 
 	meshBuilder.setIndices({

@@ -1,6 +1,7 @@
 #include "LocalClient.h"
 
 #include <filesystem>
+#include <functional>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -19,6 +20,7 @@
 #include <TI/ModelManager.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Server/Plane.h>
+#include <TI/Util/Random.h>
 
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
@@ -96,6 +98,14 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
+	for (int i : meshesToErase)
+	{
+		app->getModelManager()->removeModel(debugMeshes[i].name);
+		debugMeshes.erase(debugMeshes.begin() + i);
+	}
+
+	meshesToErase.clear();
+
 	Renderer* const renderer = app->getRenderer();
 	if (!renderer)
 	{
@@ -113,11 +123,16 @@ void LocalClient::update(float dt)
 	{
 		DebugMeshInfo& debugMeshInfo = debugMeshes[i];
 
-		Model* model = app->getModelManager()->findModel("DebugMesh" + std::to_string(i));
+		Model* model = app->getModelManager()->findModel(debugMeshInfo.name);
 
 		if (model)
 		{
 			renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width);
+		}
+
+		if (!debugMeshInfo.persistent)
+		{
+			meshesToErase.push_back(i);
 		}
 	}
 
@@ -131,7 +146,6 @@ void LocalClient::update(float dt)
 		}
 	}
 	
-
 	// Render entities
 	for (auto& entityPair : server->getEntities())
 	{
@@ -178,7 +192,7 @@ unsigned int LocalClient::getViewportId() const
 	return viewportId;
 }
 
-void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width)
+void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent)
 {
 	Material mat;
 	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
@@ -193,11 +207,11 @@ void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, co
 	model->setMesh(std::move(mesh));
 	model->setMaterial(std::move(mat));
 
-	std::string name = "DebugMesh" + std::to_string(debugMeshes.size());
+	std::string name = "DebugMesh" + random_string(10);
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_LINES });
+	debugMeshes.push_back({ name, color, width, GL_LINES, persistent });
 }
 
 void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width)
@@ -215,11 +229,115 @@ void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& col
 	model->setMesh(std::move(mesh));
 	model->setMaterial(std::move(mat));
 
-	std::string name = "DebugMesh" + std::to_string(debugMeshes.size());
+	std::string name = "DebugMesh" + random_string(10);
 
 	app->getModelManager()->addModel(name, std::move(model));
 
-	debugMeshes.push_back({ name, color, width, GL_POINTS });
+	debugMeshes.push_back({ name, color, width, GL_POINTS, true });
+}
+
+void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent)
+{
+	Material mat;
+	mat.setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	mat.setColor(color);
+
+	MeshBuilder meshBuilder;
+
+	meshBuilder.setPositions({
+		// front
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y, -0.5f + position.z),
+		//glm::vec3(-0.5f + position.x,  0.5f + position.y,  0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		//glm::vec3( 0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y,  0.5f + position.z),
+		//glm::vec3(-0.5f + position.x, -0.5f + position.y, -0.5f + position.z),
+		glm::vec3(0.5f,  0.5f,  0.5f),
+		glm::vec3(-0.5f,  0.5f,  0.5f),
+		glm::vec3(-0.5f, -0.5f,  0.5f),
+		glm::vec3(0.5f, -0.5f,  0.5f),
+
+		// back
+		glm::vec3(-0.5f,  0.5f,  -0.5f),
+		glm::vec3(0.5f,  0.5f,   -0.5f),
+		glm::vec3(0.5f, -0.5f,   -0.5f),
+		glm::vec3(-0.5f, -0.5f,  -0.5f),
+
+		// left
+		glm::vec3(-0.5f,  0.5f,   0.5f),
+		glm::vec3(-0.5f,  0.5f,  -0.5f),
+		glm::vec3(-0.5f, -0.5f,  -0.5f),
+		glm::vec3(-0.5f, -0.5f,   0.5f),
+
+		// right
+		glm::vec3(0.5f,  0.5f,  -0.5f),
+		glm::vec3(0.5f,  0.5f,   0.5f),
+		glm::vec3(0.5f, -0.5f,   0.5f),
+		glm::vec3(0.5f, -0.5f,  -0.5f),
+
+		// top
+		glm::vec3(0.5f, 0.5f,   0.5f),
+		glm::vec3(0.5f, 0.5f,  -0.5f),
+		glm::vec3(-0.5f, 0.5f,  -0.5f),
+		glm::vec3(-0.5f, 0.5f,   0.5f),
+
+		// bottom
+		glm::vec3(0.5f,  -0.5f,  -0.5f),
+		glm::vec3(0.5f,  -0.5f,   0.5f),
+		glm::vec3(-0.5f, -0.5f,   0.5f),
+		glm::vec3(-0.5f, -0.5f,  -0.5f),
+
+		});
+
+	meshBuilder.setIndices({
+		0, 1, 2,
+		0, 2, 3,
+
+		4, 5, 6,
+		4, 6, 7,
+
+		8, 9, 10,
+		8, 10, 11,
+
+		12, 13, 14,
+		12, 14, 15,
+
+		16, 17, 18,
+		16, 18, 19,
+
+		20, 21, 22,
+		20, 22, 23
+	});
+
+	Mesh mesh = meshBuilder.build();
+
+	auto model = std::make_unique<Model>();
+	model->setMesh(std::move(mesh));
+	model->setMaterial(std::move(mat));
+
+	std::string name = "DebugMesh" + random_string(10);
+
+	app->getModelManager()->addModel(name, std::move(model));
+
+	debugMeshes.push_back({ name, color, width, GL_LINES, persistent });
 }
 
 std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()

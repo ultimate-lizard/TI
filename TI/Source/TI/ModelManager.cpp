@@ -143,3 +143,8 @@ void ModelManager::addModel(const std::string& name, std::unique_ptr<Model> mode
 {
 	models.emplace(name, std::move(model));
 }
+
+void ModelManager::removeModel(const std::string& name)
+{
+	models.erase(name);
+}

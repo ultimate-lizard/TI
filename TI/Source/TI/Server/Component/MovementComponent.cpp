@@ -8,6 +8,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/LocalClient.h>
+#include <TI/Client/ChunkMesh.h>
 
 float maxVelocity = 100.0f;
 
@@ -76,24 +77,27 @@ void MovementComponent::tick(float dt)
 
 	// COLLISION DETECTION
 	glm::vec3 playerMin = position;
-	playerMin.x -= 0.5f;
-	playerMin.y -= 1.8f;
-	playerMin.z -= 0.5f;
+	playerMin.x -= 0.1f;
+	playerMin.y -= 0.1f;
+	playerMin.z -= 0.1f;
 
 	glm::vec3 playerMax = position;
-	playerMax.x += 0.5f;
-	playerMax.y += 0.2f;
-	playerMax.z += 0.5f;
+	playerMax.x += 0.1f;
+	playerMax.y += 0.1f;
+	playerMax.z += 0.1f;
+
+	LocalClient* localClient = entity->getLocalClient();
+	localClient->drawDebugBox(position, glm::vec3(1.0f), { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, true);
 
 	std::vector<std::pair<glm::uvec3, glm::uvec3>> blocksAround;
 
-	const Plane* plane = transformComponent->getPlane();
+	Plane* plane = transformComponent->getPlane();
 
-	for (int x = -1; x <= 1; ++x)
+	for (int z = -1; z <= 1; ++z)
 	{
-		for (int y = -2; y <= 2; ++y)
+		for (int y = -1; y <= 1; ++y)
 		{
-			for (int z = -1; z <= 1; ++z)
+			for (int x = -1; x <= 1; ++x)
 			{
 				glm::vec3 playerPos = position;
 				playerPos.x += x;
@@ -112,13 +116,14 @@ void MovementComponent::tick(float dt)
 					blockMax.y += 1;
 					blockMax.z += 1;
 
-					// entity->getLocalClient()->drawDebugLine(blockMin, blockMax, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f);
-
 					blocksAround.push_back({ blockMin, blockMax });
 				}
 			}
 		}
 	}
+
+	std::vector<std::pair<glm::uvec3, glm::uvec3>> collidedBlocksX;
+	std::vector<std::pair<glm::uvec3, glm::uvec3>> collidedBlocksZ;
 
 	bool collidedX = false;
 	bool collidedY = false;
@@ -136,42 +141,92 @@ void MovementComponent::tick(float dt)
 		if (playerMin.x <= blockMax.x && playerMax.x >= blockMin.x)
 		{
 			collidedX = true;
+			collidedBlocksX.push_back({ blockMin, blockMax });
 		}
 
 		if (playerMin.z <= blockMax.z && playerMax.z >= blockMin.z)
 		{
 			collidedZ = true;
+			collidedBlocksZ.push_back({ blockMin, blockMax });
 		}
 	}
 
-	position += getVelocity().z * (speed * forward) * dt;
-	position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+	std::cout << "collidedBlocksX: " << collidedBlocksX.size() << std::endl;
 
-	// GRAVITY
-	static float adjuster = 0.0f;
-
-	if (velocity.x || velocity.y || velocity.z)
+	if (!collidedZ)
 	{
-		adjuster = 0.0f;
+		position += getVelocity().z * (speed * forward) * dt;
 	}
 	else
 	{
-		adjuster += dt * 0.15f;
-		if (adjuster > maxVelocity)
+		for (auto& pair : collidedBlocksZ)
 		{
-			adjuster = maxVelocity;
+			const glm::uvec3 blockMin = pair.first;
+			const glm::uvec3 blockMax = pair.second;
+
+			//position.z = blockMin.z - 1;
+
+			plane->spawnBlock(blockMin, 0);
 		}
 
-		if (collidedY)
+		for (ChunkMesh* mesh : entity->getLocalClient()->getChunkMeshes())
 		{
-			adjuster = 0.0f;
+			// mesh->rebuildMesh();
 		}
-		else
-		{
-			// apply gravity
-			position += glm::vec3(0.0f, -1.0f, 0.0f) * adjuster;
-		}
+
+		velocity.z = 0;
 	}
+	
+	if (!collidedX)
+	{
+		position += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
+	}
+	else
+	{
+		for (auto& pair : collidedBlocksX)
+		{
+			const glm::uvec3 blockMin = pair.first;
+			const glm::uvec3 blockMax = pair.second;
+
+			//position.x = blockMin.x - 1;
+
+			//plane->spawnBlock(blockMin, 0);
+		}
+
+		for (ChunkMesh* mesh : entity->getLocalClient()->getChunkMeshes())
+		{
+			// mesh->rebuildMesh();
+		}
+
+		velocity.x = 0;
+	}
+	//// GRAVITY
+	//static float adjuster = 0.0f;
+
+	//if (velocity.x || velocity.y || velocity.z)
+	//{
+	//	adjuster = 0.0f;
+	//}
+	//else
+	//{
+	//	adjuster += dt * 0.15f;
+	//	if (adjuster > maxVelocity)
+	//	{
+	//		adjuster = maxVelocity;
+	//	}
+
+	//	if (collidedY)
+	//	{
+	//		adjuster = 0.0f;
+	//	}
+	//	else
+	//	{
+	//		// apply gravity
+	//		position += glm::vec3(0.0f, -1.0f, 0.0f) * adjuster;
+	//	}
+	//}
+
+	// std::cout << "Player pos: " << position.x << " " << position.y << " " << position.z << std::endl;
 
 	transformComponent->setRotation(rotation);
 	transformComponent->setPosition(position);

@@ -19,6 +19,7 @@ struct DebugMeshInfo
 	glm::vec4 color;
 	float width;
 	int meshType;
+	bool persistent;
 };
 
 class LocalClient : public Client
@@ -40,8 +41,9 @@ public:
 	void setViewportId(unsigned int id);
 	unsigned int getViewportId() const;
 
-	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width);
+	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent = true);
 	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width);
+	void drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent = true);
 
 	// TODO: This is a temporary method
 	std::vector<ChunkMesh*>& getChunkMeshes();
@@ -60,7 +62,11 @@ private:
 	// Debug info rendering
 	// TODO: Maybe move to ModelManager?
 	std::vector<DebugMeshInfo> debugMeshes;
+	// unsigned long long debugMeshesCount = 0;
+
 	Material* debugMaterial;
 
 	std::vector<ChunkMesh*> chunkMeshes;
+
+	std::vector<size_t> meshesToErase;
 };

@@ -16,7 +16,7 @@ LocalServer::LocalServer(Application* app) :
 {
 	initEntityTemplates();
 
-	/*Entity* const cubeEntity = spawnEntity("Cube", "cube");
+	Entity* const cubeEntity = spawnEntity("Cube", "cube");
 	Entity* const cube2Entity = spawnEntity("Cube", "cube2");
 
 	if (auto transformComponent = cubeEntity->findComponent<TransformComponent>())
@@ -27,7 +27,7 @@ LocalServer::LocalServer(Application* app) :
 	if (auto transformComponent = cube2Entity->findComponent<TransformComponent>())
 	{
 		transformComponent->setPosition({ -2.0f, 0.0f, -1.0f });
-	}*/
+	}
 }
 
 void LocalServer::update(float dt)

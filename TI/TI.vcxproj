@@ -255,6 +255,7 @@
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />
     <ClInclude Include="Source\TI\Util\Config.h" />
     <ClInclude Include="Source\TI\Util\File.h" />
+    <ClInclude Include="Source\TI\Util\Random.h" />
     <ClInclude Include="Source\TI\Util\Serialization.h" />
     <ClInclude Include="Source\TI\Window.h" />
   </ItemGroup>

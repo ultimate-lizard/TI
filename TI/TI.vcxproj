@@ -197,7 +197,6 @@
     <ClCompile Include="Source\TI\Renderer\Viewport.cpp" />
     <ClCompile Include="Source\TI\Server\Chunk.cpp" />
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
-    <ClCompile Include="Source\TI\Server\Component\CollisionComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
@@ -241,7 +240,6 @@
     <ClInclude Include="Source\TI\Renderer\Viewport.h" />
     <ClInclude Include="Source\TI\Server\Chunk.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
-    <ClInclude Include="Source\TI\Server\Component\CollisionComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
     <ClInclude Include="Source\TI\Server\Component\MeshComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\MovementComponent.h" />

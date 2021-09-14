@@ -31,11 +31,6 @@ void Server::initEntityTemplates()
 		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
 	}
 
-	if (auto playerTransformComponent = playerEntity->findComponent<TransformComponent>())
-	{
-		playerEntity->addComponent<CollisionComponent>(playerTransformComponent);
-	}
-
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setCamera(std::move(camera));
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));

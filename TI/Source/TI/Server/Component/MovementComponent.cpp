@@ -6,7 +6,6 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
-#include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
@@ -86,12 +85,6 @@ void MovementComponent::tick(float dt)
 	
 	transformComponent->setRotation(rotation);
 	transformComponent->setPosition(position + acceleration);
-
-	if (auto collisionComponent = entity->findComponent<CollisionComponent>())
-	{
-		BoundingPrimitive playerBox = collisionComponent->getBoundingPrimitive();
-		drawDebugBox(playerBox.minSize, glm::vec3(1.0f), { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
-	}
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)

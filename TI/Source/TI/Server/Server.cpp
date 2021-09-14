@@ -7,6 +7,7 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
@@ -28,6 +29,11 @@ void Server::initEntityTemplates()
 	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
 	{
 		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	}
+
+	if (auto playerTransformComponent = playerEntity->findComponent<TransformComponent>())
+	{
+		playerEntity->addComponent<CollisionComponent>(playerTransformComponent);
 	}
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();

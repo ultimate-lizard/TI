@@ -148,7 +148,7 @@ void DebugInformation::updateDebugMeshLifetime()
 	}
 }
 
-const std::vector<DebugMeshInfo>& DebugInformation::getMeshes() const
+std::vector<DebugMeshInfo>& DebugInformation::getMeshes()
 {
 	return meshes;
 }

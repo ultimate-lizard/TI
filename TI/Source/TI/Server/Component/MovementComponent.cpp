@@ -70,14 +70,14 @@ void MovementComponent::tick(float dt)
 	glm::vec3 position = transformComponent->getPosition();
 
 	glm::vec3 playerMin = position;
-	playerMin.x -= 0.1f;
-	playerMin.y -= 0.1f;
-	playerMin.z -= 0.1f;
+	playerMin.x -= 0.3f;
+	playerMin.y -= 0.3f;
+	playerMin.z -= 0.3f;
 
 	glm::vec3 playerMax = position;
-	playerMax.x += 0.1f;
-	playerMax.y += 0.1f;
-	playerMax.z += 0.1f;
+	playerMax.x += 0.3f;
+	playerMax.y += 0.3f;
+	playerMax.z += 0.3f;
 
 	// TODO: Use acceleration in collision checks
 	glm::vec3 acceleration = getVelocity().z * (speed * forward) * dt;

@@ -41,7 +41,7 @@ public:
 
 	void updateDebugMeshLifetime();
 
-	const std::vector<DebugMeshInfo>& getMeshes() const;
+	std::vector<DebugMeshInfo>& getMeshes();
 
 private:
 	DebugInformation(ResourceManager* resourceManager, Renderer* renderer);

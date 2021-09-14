@@ -10,6 +10,7 @@
 #include <TI/Server/ListenServer.h>
 #include <TI/Server/RemoteServer.h>
 #include <TI/Client/LocalClient.h>
+#include <TI/Client/DebugInformation.h>
 #include <TI/ResourceManager.h>
 
 static const char* GAME_TITLE = "TI";
@@ -91,6 +92,11 @@ void Application::start()
 		}
 
 		renderer->render();
+
+		if (!getLocalClients().empty())
+		{
+			getLocalClients()[0]->getDebugInformation()->updateDebugMeshLifetime();
+		}
 
 		window.swap();
 

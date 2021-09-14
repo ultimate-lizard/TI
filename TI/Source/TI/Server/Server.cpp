@@ -7,7 +7,6 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
-#include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>

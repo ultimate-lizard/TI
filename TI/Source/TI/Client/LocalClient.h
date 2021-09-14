@@ -1,25 +1,29 @@
 #pragma once
 
 #include <vector>
+#include <map>
+#include <memory>
 
 #include <glm/glm.hpp>
 
 #include <TI/Client/Client.h>
 #include <TI/Util/Config.h>
+#include <TI/Renderer/Material.h>
+#include <TI/Renderer/RenderCommand.h>
 
 class InputHandler;
 class IController;
 class Mesh;
-class Material;
 class ChunkMesh;
+class Renderer;
 
 struct DebugMeshInfo
 {
-	std::string name;
-	glm::vec4 color;
-	float width;
-	int meshType;
-	bool wireframe = true;
+	std::unique_ptr<Mesh> mesh;
+	Material* material = nullptr;
+	RenderMode renderMode;
+	bool persistent = true;
+	float lineWidth = 1.0f;
 };
 
 class LocalClient : public Client
@@ -41,17 +45,22 @@ public:
 	void setViewportId(unsigned int id);
 	unsigned int getViewportId() const;
 
-	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width);
-	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width);
-	void drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width);
+	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent = true);
+	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width, bool persistent = true);
+	void drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent = true);
 
-	// TODO: This is a temporary method
+	// This is a temporary method
 	std::vector<ChunkMesh*>& getChunkMeshes();
 
 private:
 	void loadConfig();
 	void loadMappings();
 
+	void renderDebugMeshes();
+	void renderWorld();
+	void renderEntities();
+
+private:
 	std::unique_ptr<InputHandler> inputHandler;
 	std::unique_ptr<IController> playerController;
 
@@ -59,10 +68,11 @@ private:
 
 	unsigned int viewportId;
 
-	std::vector<DebugMeshInfo> debugMeshes;
-	// std::unique_ptr<Material> debugMeshMaterial;
+	Renderer* renderer;
 
-	// Material* debugMaterial;
+	Shader* debugShader;
+	std::vector<DebugMeshInfo> debugMeshes;
+	std::map<size_t, std::unique_ptr<Material>> debugMaterials;
 
 	std::vector<ChunkMesh*> chunkMeshes;
 	Material* chunkMaterial;

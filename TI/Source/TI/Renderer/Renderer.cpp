@@ -11,8 +11,6 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Renderer/Texture.h>
 #include <TI/Renderer/Material.h>
-#include <TI/Server/Component/MeshComponent.h>
-#include <TI/Server/Entity.h>
 #include <TI/Window.h>
 
 Renderer::Renderer(Window* window) :
@@ -42,26 +40,14 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId, unsigned int renderMode, float lineWidth, bool wireframe, bool cullFaces)
+void Renderer::pushRender(RenderCommand command)
 {
-	if (auto iter = viewportsMap.find(viewportId); iter != viewportsMap.end())
+	if (auto iter = viewportsMap.find(command.viewportId); iter != viewportsMap.end())
 	{
 		if (!iter->second.isEnabled()) return;
 
-		iter->second.getRenderCommands().push_front({ mesh, material, transform, renderMode, lineWidth, wireframe, cullFaces });
+		renderCommands.push_front(std::move(command));
 	}
-}
-
-// Render should not work with components
-// TODO: Remove this method
-void Renderer::pushRender(MeshComponent* meshComponent, int viewportId, unsigned int renderMode)
-{
-	auto model = meshComponent->getModel();
-	auto mesh = model->getMesh();
-	auto material = model->getMaterial();
-	auto transform = meshComponent->getTransform();
-
-	pushRender(mesh, material, transform, viewportId, renderMode);
 }
 
 void Renderer::render()
@@ -80,8 +66,6 @@ void Renderer::render()
 		{
 			continue;
 		}
-
-		std::list<RenderCommand>& renderCommands = viewport.getRenderCommands();
 
 		while (!renderCommands.empty())
 		{
@@ -131,14 +115,15 @@ void Renderer::render()
 			glBindVertexArray(command.mesh->getVAO());
 
 			Mesh* mesh = command.mesh;
+			int renderMode = static_cast<int>(command.renderMode);
 			if (mesh->getIndicesCount())
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
-				glDrawElements(command.renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
+				glDrawElements(renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
 			}
 			else
 			{
-				glDrawArrays(command.renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
+				glDrawArrays(renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
 			}
 		}
 	}

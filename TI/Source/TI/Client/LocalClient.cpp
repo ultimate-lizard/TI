@@ -4,6 +4,7 @@
 #include <functional>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
 
 #include <TI/Client/ClientConnectionRequest.h>
 #include <TI/Server/Server.h>
@@ -25,8 +26,12 @@
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
 	viewportId(0),
+	renderer(app->getRenderer()),
+	debugShader(app->getResourceManager()->getShader("Default")),
 	chunkMaterial(app->getResourceManager()->getMaterial("Chunk"))
 {
+	// TODO: assert(app);
+
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
 
@@ -61,9 +66,7 @@ void LocalClient::connect(const std::string& ip, int port)
 			chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
 		}
 
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+
 	}
 }
 
@@ -99,58 +102,28 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	Renderer* const renderer = app->getRenderer();
-	if (!renderer)
+	// Remove not persistent debug meshes
+	for (size_t i = 0; i < debugMeshes.size(); ++i)
 	{
-		return;
-	}
-
-	auto server = app->getCurrentServer();
-	if (!server)
-	{
-		return;
-	}
-
-	// Render debug stuff
-	for (int i = 0; i < debugMeshes.size(); ++i)
-	{
-		DebugMeshInfo& debugMeshInfo = debugMeshes[i];
-
-		Model* model = app->getResourceManager()->getModel(debugMeshInfo.name);
-
-		if (model)
+		if (!debugMeshes[i].persistent)
 		{
-			// renderer->pushRender(model->getMesh(), model->getMaterial(), glm::mat4(1.0f), viewportId, debugMeshInfo.meshType, debugMeshInfo.width, debugMeshInfo.wireframe, false);
+			debugMeshes.erase(debugMeshes.begin() + i);
+			--i;
 		}
 	}
 
-	// Render world
-	if (renderer)
-	{
-		for (ChunkMesh* chunkMesh : chunkMeshes)
-		{
-			glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMesh->getPosition());
-			renderer->pushRender(&chunkMesh->getMesh(), chunkMaterial, transform, viewportId);
-		}
-	}
-	
-	// Render entities
-	for (auto& entityPair : server->getEntities())
-	{
-		auto& entity = entityPair.second;
+	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f, false);
+	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f, false);
+	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, false);
 
-		auto meshComp = entity->findComponent<MeshComponent>();
-		if (meshComp)
-		{
-			// Don't render your entity as we play in first person
-			if (entity->getId() == name)
-			{
-				// continue;
-			}
+	drawDebugPoint(glm::vec3(0.0f), { 1.0f, 1.0f, 0.0f, 1.0f }, 10.0f, false);
 
-			renderer->pushRender(meshComp, viewportId);
-		}
-	}
+	drawDebugBox({ -2.0f, 0.0f, -2.0f }, glm::vec3(1.0f), { 1.0f, 0.0f, 1.0f, 1.0f }, 2.0f, false);
+
+	// TODO: assert(renderer)
+	renderDebugMeshes();
+	renderWorld();
+	renderEntities();
 }
 
 InputHandler* const LocalClient::getInputHandler() const
@@ -180,83 +153,90 @@ unsigned int LocalClient::getViewportId() const
 	return viewportId;
 }
 
-void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width)
+void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent)
 {
-	//auto mat = std::make_unique<Material>();
-	//mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	//mat->setColor(color);
+	Material* material = nullptr;
+	size_t hash = std::hash<glm::vec4>{}(color);
 
-	//MeshBuilder meshBuilder;
-	//meshBuilder.setPositions({ start, end });
+	auto materialIter = debugMaterials.find(hash);
+	if (materialIter == debugMaterials.end())
+	{
+		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
+	}
+	else
+	{
+		material = materialIter->second.get();
+	}
 
-	//std::unique_ptr<Mesh> mesh = meshBuilder.build();
+	MeshBuilder meshBuilder;
+	meshBuilder.setPositions({ start, end });
 
-	//auto model = std::make_unique<Model>();
-	//model->setMesh(std::move(mesh));
-	//model->setMaterial(std::move(mat));
-
-	//std::string name = "DebugMesh_" + random_string(10);
-
-	//app->getModelManager()->addModel(name, std::move(model));
-
-	//debugMeshes.push_back({ name, color, width, GL_LINES });
+	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Lines, persistent });
 }
 
-void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width)
+void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width, bool persistent)
 {
-	//auto mat = std::make_unique<Material>();
-	//mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	//mat->setColor(color);
+	Material* material = nullptr;
+	size_t hash = std::hash<glm::vec4>{}(color);
 
-	//MeshBuilder meshBuilder;
-	//meshBuilder.setPositions({ position });
+	auto materialIter = debugMaterials.find(hash);
+	if (materialIter == debugMaterials.end())
+	{
+		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
+	}
+	else
+	{
+		material = materialIter->second.get();
+	}
 
-	//std::unique_ptr<Mesh> mesh = meshBuilder.build();
+	MeshBuilder meshBuilder;
+	meshBuilder.setPositions({ position });
 
-	//auto model = std::make_unique<Model>();
-	//model->setMesh(std::move(mesh));
-	//model->setMaterial(std::move(mat));
-
-	//std::string name = "DebugMesh_" + random_string(10);
-
-	//app->getModelManager()->addModel(name, std::move(model));
-
-	//debugMeshes.push_back({ name, color, width, GL_POINTS });
+	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Points, persistent, width });
 }
 
-void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width)
+void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent)
 {
-	/*auto mat = std::make_unique<Material>();
-	mat->setShader("../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
-	mat->setColor(color);
+	Material* material = nullptr;
+	size_t hash = std::hash<glm::vec4>{}(color);
+
+	auto materialIter = debugMaterials.find(hash);
+	if (materialIter == debugMaterials.end())
+	{
+		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
+	}
+	else
+	{
+		material = materialIter->second.get();
+	}
 
 	MeshBuilder meshBuilder;
 
 	meshBuilder.setPositions({
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + 0.0f),
-		glm::vec3(position.x + 0.0f, position.y + size.y, position.z + size.z),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + 0.0f),
-		glm::vec3(position.x + size.x, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + size.z),
-		glm::vec3(position.x + 0.0f, position.y + 0.0f, position.z + 0.0f),
+		{ position.x + size.x, position.y + size.y, position.z + size.z },
+		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
+		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
+		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
+		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
+		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
+		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
+		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
+		{ position.x + size.x, position.y + size.y, position.z + size.z },
+		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
+		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
+		{ position.x + size.x, position.y + size.y, position.z + size.z },
+		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
+		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
+		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
+		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
+		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
 	});
 
 	meshBuilder.setIndices({
@@ -274,17 +254,7 @@ void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size,
 		20, 22, 23
 	});
 
-	std::unique_ptr<Mesh> mesh = meshBuilder.build();
-
-	auto model = std::make_unique<Model>();
-	model->setMesh(std::move(mesh));
-	model->setMaterial(std::move(mat));
-
-	std::string name = "DebugMesh_" + random_string(10);
-
-	 app->getModelManager()->addModel(name, std::move(model));
-
-	debugMeshes.push_back({ name, color, width, GL_TRIANGLES, true });*/
+	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Triangles, persistent });
 }
 
 std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()
@@ -328,5 +298,45 @@ void LocalClient::loadMappings()
 	for (const auto& entry : keyEntries)
 	{
 		inputHandler->addKeyMapping(entry.key, entry.bindingName);
+	}
+}
+
+void LocalClient::renderDebugMeshes()
+{
+	for (DebugMeshInfo& debugMeshInfo : debugMeshes)
+	{
+		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true });
+	}
+}
+
+void LocalClient::renderWorld()
+{
+	for (ChunkMesh* chunkMesh : chunkMeshes)
+	{
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMesh->getPosition());
+		renderer->pushRender({ &chunkMesh->getMesh(), chunkMaterial, transform, viewportId });
+	}
+}
+
+void LocalClient::renderEntities()
+{
+	Server* server = app->getCurrentServer();
+
+	if (server)
+	{
+		for (auto& entityPair : server->getEntities())
+		{
+			auto& entity = entityPair.second;
+			if (auto meshComp = entity->findComponent<MeshComponent>(); meshComp)
+			{
+				// Don't render your entity as we play in first person
+				if (entity->getId() == name)
+				{
+					// continue;
+				}
+
+				renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId });
+			}
+		}
 	}
 }

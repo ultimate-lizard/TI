@@ -11,9 +11,6 @@ class Viewport
 public:
 	Viewport(glm::ivec2 position = { 0, 0 }, glm::ivec2 size = { 800, 600 });
 
-	void pushCommand(RenderCommand&& command);
-	std::list<RenderCommand>& getRenderCommands();
-
 	void bind();
 
 	void setPosition(const glm::ivec2& position);
@@ -31,8 +28,6 @@ private:
 	void updateCameraPerspective();
 
 private:
-	std::list<RenderCommand> renderCommands;
-
 	glm::ivec2 position;
 	glm::ivec2 size;
 	Camera* camera;

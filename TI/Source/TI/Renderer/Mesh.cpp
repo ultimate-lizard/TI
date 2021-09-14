@@ -90,7 +90,13 @@ Mesh::Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::ve
 
 Mesh::~Mesh()
 {
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteVertexArrays(1, &vao);
 }
 
 const unsigned int Mesh::getVAO() const

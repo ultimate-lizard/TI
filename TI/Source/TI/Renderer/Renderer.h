@@ -21,8 +21,7 @@ public:
 	Renderer(Window* window);
 	~Renderer();
 
-	void pushRender(Mesh* mesh, Material* material, const glm::mat4& transform, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES, float lineWidth = 1.0f, bool wireframe = false, bool cullFaces = true);
-	void pushRender(MeshComponent* meshComponent, int viewportId = 0, unsigned int renderMode = GL_TRIANGLES);
+	void pushRender(RenderCommand command);
 
 	void render();
 
@@ -43,6 +42,8 @@ private:
 	SDL_GLContext glContext;
 
 	glm::vec4 clearColor;
+
+	std::list<RenderCommand> renderCommands;
 
 	Camera* camera;
 

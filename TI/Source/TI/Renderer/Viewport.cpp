@@ -13,16 +13,6 @@ Viewport::Viewport(glm::ivec2 position, glm::ivec2 size) :
 	updateCameraPerspective();
 }
 
-void Viewport::pushCommand(RenderCommand&& command)
-{
-	renderCommands.push_back(std::move(command));
-}
-
-std::list<RenderCommand>& Viewport::getRenderCommands()
-{
-	return renderCommands;
-}
-
 void Viewport::bind()
 {
 	glViewport(position.x, position.y, size.x, size.y);

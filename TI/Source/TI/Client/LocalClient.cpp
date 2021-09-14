@@ -22,15 +22,19 @@
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Server/Plane.h>
 #include <TI/Util/Random.h>
+#include <TI/Client/DebugInformation.h>
+
+std::unique_ptr<DebugInformation> LocalClient::debugInformation = nullptr;
 
 LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
 	viewportId(0),
 	renderer(app->getRenderer()),
-	debugShader(app->getResourceManager()->getShader("Default")),
 	chunkMaterial(app->getResourceManager()->getMaterial("Chunk"))
 {
 	// TODO: assert(app);
+	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
+	debugInformation = std::unique_ptr<DebugInformation>(debugInfoPtr);
 
 	inputHandler = std::make_unique<InputHandler>();
 	playerController = std::make_unique<PlayerController>(this, inputHandler.get());
@@ -66,7 +70,9 @@ void LocalClient::connect(const std::string& ip, int port)
 			chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
 		}
 
-
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
+		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
 	}
 }
 
@@ -102,24 +108,6 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	// Remove not persistent debug meshes
-	for (size_t i = 0; i < debugMeshes.size(); ++i)
-	{
-		if (!debugMeshes[i].persistent)
-		{
-			debugMeshes.erase(debugMeshes.begin() + i);
-			--i;
-		}
-	}
-
-	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f, false);
-	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f, false);
-	drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f, false);
-
-	drawDebugPoint(glm::vec3(0.0f), { 1.0f, 1.0f, 0.0f, 1.0f }, 10.0f, false);
-
-	drawDebugBox({ -2.0f, 0.0f, -2.0f }, glm::vec3(1.0f), { 1.0f, 0.0f, 1.0f, 1.0f }, 2.0f, false);
-
 	// TODO: assert(renderer)
 	renderDebugMeshes();
 	renderWorld();
@@ -153,113 +141,14 @@ unsigned int LocalClient::getViewportId() const
 	return viewportId;
 }
 
-void LocalClient::drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent)
-{
-	Material* material = nullptr;
-	size_t hash = std::hash<glm::vec4>{}(color);
-
-	auto materialIter = debugMaterials.find(hash);
-	if (materialIter == debugMaterials.end())
-	{
-		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
-	}
-	else
-	{
-		material = materialIter->second.get();
-	}
-
-	MeshBuilder meshBuilder;
-	meshBuilder.setPositions({ start, end });
-
-	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Lines, persistent });
-}
-
-void LocalClient::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width, bool persistent)
-{
-	Material* material = nullptr;
-	size_t hash = std::hash<glm::vec4>{}(color);
-
-	auto materialIter = debugMaterials.find(hash);
-	if (materialIter == debugMaterials.end())
-	{
-		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
-	}
-	else
-	{
-		material = materialIter->second.get();
-	}
-
-	MeshBuilder meshBuilder;
-	meshBuilder.setPositions({ position });
-
-	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Points, persistent, width });
-}
-
-void LocalClient::drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent)
-{
-	Material* material = nullptr;
-	size_t hash = std::hash<glm::vec4>{}(color);
-
-	auto materialIter = debugMaterials.find(hash);
-	if (materialIter == debugMaterials.end())
-	{
-		material = debugMaterials.emplace(hash, std::make_unique<Material>(debugShader, nullptr, color)).first->second.get();
-	}
-	else
-	{
-		material = materialIter->second.get();
-	}
-
-	MeshBuilder meshBuilder;
-
-	meshBuilder.setPositions({
-		{ position.x + size.x, position.y + size.y, position.z + size.z },
-		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
-		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
-		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
-		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
-		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
-		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
-		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
-		{ position.x + size.x, position.y + size.y, position.z + size.z },
-		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
-		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
-		{ position.x + size.x, position.y + size.y, position.z + size.z },
-		{ position.x + size.x, position.y + size.y, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + size.y, position.z + 0.0f },
-		{ position.x + 0.0f, position.y + size.y, position.z + size.z },
-		{ position.x + size.x, position.y + 0.0f, position.z + 0.0f },
-		{ position.x + size.x, position.y + 0.0f, position.z + size.z },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + size.z },
-		{ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f },
-	});
-
-	meshBuilder.setIndices({
-		0, 1, 2,
-		0, 2, 3,
-		4, 5, 6,
-		4, 6, 7,
-		8, 9, 10,
-		8, 10, 11,
-		12, 13, 14,
-		12, 14, 15,
-		16, 17, 18,
-		16, 18, 19,
-		20, 21, 22,
-		20, 22, 23
-	});
-
-	debugMeshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Triangles, persistent });
-}
-
 std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()
 {
 	return chunkMeshes;
+}
+
+DebugInformation* LocalClient::getDebugInformation()
+{
+	return debugInformation.get();
 }
 
 void LocalClient::loadConfig()
@@ -301,14 +190,6 @@ void LocalClient::loadMappings()
 	}
 }
 
-void LocalClient::renderDebugMeshes()
-{
-	for (DebugMeshInfo& debugMeshInfo : debugMeshes)
-	{
-		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true });
-	}
-}
-
 void LocalClient::renderWorld()
 {
 	for (ChunkMesh* chunkMesh : chunkMeshes)
@@ -338,5 +219,13 @@ void LocalClient::renderEntities()
 				renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId });
 			}
 		}
+	}
+}
+
+void LocalClient::renderDebugMeshes()
+{
+	for (const DebugMeshInfo& debugMeshInfo : debugInformation->getMeshes())
+	{
+		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false });
 	}
 }

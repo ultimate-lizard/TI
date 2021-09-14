@@ -9,8 +9,6 @@
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
 
-#include <TI/Client/LocalClient.h>
-
 class Entity
 {
 public:
@@ -79,19 +77,8 @@ public:
 
 	std::unique_ptr<Entity> clone() const;
 
-	inline void setLocalClient(LocalClient* localClient)
-	{
-		this->localClient = localClient;
-	}
-
-	inline LocalClient* getLocalClient()
-	{
-		return localClient;
-	}
-
 private:
 	std::vector<std::unique_ptr<Component>> components;
 	std::string name;
 	std::string id;
-	LocalClient* localClient;
 };

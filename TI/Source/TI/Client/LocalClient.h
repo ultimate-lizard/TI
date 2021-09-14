@@ -16,15 +16,7 @@ class IController;
 class Mesh;
 class ChunkMesh;
 class Renderer;
-
-struct DebugMeshInfo
-{
-	std::unique_ptr<Mesh> mesh;
-	Material* material = nullptr;
-	RenderMode renderMode;
-	bool persistent = true;
-	float lineWidth = 1.0f;
-};
+class DebugInformation;
 
 class LocalClient : public Client
 {
@@ -45,12 +37,10 @@ public:
 	void setViewportId(unsigned int id);
 	unsigned int getViewportId() const;
 
-	void drawDebugLine(const glm::vec3& start, const glm::vec3& end, const glm::vec4& color, float width, bool persistent = true);
-	void drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width, bool persistent = true);
-	void drawDebugBox(const glm::vec3& position, const glm::vec3& size, const glm::vec4& color, float width, bool persistent = true);
-
 	// This is a temporary method
 	std::vector<ChunkMesh*>& getChunkMeshes();
+
+	static DebugInformation* getDebugInformation();
 
 private:
 	void loadConfig();
@@ -70,10 +60,8 @@ private:
 
 	Renderer* renderer;
 
-	Shader* debugShader;
-	std::vector<DebugMeshInfo> debugMeshes;
-	std::map<size_t, std::unique_ptr<Material>> debugMaterials;
-
 	std::vector<ChunkMesh*> chunkMeshes;
 	Material* chunkMaterial;
+
+	static std::unique_ptr<DebugInformation> debugInformation;
 };

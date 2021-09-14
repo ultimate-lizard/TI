@@ -176,6 +176,7 @@
     <ClCompile Include="Source\TI\Client\ChunkMesh.cpp" />
     <ClCompile Include="Source\TI\Client\Client.cpp" />
     <ClCompile Include="Source\TI\Client\Controller.cpp" />
+    <ClCompile Include="Source\TI\Client\DebugInformation.cpp" />
     <ClCompile Include="Source\TI\Client\LocalClient.cpp" />
     <ClCompile Include="Source\TI\Client\RemoteClient.cpp" />
     <ClCompile Include="Source\TI\Input.cpp" />
@@ -196,6 +197,7 @@
     <ClCompile Include="Source\TI\Renderer\Viewport.cpp" />
     <ClCompile Include="Source\TI\Server\Chunk.cpp" />
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\CollisionComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
@@ -219,6 +221,7 @@
     <ClInclude Include="Source\TI\Client\Client.h" />
     <ClInclude Include="Source\TI\Client\ClientConnectionRequest.h" />
     <ClInclude Include="Source\TI\Client\Controller.h" />
+    <ClInclude Include="Source\TI\Client\DebugInformation.h" />
     <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
     <ClInclude Include="Source\TI\Client\LocalClient.h" />
     <ClInclude Include="Source\TI\Client\RemoteClient.h" />
@@ -238,6 +241,7 @@
     <ClInclude Include="Source\TI\Renderer\Viewport.h" />
     <ClInclude Include="Source\TI\Server\Chunk.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
+    <ClInclude Include="Source\TI\Server\Component\CollisionComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
     <ClInclude Include="Source\TI\Server\Component\MeshComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\MovementComponent.h" />

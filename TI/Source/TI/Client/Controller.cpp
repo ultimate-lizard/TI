@@ -10,11 +10,12 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Client/Client.h>
-#include <TI/Client/LocalClient.h>
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Renderer/Renderer.h>
+#include <TI/Client/DebugInformation.h>
+#include <TI/Client/LocalClient.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
@@ -129,8 +130,8 @@ void PlayerController::castRayWithCollision()
 
 							if (plane->getBlock(cur) != 0)
 							{
-								localClient->drawDebugPoint(cur, { 1.0f, 0.0f, 0.0f, 1.0f }, 20.0f);
-								localClient->drawDebugLine(start, cur, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
+								drawDebugPoint(cur, { 1.0f, 0.0f, 0.0f, 1.0f }, 20.0f);
+								drawDebugLine(start, cur, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
 
 								found = true;
 
@@ -140,7 +141,7 @@ void PlayerController::castRayWithCollision()
 
 						if (!found)
 						{
-							localClient->drawDebugLine(start, end, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
+							drawDebugLine(start, end, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
 						}
 					}
 				}

@@ -7,7 +7,6 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Plane.h>
-#include <TI/Client/LocalClient.h>
 #include <TI/Client/ChunkMesh.h>
 
 float maxVelocity = 100.0f;

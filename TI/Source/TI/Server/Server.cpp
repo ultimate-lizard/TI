@@ -7,6 +7,7 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
@@ -19,7 +20,7 @@ void Server::initEntityTemplates()
 
 	auto camera = std::make_unique<Camera>();
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -0.5f, 0.3f, -0.2f });
+	camera->setPosition({ -2.0f, 0.5f, -0.0f });
 
 	playerEntity->setName("Player");
 
@@ -28,6 +29,12 @@ void Server::initEntityTemplates()
 	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
 	{
 		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
+	}
+
+	
+	if (auto physicsComponent = playerEntity->addComponent<PhysicsComponent>())
+	{
+		physicsComponent->setCollisionBox({ { -0.2f, -0.2f, -0.2f }, { 0.2f, 0.2f, 0.2f } });
 	}
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
@@ -133,6 +140,8 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 			}
 		}
 
+		spawnedEntity->initComponents();
+
 		spawnedEntities.emplace(id, std::move(spawnedEntity));
 	}
 
@@ -150,14 +159,8 @@ void Server::possesEntity(const std::string& entityName, Client* const client)
 	{
 		std::unique_ptr<Entity>& possesedEntity = spawnedEntities.at(entityName);
 
-		if (auto transformComponent = possesedEntity->findComponent<TransformComponent>())
-		{
-			auto movementComponent = possesedEntity->addComponent<MovementComponent>(transformComponent);
-		}
-		else
-		{
-			throw std::exception("Cannot posses entity without transform component");
-		}
+		auto movementComponent = possesedEntity->addComponent<MovementComponent>();
+		movementComponent->init();
 		
 		client->setPossesedEntity(possesedEntity.get());
 	}

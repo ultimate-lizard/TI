@@ -44,6 +44,9 @@ private:
 	void destroyBlock();
 
 	void togglePolygonMode();
+	void toggleGravity();
+
+	void jump();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComp;

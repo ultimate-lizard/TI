@@ -3,11 +3,6 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 
-Entity::Entity()
-{
-
-}
-
 Entity::Entity(const Entity& otherEntity)
 {
 	for (const std::unique_ptr<Component>& component : otherEntity.components)
@@ -21,16 +16,15 @@ Entity::Entity(const Entity& otherEntity)
 	id = otherEntity.id;
 }
 
+void Entity::initComponents()
+{
+	for (std::unique_ptr<Component>& component : components)
+	{
+		component->init();
+	}
+}
+
 std::unique_ptr<Entity> Entity::clone() const
 {
-	auto newEntity = std::make_unique<Entity>(*this);
-	/*
-	for (auto& component : components)
-	{
-		std::unique_ptr<Component> newComp = component->clone();
-		newComp->entity = newEntity.get();
-		newEntity->components.push_back(std::move(newComp));
-	}*/
-
-	return std::move(newEntity);
+	return std::make_unique<Entity>(*this);
 }

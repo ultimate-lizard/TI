@@ -9,6 +9,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Client/Client.h>
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>
@@ -204,6 +205,31 @@ void PlayerController::togglePolygonMode()
 	}
 }
 
+void PlayerController::toggleGravity()
+{
+	if (entity)
+	{
+		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+		{
+			physicsComponent->setGravityEnabled(!physicsComponent->isGravityEnabled());
+		}
+	}
+}
+
+void PlayerController::jump()
+{
+	if (entity)
+	{
+		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+		{
+			if (physicsComponent->isGravityEnabled())
+			{
+				movementComp->jump();
+			}
+		}
+	}
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -224,5 +250,8 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("DestroyBlock", ActionInputType::KeyPress, std::bind(&PlayerController::destroyBlock, this));
 
 		inputHandler->bindKey("TogglePolygonMode", ActionInputType::KeyPress, std::bind(&PlayerController::togglePolygonMode, this));
+		inputHandler->bindKey("ToggleGravity", ActionInputType::KeyPress, std::bind(&PlayerController::toggleGravity, this));
+
+		inputHandler->bindKey("Jump", ActionInputType::KeyPress, std::bind(&PlayerController::jump, this));
 	}
 }

@@ -6,95 +6,92 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 
 float maxVelocity = 100.0f;
 
-MovementComponent::MovementComponent(TransformComponent* const transformComponent) :
-	transformComponent(transformComponent),
+MovementComponent::MovementComponent() :
+	transformComponent(nullptr),
+	physicsComponent(nullptr),
 	yawRate(0.0f),
 	pitchRate(0.0f),
-	speed(70.0f),
+	speed(30.0f),
 	forward(0.0f, 0.0f, -1.0f),
-	up({ 0.0f, 1.0f, 0.0f }),
-	right({ 1.0f, 0.0f, 0.0f }),
 	sensivity(20.0f)
 {
-
 }
 
-MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
+MovementComponent::MovementComponent(const MovementComponent& otherMovementComp) :
+	Component(otherMovementComp),
+	transformComponent(otherMovementComp.transformComponent),
+	physicsComponent(otherMovementComp.physicsComponent),
+	yawRate(otherMovementComp.yawRate),
+	pitchRate(otherMovementComp.pitchRate),
+	movementDirection(otherMovementComp.movementDirection),
+	speed(otherMovementComp.speed),
+	forward(otherMovementComp.forward),
+	sensivity(otherMovementComp.sensivity)
 {
-	transformComponent = otherMovementComp.transformComponent;
+}
 
-	yawRate = otherMovementComp.yawRate;
-	pitchRate = otherMovementComp.pitchRate;
-
-	velocity = otherMovementComp.velocity;
-	speed = otherMovementComp.speed;
-
-	forward = otherMovementComp.forward;
-	up = otherMovementComp.up;
-	right = otherMovementComp.right;
-
-	sensivity = otherMovementComp.sensivity;
+void MovementComponent::init()
+{
+	if (entity)
+	{
+		transformComponent = entity->findComponent<TransformComponent>();
+		physicsComponent = entity->findComponent<PhysicsComponent>();
+	}
 }
 
 void MovementComponent::tick(float dt)
 {
-	if (!transformComponent)
+	if (transformComponent && physicsComponent)
 	{
-		return;
+		glm::vec3 rotation = transformComponent->getRotation();
+
+		rotation.x += pitchRate * dt;
+		rotation.y += yawRate * dt;
+
+		if (rotation.x > 89.0f) rotation.x = 89.0f;
+		if (rotation.x < -89.0f) rotation.x = -89.0f;
+
+		forward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+		forward.y = 0.0f;
+		forward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+
+		glm::vec3 movementForward = forward;
+		movementForward = glm::normalize(movementForward);
+
+		forward.y = sin(glm::radians(rotation.x));
+		forward = glm::normalize(forward);
+
+		glm::vec3 right = glm::normalize(glm::cross(movementForward, glm::vec3(0.0f, 1.0f, 0.0f)));
+		glm::vec3 up = glm::normalize(glm::cross(right, movementForward));
+
+		glm::vec3 velocity = movementDirection.z * (speed * movementForward);
+		velocity += movementDirection.x * (speed * glm::cross(movementForward, up));
+
+		glm::vec3 position = transformComponent->getPosition();
+
+		transformComponent->setRotation(rotation);
+
+		physicsComponent->setAbsoluteVelocity(velocity);
+
+		drawDebugLine(position, position + velocity, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
 	}
-
-	glm::vec3 rotation = transformComponent->getRotation();
-
-	rotation.x += pitchRate * dt;
-	rotation.y += yawRate * dt;
-
-	if (rotation.x > 89.0f) rotation.x = 89.0f;
-	if (rotation.x < -89.0f) rotation.x = -89.0f;
-
-	glm::vec3 newForward;
-	newForward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-	newForward.y = sin(glm::radians(rotation.x));
-	newForward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-
-	forward = glm::normalize(newForward);
-
-	right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-	up = glm::normalize(glm::cross(right, forward));
-
-	glm::vec3 position = transformComponent->getPosition();
-
-	glm::vec3 playerMin = position;
-	playerMin.x -= 0.3f;
-	playerMin.y -= 0.3f;
-	playerMin.z -= 0.3f;
-
-	glm::vec3 playerMax = position;
-	playerMax.x += 0.3f;
-	playerMax.y += 0.3f;
-	playerMax.z += 0.3f;
-
-	// TODO: Use acceleration in collision checks
-	glm::vec3 acceleration = getVelocity().z * (speed * forward) * dt;
-	acceleration += getVelocity().x * (speed * glm::cross(forward, up)) * dt;
-	
-	transformComponent->setRotation(rotation);
-	transformComponent->setPosition(position + acceleration);
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)
 {
-	this->velocity = velocity;
+	this->movementDirection = velocity;
 }
 
 const glm::vec3& MovementComponent::getVelocity() const
 {
-	return velocity;
+	return movementDirection;
 }
 
 void MovementComponent::setSpeed(float speed)
@@ -134,12 +131,23 @@ float MovementComponent::getYawRate() const
 
 void MovementComponent::setMovementForward(float value)
 {
-	velocity.z = value;
+	movementDirection.z = value;
 }
 
 void MovementComponent::setMovementSideways(float value)
 {
-	velocity.x = value;
+	movementDirection.x = value;
+}
+
+void MovementComponent::jump()
+{
+	if (physicsComponent)
+	{
+		if (physicsComponent->isOnGround())
+		{
+			physicsComponent->addVelocity({ 0.0f, 65.0f, 0.0f });
+		}
+	}
 }
 
 std::unique_ptr<Component> MovementComponent::clone() const
@@ -150,21 +158,6 @@ std::unique_ptr<Component> MovementComponent::clone() const
 const glm::vec3& MovementComponent::getForward() const
 {
 	return forward;
-}
-
-void MovementComponent::operator=(const MovementComponent& otherMovementComp)
-{
-	yawRate = otherMovementComp.yawRate;
-	pitchRate = otherMovementComp.pitchRate;
-
-	velocity = otherMovementComp.velocity;
-	float speed = otherMovementComp.speed;
-
-	forward = otherMovementComp.forward;
-	up = otherMovementComp.up;
-	right = otherMovementComp.right;
-
-	sensivity = otherMovementComp.sensivity;
 }
 
 void MovementComponent::addHorizontalLook(float value)

@@ -13,6 +13,7 @@ public:
 	Component(const Component&);
 	virtual ~Component() = default;
 
+	virtual void init() {}
 	virtual void tick(float dt) {}
 
 	virtual void setParentEntity(Entity* const);

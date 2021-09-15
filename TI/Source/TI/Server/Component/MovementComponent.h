@@ -5,13 +5,16 @@
 #include <TI/Server/Component/Component.h>
 
 class TransformComponent;
+class PhysicsComponent;
 
 class MovementComponent : public Component
 {
 public:
-	MovementComponent(TransformComponent* const transformComponent);
+	MovementComponent();
 	MovementComponent(const MovementComponent& otherMovementComp);
+	MovementComponent(MovementComponent&&) = delete;
 
+	void init() override;
 	void tick(float dt) override;
 
 	void setVelocity(const glm::vec3& velocity);
@@ -31,7 +34,7 @@ public:
 	void setMovementForward(float value);
 	void setMovementSideways(float value);
 
-	void operator=(const MovementComponent& otherMovementComp);
+	void jump();
 
 	std::unique_ptr<Component> clone() const override;
 
@@ -39,16 +42,16 @@ public:
 
 private:
 	TransformComponent* transformComponent;
+	PhysicsComponent* physicsComponent;
 
 	float yawRate;
 	float pitchRate;
 
+	glm::vec3 movementDirection;
 	glm::vec3 velocity;
 	float speed;
 
 	glm::vec3 forward;
-	glm::vec3 up;
-	glm::vec3 right;
 
 	float sensivity;
 

@@ -50,7 +50,7 @@ void DebugInformation::drawDebugLine(const glm::vec3& start, const glm::vec3& en
 	MeshBuilder meshBuilder;
 	meshBuilder.setPositions({ start, end });
 
-	meshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Lines, persistent });
+	meshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Lines, persistent, width });
 }
 
 void DebugInformation::drawDebugPoint(const glm::vec3& position, const glm::vec4& color, float width, bool persistent)
@@ -133,7 +133,7 @@ void DebugInformation::drawDebugBox(const glm::vec3& position, const glm::vec3& 
 		20, 22, 23
 		});
 
-	meshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Triangles, persistent });
+	meshes.push_back({ std::move(meshBuilder.build()), material, RenderMode::Triangles, persistent, width });
 }
 
 void DebugInformation::updateDebugMeshLifetime()

@@ -12,10 +12,11 @@
 class Entity
 {
 public:
-	Entity();
-
+	Entity() = default;
 	Entity(const Entity&);
 	Entity(Entity&& otherEntity) = delete;
+
+	void initComponents();
 
 	template <class AddedComponent, typename ... Args>
 	inline AddedComponent* addComponent(Args&& ... args)

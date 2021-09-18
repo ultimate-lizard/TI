@@ -44,7 +44,7 @@ private:
 	void destroyBlock();
 
 	void togglePolygonMode();
-	void toggleGravity();
+	void toggleFlyMode();
 
 	void jump();
 

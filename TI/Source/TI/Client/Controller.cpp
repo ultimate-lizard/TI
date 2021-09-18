@@ -205,13 +205,18 @@ void PlayerController::togglePolygonMode()
 	}
 }
 
-void PlayerController::toggleGravity()
+void PlayerController::toggleFlyMode()
 {
 	if (entity)
 	{
 		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
 		{
 			physicsComponent->setGravityEnabled(!physicsComponent->isGravityEnabled());
+		}
+
+		if (movementComp)
+		{
+			movementComp->setFlyModeEnabled(!movementComp->isFlyModeEnabled());
 		}
 	}
 }
@@ -250,7 +255,7 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("DestroyBlock", ActionInputType::KeyPress, std::bind(&PlayerController::destroyBlock, this));
 
 		inputHandler->bindKey("TogglePolygonMode", ActionInputType::KeyPress, std::bind(&PlayerController::togglePolygonMode, this));
-		inputHandler->bindKey("ToggleGravity", ActionInputType::KeyPress, std::bind(&PlayerController::toggleGravity, this));
+		inputHandler->bindKey("ToggleFlyMode", ActionInputType::KeyPress, std::bind(&PlayerController::toggleFlyMode, this));
 
 		inputHandler->bindKey("Jump", ActionInputType::KeyPress, std::bind(&PlayerController::jump, this));
 	}

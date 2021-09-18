@@ -36,6 +36,9 @@ public:
 
 	void jump();
 
+	void setFlyModeEnabled(bool flyMode);
+	bool isFlyModeEnabled() const;
+
 	std::unique_ptr<Component> clone() const override;
 
 	const glm::vec3& getForward() const;
@@ -54,6 +57,7 @@ private:
 	glm::vec3 forward;
 
 	float sensivity;
+	bool flyMode;
 
 public:
 	void addHorizontalLook(float value);

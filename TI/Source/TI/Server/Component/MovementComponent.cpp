@@ -18,9 +18,10 @@ MovementComponent::MovementComponent() :
 	physicsComponent(nullptr),
 	yawRate(0.0f),
 	pitchRate(0.0f),
-	speed(30.0f),
+	speed(50.0f),
 	forward(0.0f, 0.0f, -1.0f),
-	sensivity(20.0f)
+	sensivity(20.0f),
+	flyMode(true)
 {
 }
 
@@ -33,7 +34,8 @@ MovementComponent::MovementComponent(const MovementComponent& otherMovementComp)
 	movementDirection(otherMovementComp.movementDirection),
 	speed(otherMovementComp.speed),
 	forward(otherMovementComp.forward),
-	sensivity(otherMovementComp.sensivity)
+	sensivity(otherMovementComp.sensivity),
+	flyMode(otherMovementComp.flyMode)
 {
 }
 
@@ -62,11 +64,20 @@ void MovementComponent::tick(float dt)
 		forward.y = 0.0f;
 		forward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
 
+		if (flyMode)
+		{
+			forward.y = sin(glm::radians(rotation.x));
+			forward = glm::normalize(forward);
+		}
+
 		glm::vec3 movementForward = forward;
 		movementForward = glm::normalize(movementForward);
 
-		forward.y = sin(glm::radians(rotation.x));
-		forward = glm::normalize(forward);
+		if (!flyMode)
+		{
+			forward.y = sin(glm::radians(rotation.x));
+			forward = glm::normalize(forward);
+		}
 
 		glm::vec3 right = glm::normalize(glm::cross(movementForward, glm::vec3(0.0f, 1.0f, 0.0f)));
 		glm::vec3 up = glm::normalize(glm::cross(right, movementForward));
@@ -146,6 +157,22 @@ void MovementComponent::jump()
 			physicsComponent->addVelocity({ 0.0f, 65.0f, 0.0f });
 		}
 	}
+}
+
+void MovementComponent::setFlyModeEnabled(bool flyMode)
+{
+	this->flyMode = flyMode;
+	if (physicsComponent)
+	{
+		glm::vec3 velocity = physicsComponent->getVelocity();
+		velocity.y = 0.0f;
+		physicsComponent->setVelocity(velocity);
+	}
+}
+
+bool MovementComponent::isFlyModeEnabled() const
+{
+	return flyMode;
 }
 
 std::unique_ptr<Component> MovementComponent::clone() const

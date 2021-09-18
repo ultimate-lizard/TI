@@ -10,11 +10,11 @@ Camera::Camera(const glm::vec3& position)
 	this->position = position;
 }
 
-Camera::Camera(const Camera& otherCamera) :
-	SceneNode(otherCamera)
+Camera::Camera(const Camera& other) :
+	SceneNode(other),
+	projection(other.projection),
+	view(other.view)
 {
-	projection = otherCamera.projection;
-	view = otherCamera.view;
 }
 
 void Camera::setPerspective(float fov, float aspect, float near, float far)

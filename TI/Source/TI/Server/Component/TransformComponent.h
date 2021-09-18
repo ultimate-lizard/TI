@@ -11,13 +11,15 @@ class TransformComponent : public Component, public SceneNode
 {
 public:
 	TransformComponent();
-	TransformComponent(Plane* plane);
 	TransformComponent(const TransformComponent& other);
+	TransformComponent(TransformComponent&&) = delete;
 
-	std::unique_ptr<Component> clone() const override;
+	void tick(float dt) override;
 
 	void setPlane(Plane* plane);
 	Plane* getPlane() const;
+
+	std::unique_ptr<Component> clone() const override;
 
 private:
 	Plane* plane;

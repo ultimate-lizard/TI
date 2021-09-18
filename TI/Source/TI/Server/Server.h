@@ -37,7 +37,7 @@ public:
 
 protected:
 	void initEntityTemplates();
-	Entity* const spawnEntity(const std::string& id, const std::string& templateName);
+	Entity* const spawnEntity(const std::string& id, const std::string& templateName, const glm::vec3& position);
 	void possesEntity(const std::string& entityName, Client* const client);
 
 protected:

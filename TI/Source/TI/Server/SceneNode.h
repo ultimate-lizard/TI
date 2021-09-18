@@ -8,13 +8,9 @@ class SceneNode
 {
 public:
 	SceneNode();
-	SceneNode(SceneNode* parent);
 
 	SceneNode(const SceneNode&);
 	SceneNode(SceneNode&&) = delete;
-
-	void setParentNode(SceneNode* const parent);
-	void addChildNode(SceneNode* child);
 
 	void updateTransform();
 
@@ -27,6 +23,10 @@ public:
 	const glm::vec3& getPosition() const;
 	const glm::vec3& getRotation() const;
 	const glm::vec3& getScale() const;
+
+	void setParent(SceneNode* parent);
+	void addChild(SceneNode* child);
+	bool isChildOf(SceneNode* node);
 
 protected:
 	SceneNode* parent;

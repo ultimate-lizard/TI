@@ -11,36 +11,41 @@ SceneNode::SceneNode() :
 {
 }
 
-SceneNode::SceneNode(SceneNode* parent) :
-	parent(parent),
-	transform(1.0f),
-	position(0.0f),
-	rotation(0.0f),
-	scale(1.0f)
+SceneNode::SceneNode(const SceneNode& other) :
+	parent(nullptr),
+	transform(other.transform),
+	position(other.position),
+	rotation(other.rotation),
+	scale(other.scale)
 {
 }
 
-SceneNode::SceneNode(const SceneNode& otherNode) :
-	parent(otherNode.parent),
-	transform(otherNode.transform),
-	position(otherNode.position),
-	rotation(otherNode.rotation),
-	scale(otherNode.scale)
-{
-}
-
-void SceneNode::setParentNode(SceneNode* const parent)
+void SceneNode::setParent(SceneNode* parent)
 {
 	this->parent = parent;
 	if (parent)
 	{
-		parent->addChildNode(this);
+		parent->addChild(this);
 	}
 }
 
-void SceneNode::addChildNode(SceneNode* child)
+void SceneNode::addChild(SceneNode* child)
 {
 	children.push_back(child);
+	child->parent = this;
+}
+
+bool SceneNode::isChildOf(SceneNode* node)
+{
+	for (SceneNode* n : node->children)
+	{
+		if (n == this)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void SceneNode::updateTransform()

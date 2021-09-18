@@ -13,22 +13,17 @@ MeshComponent::MeshComponent(ResourceManager* modelManager) :
 
 }
 
-MeshComponent::MeshComponent(const MeshComponent& otherMeshComp) :
-	Component(otherMeshComp),
-	SceneNode(otherMeshComp)
+MeshComponent::MeshComponent(const MeshComponent& other) :
+	Component(other),
+	SceneNode(other),
+	modelManager(other.modelManager),
+	model(other.model)
 {
-	modelManager = otherMeshComp.modelManager;
-	model = otherMeshComp.model;
 }
 
-void MeshComponent::setParentEntity(Entity* const entity)
+std::unique_ptr<Component> MeshComponent::clone() const
 {
-	Component::setParentEntity(entity);
-
-	if (auto transformComponent = entity->findComponent<TransformComponent>())
-	{
-		setParentNode(transformComponent);
-	}
+	return std::make_unique<MeshComponent>(*this);
 }
 
 void MeshComponent::loadModel(const std::string& name)
@@ -44,14 +39,3 @@ Model* const MeshComponent::getModel() const
 {
 	return model;
 }
-
-std::unique_ptr<Component> MeshComponent::clone() const
-{
-	return std::make_unique<MeshComponent>(*this);
-}
-
-//void MeshComponent::operator=(const MeshComponent& otherMeshComp)
-//{
-//	modelManager = otherMeshComp.modelManager;
-//	model = otherMeshComp.model;
-//}

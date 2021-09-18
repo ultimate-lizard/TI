@@ -16,37 +16,44 @@
 void Server::initEntityTemplates()
 {
 	auto playerEntity = std::make_unique<Entity>();
-	playerEntity->addComponent<TransformComponent>();
+	playerEntity->setName("Player");
+
+	auto transformComponent = playerEntity->addComponent<TransformComponent>();
+	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
+	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
+	auto movementComponent = playerEntity->addComponent<MovementComponent>();
+	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
+
+	// assert(transformComponent);
+	// assert(meshComponent);
+	// assert(physicsComponent);
+	// assert(cameraComponent);
+	// assert(movementComponent);
+
+	meshComponent->setParent(transformComponent);
+	cameraComponent->setParent(movementComponent);
+	movementComponent->setParent(transformComponent);
+
+	meshComponent->loadModel("Player");
+	meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
+
+	physicsComponent->setCollisionBox({ { -0.2f, -0.2f, -0.2f }, { 0.2f, 0.2f, 0.2f } });
 
 	auto camera = std::make_unique<Camera>();
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
 	camera->setPosition({ -2.0f, 0.5f, -0.0f });
-
-	playerEntity->setName("Player");
-
-	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
-	meshComponent->loadModel("Player");
-	if (auto meshComponent = playerEntity->findComponent<MeshComponent>())
-	{
-		meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
-	}
-
-	
-	if (auto physicsComponent = playerEntity->addComponent<PhysicsComponent>())
-	{
-		physicsComponent->setCollisionBox({ { -0.2f, -0.2f, -0.2f }, { 0.2f, 0.2f, 0.2f } });
-	}
-
-	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
+	camera->setParent(cameraComponent);
 	cameraComponent->setCamera(std::move(camera));
+
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
 	auto cubeEntity = std::make_unique<Entity>();
-	cubeEntity->addComponent<TransformComponent>();
 	cubeEntity->setName("Cube");
-
+	auto cubeTransformComponent = cubeEntity->addComponent<TransformComponent>();
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
+	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
+
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 }
 
@@ -123,7 +130,7 @@ const Plane* const Server::getPlane() const
 	return plane;
 }
 
-Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id)
+Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, const glm::vec3& position)
 {
 	Entity* result = nullptr;
 
@@ -137,6 +144,7 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
 				transformComponent->setPlane(plane);
+				transformComponent->setPosition(position);
 			}
 		}
 
@@ -150,18 +158,11 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 
 void Server::possesEntity(const std::string& entityName, Client* const client)
 {
-	if (!client)
+	if (client)
 	{
-		return;
-	}
-
-	if (spawnedEntities.find(entityName) != spawnedEntities.end())
-	{
-		std::unique_ptr<Entity>& possesedEntity = spawnedEntities.at(entityName);
-
-		auto movementComponent = possesedEntity->addComponent<MovementComponent>();
-		movementComponent->init();
-		
-		client->setPossesedEntity(possesedEntity.get());
+		if (spawnedEntities.find(entityName) != spawnedEntities.end())
+		{
+			client->setPossesedEntity(spawnedEntities.at(entityName).get());
+		}
 	}
 }

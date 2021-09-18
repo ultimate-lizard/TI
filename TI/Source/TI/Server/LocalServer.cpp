@@ -16,18 +16,8 @@ LocalServer::LocalServer(Application* app) :
 {
 	initEntityTemplates();
 
-	Entity* const cubeEntity = spawnEntity("Cube", "cube");
-	Entity* const cube2Entity = spawnEntity("Cube", "cube2");
-
-	if (auto transformComponent = cubeEntity->findComponent<TransformComponent>())
-	{
-		transformComponent->setPosition({ 0.0f, 0.0f, -1.0f });
-	}
-
-	if (auto transformComponent = cube2Entity->findComponent<TransformComponent>())
-	{
-		transformComponent->setPosition({ -2.0f, 0.0f, -1.0f });
-	}
+	Entity* const cubeEntity = spawnEntity("Cube", "cube", { 0.0f, 0.0f, -1.0f });
+	Entity* const cube2Entity = spawnEntity("Cube", "cube2", { -2.0f, 0.0f, -1.0f });
 }
 
 void LocalServer::update(float dt)
@@ -52,18 +42,12 @@ void LocalServer::ejectClient(Client* client)
 
 void LocalServer::spawnPlayer(Client* const client)
 {
-	Entity* const player = spawnEntity(client->getName(), "Player");
-
 	if (plane)
 	{
 		glm::ivec3 planeSize = plane->getSize();
 
-		if (auto transformComponent = player->findComponent<TransformComponent>())
-		{
-			// transformComponent->setPosition({ planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y* plane->getChunkSize() + 2.0f, planeSize.z * plane->getChunkSize() / 2.0f });
-			transformComponent->setPosition({ 0.0f, planeSize.y * plane->getChunkSize() + 3.0f, 0.0f });
-		}
+		spawnEntity(client->getName(), "Player", { 0.0f, planeSize.y * plane->getChunkSize() + 3.0f, 0.0f });
+
+		possesEntity(client->getName(), client);
 	}
-	
-	possesEntity(client->getName(), client);
 }

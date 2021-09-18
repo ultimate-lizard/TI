@@ -1,28 +1,26 @@
 #include "TransformComponent.h"
 
 #include <TI/Server/Plane.h>
+#include <TI/Client/DebugInformation.h>
+#include <TI/Server/Entity.h>
 
 TransformComponent::TransformComponent() :
+	Component(),
 	SceneNode(),
 	plane(nullptr)
 {
 }
 
-TransformComponent::TransformComponent(Plane* plane) :
-	SceneNode(),
-	plane(plane)
-{
-}
-
 TransformComponent::TransformComponent(const TransformComponent& other) :
+	Component(other),
 	SceneNode(other),
 	plane(other.plane)
 {
 }
 
-std::unique_ptr<Component> TransformComponent::clone() const
+void TransformComponent::tick(float dt)
 {
-	return std::make_unique<TransformComponent>(*this);
+	// drawDebugPoint(position, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f, false);
 }
 
 void TransformComponent::setPlane(Plane* plane)
@@ -33,4 +31,9 @@ void TransformComponent::setPlane(Plane* plane)
 Plane* TransformComponent::getPlane() const
 {
 	return plane;
+}
+
+std::unique_ptr<Component> TransformComponent::clone() const
+{
+	return std::make_unique<TransformComponent>(*this);
 }

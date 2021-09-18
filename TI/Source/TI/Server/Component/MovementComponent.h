@@ -3,11 +3,12 @@
 #include <glm/glm.hpp>
 
 #include <TI/Server/Component/Component.h>
+#include <TI/Server/SceneNode.h>
 
 class TransformComponent;
 class PhysicsComponent;
 
-class MovementComponent : public Component
+class MovementComponent : public Component, public SceneNode
 {
 public:
 	MovementComponent();
@@ -16,6 +17,8 @@ public:
 
 	void init() override;
 	void tick(float dt) override;
+
+	std::unique_ptr<Component> clone() const override;
 
 	void setVelocity(const glm::vec3& velocity);
 	const glm::vec3& getVelocity() const;
@@ -38,8 +41,6 @@ public:
 
 	void setFlyModeEnabled(bool flyMode);
 	bool isFlyModeEnabled() const;
-
-	std::unique_ptr<Component> clone() const override;
 
 	const glm::vec3& getForward() const;
 

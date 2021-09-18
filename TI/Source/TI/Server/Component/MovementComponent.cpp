@@ -25,17 +25,18 @@ MovementComponent::MovementComponent() :
 {
 }
 
-MovementComponent::MovementComponent(const MovementComponent& otherMovementComp) :
-	Component(otherMovementComp),
-	transformComponent(otherMovementComp.transformComponent),
-	physicsComponent(otherMovementComp.physicsComponent),
-	yawRate(otherMovementComp.yawRate),
-	pitchRate(otherMovementComp.pitchRate),
-	movementDirection(otherMovementComp.movementDirection),
-	speed(otherMovementComp.speed),
-	forward(otherMovementComp.forward),
-	sensivity(otherMovementComp.sensivity),
-	flyMode(otherMovementComp.flyMode)
+MovementComponent::MovementComponent(const MovementComponent& other) :
+	Component(other),
+	SceneNode(other),
+	transformComponent(other.transformComponent),
+	physicsComponent(other.physicsComponent),
+	yawRate(other.yawRate),
+	pitchRate(other.pitchRate),
+	movementDirection(other.movementDirection),
+	speed(other.speed),
+	forward(other.forward),
+	sensivity(other.sensivity),
+	flyMode(other.flyMode)
 {
 }
 
@@ -91,6 +92,11 @@ void MovementComponent::tick(float dt)
 
 		physicsComponent->setAbsoluteVelocity(velocity);
 	}
+}
+
+std::unique_ptr<Component> MovementComponent::clone() const
+{
+	return std::make_unique<MovementComponent>(*this);
 }
 
 void MovementComponent::setVelocity(const glm::vec3& velocity)
@@ -173,11 +179,6 @@ void MovementComponent::setFlyModeEnabled(bool flyMode)
 bool MovementComponent::isFlyModeEnabled() const
 {
 	return flyMode;
-}
-
-std::unique_ptr<Component> MovementComponent::clone() const
-{
-	return std::make_unique<MovementComponent>(*this);
 }
 
 const glm::vec3& MovementComponent::getForward() const

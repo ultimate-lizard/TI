@@ -17,12 +17,10 @@ public:
 	MeshComponent(MeshComponent&&) = delete;
 	void operator=(const MeshComponent& otherMeshComp) = delete;
 
-	void setParentEntity(Entity* const entity) override;
+	std::unique_ptr<Component> clone() const override;
 
 	void loadModel(const std::string& name);
 	Model* const getModel() const;
-
-	std::unique_ptr<Component> clone() const override;
 
 private:
 	ResourceManager* modelManager;

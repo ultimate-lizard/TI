@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 class Entity;
 
@@ -11,13 +12,11 @@ class Component
 public:
 	Component();
 	Component(const Component&);
+	Component(Component&&) = delete;
 	virtual ~Component() = default;
 
 	virtual void init() {}
 	virtual void tick(float dt) {}
-
-	virtual void setParentEntity(Entity* const);
-	inline Entity* getParentEntity() { return entity; }
 
 	virtual std::unique_ptr<Component> clone() const = 0;
 

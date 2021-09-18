@@ -3,23 +3,21 @@
 #include <memory>
 
 #include <TI/Server/Component/Component.h>
+#include <TI/Server/SceneNode.h>
 
 class Camera;
 
-class CameraComponent : public Component
+class CameraComponent : public Component, public SceneNode
 {
 public:
 	CameraComponent();
-	CameraComponent(const CameraComponent& otherCameraComp);
+	CameraComponent(const CameraComponent& other);
+	CameraComponent(CameraComponent&&) = delete;
+
+	std::unique_ptr<Component> clone() const override;
 
 	void setCamera(std::unique_ptr<Camera> camera);
 	Camera* getCamera() const;
-
-	void setParentEntity(Entity* const entity) override;
-
-	void operator=(const CameraComponent& otherCameraComp);
-
-	std::unique_ptr<Component> clone() const override;
 
 private:
 	std::unique_ptr<Camera> camera;

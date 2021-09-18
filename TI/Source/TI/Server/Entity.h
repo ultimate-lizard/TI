@@ -9,11 +9,13 @@
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
 
+class TransformComponent;
+
 class Entity
 {
 public:
 	Entity() = default;
-	Entity(const Entity&);
+	Entity(const Entity&) = delete;
 	Entity(Entity&& otherEntity) = delete;
 
 	void initComponents();
@@ -32,6 +34,8 @@ public:
 
 		return nullptr;
 	}
+
+	void addComponent(std::unique_ptr<Component> component);
 
 	template <class SearchedComponent>
 	inline SearchedComponent* findComponent()
@@ -56,25 +60,10 @@ public:
 		}
 	}
 
-	inline void setName(const std::string& name)
-	{
-		this->name = name;
-	}
-
-	inline std::string getName() const
-	{
-		return name;
-	}
-
-	inline void setId(const std::string& id)
-	{
-		this->id = id;
-	}
-
-	inline std::string getId() const
-	{
-		return id;
-	}
+	inline void setName(const std::string& name) { this->name = name; }
+	inline std::string getName() const { return name; }
+	inline void setId(const std::string& id) { this->id = id; }
+	inline std::string getId() const { return id; }
 
 	std::unique_ptr<Entity> clone() const;
 

@@ -10,7 +10,7 @@ class Camera : public SceneNode
 {
 public:
 	Camera(const glm::vec3& position = { 0.0f, 0.0f, 0.0f });
-	Camera(const Camera& otherCamera);
+	Camera(const Camera& other);
 
 	void setPerspective(float fov, float aspect, float near, float far);
 	void updateView();

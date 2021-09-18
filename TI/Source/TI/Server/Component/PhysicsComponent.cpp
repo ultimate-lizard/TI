@@ -144,30 +144,33 @@ CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, cons
 				currentPosition.y += y;
 				currentPosition.z += z;
 				
-				if (transformComponent->getPlane()->getBlock(currentPosition) != 0)
+				if (Plane* plane = transformComponent->getPlane())
 				{
-					glm::vec3 checkedVelocity(0.0f);
-					checkedVelocity.x = velocity.x;
-					if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+					if (plane->getBlock(currentPosition) != 0)
 					{
-						result.adjustedVelocity.x = 0;
-						result.collidedAxis.x = true;
-					}
+						glm::vec3 checkedVelocity(0.0f);
+						checkedVelocity.x = velocity.x;
+						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						{
+							result.adjustedVelocity.x = 0;
+							result.collidedAxis.x = true;
+						}
 
-					checkedVelocity = glm::vec3(0.0f);
-					checkedVelocity.y = velocity.y;
-					if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
-					{
-						result.adjustedVelocity.y = 0;
-						result.collidedAxis.y = true;
-					}
+						checkedVelocity = glm::vec3(0.0f);
+						checkedVelocity.y = velocity.y;
+						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						{
+							result.adjustedVelocity.y = 0;
+							result.collidedAxis.y = true;
+						}
 
-					checkedVelocity = glm::vec3(0.0f);
-					checkedVelocity.z = velocity.z;
-					if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
-					{
-						result.adjustedVelocity.z = 0;
-						result.collidedAxis.z = true;
+						checkedVelocity = glm::vec3(0.0f);
+						checkedVelocity.z = velocity.z;
+						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						{
+							result.adjustedVelocity.z = 0;
+							result.collidedAxis.z = true;
+						}
 					}
 				}
 			}

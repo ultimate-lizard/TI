@@ -116,7 +116,6 @@ void PhysicsComponent::tick(float dt)
 		// Note: If there ever be velocity glitches during collision, implement adjusted position here
 
 		transformComponent->setPosition(position);
-		drawDebugLine(position, position + velocity, { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f, false);
 	}
 }
 

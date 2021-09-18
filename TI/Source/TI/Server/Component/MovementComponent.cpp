@@ -79,8 +79,6 @@ void MovementComponent::tick(float dt)
 		transformComponent->setRotation(rotation);
 
 		physicsComponent->setAbsoluteVelocity(velocity);
-
-		drawDebugLine(position, position + velocity, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
 	}
 }
 

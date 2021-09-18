@@ -28,7 +28,7 @@ Application::Application() :
 	}
 
 	SDL_GameController* controller;
-	if (SDL_NumJoysticks() > 0)
+	if (int i = SDL_NumJoysticks() > 0)
 	{
 		if (SDL_IsGameController(0))
 		{

@@ -44,13 +44,20 @@ void Input::handleInput()
 				break;
 
 			case SDL_CONTROLLERBUTTONDOWN:
+				inputHandler->onKeyInput(event.cbutton.button, ActionInputType::KeyPress);
+				inputHandler->onAxisInput(event.cbutton.button, 1.0f);
+				break;
+
 			case SDL_KEYDOWN:
 				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
 				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
-
 				break;
 
 			case SDL_CONTROLLERBUTTONUP:
+				inputHandler->onKeyInput(event.cbutton.button, ActionInputType::KeyRelease);
+				inputHandler->onAxisInput(event.cbutton.button, 0.0f);
+				break;
+
 			case SDL_KEYUP:
 				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyRelease);
 				inputHandler->onAxisInput(event.key.keysym.scancode, 0.0f);

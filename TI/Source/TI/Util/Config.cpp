@@ -167,7 +167,10 @@ Key Config::stringToKey(const std::string& string)
 	if (string == "Escape") return Key::Escape;
 	if (string == "Enter") return Key::Enter;
 	if (string == "LeftCtrl") return Key::LeftCtrl;
+	if (string == "ControllerButtonA") return Key::ControllerButtonA;
 	if (string == "ControllerButtonB") return Key::ControllerButtonB;
+	if (string == "ControllerButtonX") return Key::ControllerButtonX;
+	if (string == "ControllerButtonY") return Key::ControllerButtonY;
 	if (string == "Right") return Key::Right;
 	if (string == "Left") return Key::Left;
 	if (string == "Down") return Key::Down;
@@ -207,7 +210,10 @@ std::string Config::keyToString(Key key)
 	if (key == Key::Enter) return "Enter";
 	if (key == Key::Escape) return "Escape";
 	if (key == Key::LeftCtrl) return "LeftCtrl";
+	if (key == Key::ControllerButtonA) return "ControllerButtonA";
 	if (key == Key::ControllerButtonB) return "ControllerButtonB";
+	if (key == Key::ControllerButtonX) return "ControllerButtonX";
+	if (key == Key::ControllerButtonY) return "ControllerButtonY";
 	if (key == Key::Right) return "Right";
 	if (key == Key::Left) return "Left";
 	if (key == Key::Down) return "Down";

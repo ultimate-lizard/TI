@@ -16,7 +16,7 @@ LocalServer::LocalServer(Application* app) :
 {
 	initEntityTemplates();
 
-	Entity* const cubeEntity = spawnEntity("Cube", "cube", { 0.0f, 0.0f, -1.0f });
+	// Entity* const cubeEntity = spawnEntity("Cube", "cube", { 0.0f, 0.0f, -1.0f });
 	Entity* const cube2Entity = spawnEntity("Cube", "cube2", { -2.0f, 0.0f, -1.0f });
 }
 
@@ -46,7 +46,12 @@ void LocalServer::spawnPlayer(Client* const client)
 	{
 		glm::ivec3 planeSize = plane->getSize();
 
-		spawnEntity(client->getName(), "Player", { 0.0f, planeSize.y * plane->getChunkSize() + 3.0f, 0.0f });
+		glm::vec3 spawnLocation { planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
+		spawnEntity("Player", client->getName(), spawnLocation);
+
+		spawnLocation.x += 5.0f;
+
+		spawnEntity("Cube", "Cube1", spawnLocation);
 
 		possesEntity(client->getName(), client);
 	}

@@ -10,9 +10,9 @@ PhysicsComponent::PhysicsComponent() :
 	currentGravityVelocity(0.0f),
 	maxGravityVelocity(300.0f),
 	velocity(0.0f),
-	absoluteVelocity(0.0f),
-	gravityEnabled(false),
-	onGround(false)
+	gravityEnabled(true),
+	onGround(false),
+	frictionEnabled(true)
 {
 	
 }
@@ -24,9 +24,9 @@ PhysicsComponent::PhysicsComponent(const PhysicsComponent& other) :
 	collisionBox(other.collisionBox),
 	maxGravityVelocity(other.maxGravityVelocity),
 	velocity(other.velocity),
-	absoluteVelocity(other.absoluteVelocity),
 	gravityEnabled(other.gravityEnabled),
-	onGround(other.onGround)
+	onGround(other.onGround),
+	frictionEnabled(other.frictionEnabled)
 {
 
 }
@@ -52,16 +52,6 @@ const glm::vec3& PhysicsComponent::getVelocity() const
 void PhysicsComponent::addVelocity(const glm::vec3& velocity)
 {
 	this->velocity += velocity;
-
-	if (velocity.y)
-	{
-		onGround = false;
-	}
-}
-
-void PhysicsComponent::setAbsoluteVelocity(const glm::vec3& absoluteVelocity)
-{
-	this->absoluteVelocity = absoluteVelocity;
 }
 
 void PhysicsComponent::setGravityEnabled(bool gravityEnabled)
@@ -72,6 +62,15 @@ void PhysicsComponent::setGravityEnabled(bool gravityEnabled)
 bool PhysicsComponent::isGravityEnabled() const
 {
 	return gravityEnabled;
+}
+
+void PhysicsComponent::setFrictionEnabled(bool frictionEnabled)
+{
+}
+
+bool PhysicsComponent::isFrictionEnabled() const
+{
+	return false;
 }
 
 bool PhysicsComponent::isOnGround() const
@@ -91,8 +90,19 @@ void PhysicsComponent::tick(float dt)
 		if (gravityEnabled)
 		{
 			glm::vec3 gravityVector{ 0.0f, -1.0f, 0.0f };
-			float gravityConstant = 800.0f;
-			velocity += gravityVector * gravityConstant * dt;
+			float gravityConstant = 3000.0f;
+			glm::vec3 forces = gravityVector * gravityConstant;
+			float mass = 1.0f;
+			glm::vec3 acceleration = forces * mass;
+			velocity += acceleration * dt;
+		}
+
+		if (frictionEnabled)
+		{
+			if (isOnGround() && (velocity.x || velocity.z || velocity.y))
+			{
+				velocity += -velocity * 120.0f * dt;
+			}
 		}
 
 		glm::vec3 position = transformComponent->getPosition();
@@ -102,13 +112,7 @@ void PhysicsComponent::tick(float dt)
 		if (result.collidedAxis.y) velocity.y = result.adjustedVelocity.y;
 		if (result.collidedAxis.z) velocity.z = result.adjustedVelocity.z;
 
-		result = applyCollision(position, absoluteVelocity, collisionBox, dt);
-		if (result.collidedAxis.x) absoluteVelocity.x = result.adjustedVelocity.x;
-		if (result.collidedAxis.y) absoluteVelocity.y = result.adjustedVelocity.y;
-		if (result.collidedAxis.z) absoluteVelocity.z = result.adjustedVelocity.z;
-
 		position += velocity * dt;
-		position += absoluteVelocity * dt;
 
 		onGround = velocity.y ? false : true;
 		if (!isGravityEnabled()) onGround = false;

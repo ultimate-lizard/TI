@@ -62,7 +62,7 @@ void Viewport::updateCameraPerspective()
 	if (camera)
 	{
 		camera->setPerspective(
-			glm::radians(85.0f),
+			glm::radians(95.0f),
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.01f,
 			1000.0f

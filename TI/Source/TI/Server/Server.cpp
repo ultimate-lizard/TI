@@ -19,31 +19,29 @@ void Server::initEntityTemplates()
 	playerEntity->setName("Player");
 
 	auto transformComponent = playerEntity->addComponent<TransformComponent>();
-	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
-	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
-	auto movementComponent = playerEntity->addComponent<MovementComponent>();
-	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 
+	//auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
+	/*meshComponent->setParent(transformComponent);
+	meshComponent->loadModel("Player");
+	meshComponent->setScale({ 0.3f, 0.3f, 0.3f });*/
+
+	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
+	physicsComponent->setCollisionBox({ { -0.2f, -1.9f, -0.2f }, { 0.2f, 0.0f, 0.2f } });
+
+	auto movementComponent = playerEntity->addComponent<MovementComponent>();
+
+	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
+	auto camera = std::make_unique<Camera>();
+	camera->setRotation({ 0.0f, 90.0f, 0.0f });
+	camera->setPosition({ -0.0f, 0.0f, -0.0f });
+	camera->setParent(cameraComponent);
+	cameraComponent->setCamera(std::move(camera));
+	cameraComponent->setParent(transformComponent);
 	// assert(transformComponent);
 	// assert(meshComponent);
 	// assert(physicsComponent);
 	// assert(cameraComponent);
 	// assert(movementComponent);
-
-	meshComponent->setParent(transformComponent);
-	cameraComponent->setParent(movementComponent);
-	movementComponent->setParent(transformComponent);
-
-	meshComponent->loadModel("Player");
-	meshComponent->setScale({ 0.3f, 0.3f, 0.3f });
-
-	physicsComponent->setCollisionBox({ { -0.2f, -0.2f, -0.2f }, { 0.2f, 0.2f, 0.2f } });
-
-	auto camera = std::make_unique<Camera>();
-	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -2.0f, 0.5f, -0.0f });
-	camera->setParent(cameraComponent);
-	cameraComponent->setCamera(std::move(camera));
 
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
@@ -53,6 +51,8 @@ void Server::initEntityTemplates()
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
+	auto cubePhysicsComponent = cubeEntity->addComponent<PhysicsComponent>();
+	cubePhysicsComponent->setCollisionBox({ { -0.5f, -0.5, -0.5f },  { 0.5f, 0.5, 0.5f } });
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 }
@@ -122,7 +122,7 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 		return std::move(newEntity);
 	}
 	
-	throw std::exception();
+	return nullptr;
 }
 
 const Plane* const Server::getPlane() const

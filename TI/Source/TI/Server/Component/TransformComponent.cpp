@@ -20,7 +20,6 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 
 void TransformComponent::tick(float dt)
 {
-	// drawDebugPoint(position, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f, false);
 }
 
 void TransformComponent::setPlane(Plane* plane)

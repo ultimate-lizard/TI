@@ -8,7 +8,7 @@
 class TransformComponent;
 class PhysicsComponent;
 
-class MovementComponent : public Component, public SceneNode
+class MovementComponent : public Component
 {
 public:
 	MovementComponent();
@@ -23,8 +23,8 @@ public:
 	void setVelocity(const glm::vec3& velocity);
 	const glm::vec3& getVelocity() const;
 
-	void setSpeed(float speed);
-	float getSpeed() const;
+	void setOnGroundSpeed(float speed);
+	float getOnGroundSpeed() const;
 
 	float getSensivity() const;
 
@@ -42,23 +42,26 @@ public:
 	void setFlyModeEnabled(bool flyMode);
 	bool isFlyModeEnabled() const;
 
-	const glm::vec3& getForward() const;
+	const glm::vec3& getHeadForward() const;
+	const glm::vec3& getHeadRotation() const;
 
 private:
 	TransformComponent* transformComponent;
 	PhysicsComponent* physicsComponent;
 
+	glm::vec3 headRotation;
+	glm::vec3 headForward;
+	glm::vec3 movementDirection;
+
 	float yawRate;
 	float pitchRate;
 
-	glm::vec3 movementDirection;
-	glm::vec3 velocity;
-	float speed;
+	float onGroundSpeed;
+	float inAirSpeed;
+	glm::vec3 jumpVelocity;
 
-	glm::vec3 forward;
-
-	float sensivity;
-	bool flyMode;
+	float lookSensivity;
+	bool flightMode;
 
 public:
 	void addHorizontalLook(float value);

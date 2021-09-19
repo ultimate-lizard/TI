@@ -1,6 +1,9 @@
 #include "MovementComponent.h"
 
 #include <iostream>
+#include <algorithm>
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/CameraComponent.h>
@@ -16,27 +19,31 @@ float maxVelocity = 100.0f;
 MovementComponent::MovementComponent() :
 	transformComponent(nullptr),
 	physicsComponent(nullptr),
+	headForward(0.0f, 0.0f, 1.0f),
 	yawRate(0.0f),
 	pitchRate(0.0f),
-	speed(50.0f),
-	forward(0.0f, 0.0f, -1.0f),
-	sensivity(20.0f),
-	flyMode(true)
+	onGroundSpeed(45.0f),
+	inAirSpeed(35.0f),
+	jumpVelocity({0.0f, 90.0f, 0.0f}),
+	lookSensivity(20.0f),
+	flightMode(false)
 {
 }
 
 MovementComponent::MovementComponent(const MovementComponent& other) :
 	Component(other),
-	SceneNode(other),
 	transformComponent(other.transformComponent),
 	physicsComponent(other.physicsComponent),
+	headRotation(other.headRotation),
+	headForward(other.headForward),
+	movementDirection(other.movementDirection),
 	yawRate(other.yawRate),
 	pitchRate(other.pitchRate),
-	movementDirection(other.movementDirection),
-	speed(other.speed),
-	forward(other.forward),
-	sensivity(other.sensivity),
-	flyMode(other.flyMode)
+	onGroundSpeed(other.onGroundSpeed),
+	inAirSpeed(other.inAirSpeed),
+	jumpVelocity(other.jumpVelocity),
+	lookSensivity(other.lookSensivity),
+	flightMode(other.flightMode)
 {
 }
 
@@ -53,44 +60,68 @@ void MovementComponent::tick(float dt)
 {
 	if (transformComponent && physicsComponent)
 	{
-		glm::vec3 rotation = transformComponent->getRotation();
+		headRotation.x += pitchRate * dt;
+		headRotation.y += yawRate * dt;
 
-		rotation.x += pitchRate * dt;
-		rotation.y += yawRate * dt;
+		if (headRotation.x > 89.0f) headRotation.x = 89.0f;
+		if (headRotation.x < -89.0f) headRotation.x = -89.0f;
 
-		if (rotation.x > 89.0f) rotation.x = 89.0f;
-		if (rotation.x < -89.0f) rotation.x = -89.0f;
+		glm::vec3 newForward;
+		newForward.x = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
+		newForward.y = sin(glm::radians(headRotation.x)); // We set Y axis later to prevent Y calculation for movement
+		newForward.z = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
 
-		forward.x = cos(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
-		forward.y = 0.0f;
-		forward.z = sin(glm::radians(rotation.y)) * cos(glm::radians(rotation.x));
+		headForward = glm::normalize(newForward);
 
-		if (flyMode)
+		newForward.y = 0.0f; // We don't need to calculate Y axis during player movement
+		newForward = glm::normalize(newForward);
+
+		glm::vec3 right = glm::normalize(glm::cross(newForward, glm::vec3(0.0f, 1.0f, 0.0f)));
+		glm::vec3 up = glm::normalize(glm::cross(right, newForward));
+
+		glm::vec3 velocityGoal = newForward * movementDirection.x;
+		velocityGoal += right * movementDirection.z;
+
+		transformComponent->setRotation(headRotation);
+
+		if (movementDirection.x || movementDirection.z)
 		{
-			forward.y = sin(glm::radians(rotation.x));
-			forward = glm::normalize(forward);
+			velocityGoal = glm::normalize(velocityGoal);
 		}
 
-		glm::vec3 movementForward = forward;
-		movementForward = glm::normalize(movementForward);
+		glm::vec3 velocity = velocityGoal;
+		velocity *= onGroundSpeed;
 
-		if (!flyMode)
+		if (!flightMode)
 		{
-			forward.y = sin(glm::radians(rotation.x));
-			forward = glm::normalize(forward);
+			if (physicsComponent->isOnGround())
+			{
+				velocity = glm::clamp(velocity, glm::vec3(-onGroundSpeed), glm::vec3(onGroundSpeed));
+				physicsComponent->addVelocity(velocity * dt * 100.f);
+			}
+			else
+			{
+				velocity = glm::clamp(velocity, glm::vec3(-inAirSpeed), glm::vec3(inAirSpeed));
+				physicsComponent->addVelocity(velocity * dt * 10.0f);
+			}
 		}
+		else
+		{
+			// Flight mode movement calculation
 
-		glm::vec3 right = glm::normalize(glm::cross(movementForward, glm::vec3(0.0f, 1.0f, 0.0f)));
-		glm::vec3 up = glm::normalize(glm::cross(right, movementForward));
+			glm::vec3 velocityGoal = headForward * movementDirection.x;
+			velocityGoal += right * movementDirection.z;
 
-		glm::vec3 velocity = movementDirection.z * (speed * movementForward);
-		velocity += movementDirection.x * (speed * glm::cross(movementForward, up));
+			if (movementDirection.x || movementDirection.z)
+			{
+				velocityGoal = glm::normalize(velocityGoal);
+			}
 
-		glm::vec3 position = transformComponent->getPosition();
-
-		transformComponent->setRotation(rotation);
-
-		physicsComponent->setAbsoluteVelocity(velocity);
+			const float FLIGHT_SPEED = onGroundSpeed * 2.0f;
+			velocity = velocityGoal * FLIGHT_SPEED;
+			velocity = glm::clamp(velocity, glm::vec3(-FLIGHT_SPEED), glm::vec3(FLIGHT_SPEED));
+			physicsComponent->setVelocity(velocity);
+		}
 	}
 }
 
@@ -109,24 +140,24 @@ const glm::vec3& MovementComponent::getVelocity() const
 	return movementDirection;
 }
 
-void MovementComponent::setSpeed(float speed)
+void MovementComponent::setOnGroundSpeed(float speed)
 {
-	this->speed = speed;
+	this->onGroundSpeed = speed;
 }
 
-float MovementComponent::getSpeed() const
+float MovementComponent::getOnGroundSpeed() const
 {
-	return speed;
+	return onGroundSpeed;
 }
 
 float MovementComponent::getSensivity() const
 {
-	return sensivity;
+	return lookSensivity;
 }
 
 void MovementComponent::setPitchRate(float pitchRate)
 {
-	this->pitchRate = pitchRate * sensivity;
+	this->pitchRate = pitchRate * lookSensivity;
 }
 
 float MovementComponent::getPitchRate() const
@@ -136,7 +167,7 @@ float MovementComponent::getPitchRate() const
 
 void MovementComponent::setYawRate(float yawRate)
 {
-	this->yawRate = yawRate * sensivity;
+	this->yawRate = yawRate * lookSensivity;
 }
 
 float MovementComponent::getYawRate() const
@@ -146,12 +177,12 @@ float MovementComponent::getYawRate() const
 
 void MovementComponent::setMovementForward(float value)
 {
-	movementDirection.z = value;
+	movementDirection.x = value;
 }
 
 void MovementComponent::setMovementSideways(float value)
 {
-	movementDirection.x = value;
+	movementDirection.z = value;
 }
 
 void MovementComponent::jump()
@@ -160,14 +191,14 @@ void MovementComponent::jump()
 	{
 		if (physicsComponent->isOnGround())
 		{
-			physicsComponent->addVelocity({ 0.0f, 65.0f, 0.0f });
+			physicsComponent->addVelocity(jumpVelocity);
 		}
 	}
 }
 
 void MovementComponent::setFlyModeEnabled(bool flyMode)
 {
-	this->flyMode = flyMode;
+	this->flightMode = flyMode;
 	if (physicsComponent)
 	{
 		glm::vec3 velocity = physicsComponent->getVelocity();
@@ -178,34 +209,27 @@ void MovementComponent::setFlyModeEnabled(bool flyMode)
 
 bool MovementComponent::isFlyModeEnabled() const
 {
-	return flyMode;
+	return flightMode;
 }
 
-const glm::vec3& MovementComponent::getForward() const
+const glm::vec3& MovementComponent::getHeadForward() const
 {
-	return forward;
+	return headForward;
+}
+
+const glm::vec3& MovementComponent::getHeadRotation() const
+{
+	return headRotation;
 }
 
 void MovementComponent::addHorizontalLook(float value)
 {
-	float movement = value * sensivity;
-
-	if (transformComponent)
-	{
-		glm::vec3 rotation = transformComponent->getRotation();
-		rotation.y = rotation.y + movement;
-		transformComponent->setRotation(rotation);
-	}
+	float movement = value * lookSensivity;
+	headRotation.y = headRotation.y + movement;
 }
 
 void MovementComponent::addVerticalLook(float value)
 {
-	float movement = value * sensivity;
-
-	if (transformComponent)
-	{
-		glm::vec3 rotation = transformComponent->getRotation();
-		rotation.x = rotation.x + movement;
-		transformComponent->setRotation(rotation);
-	}
+	float movement = value * lookSensivity;
+	headRotation.x = headRotation.x + movement;
 }

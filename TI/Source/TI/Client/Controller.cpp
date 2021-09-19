@@ -121,13 +121,13 @@ void PlayerController::castRayWithCollision()
 						glm::vec3 start = transformComponent->getPosition();
 
 						float distance = 10.0f;
-						glm::vec3 end = start + movementComponent->getForward() * distance;
+						glm::vec3 end = start + movementComponent->getHeadForward() * distance;
 
 						bool found = false;
 
 						for (float i = 0.0f; i < distance; i += COLLISION_PRECISION)
 						{
-							glm::vec3 cur = start + movementComponent->getForward() * i;
+							glm::vec3 cur = start + movementComponent->getHeadForward() * i;
 
 							if (plane->getBlock(cur) != 0)
 							{
@@ -168,7 +168,7 @@ void PlayerController::destroyBlock()
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
-							glm::vec3 cur = start + movementComponent->getForward() * i;
+							glm::vec3 cur = start + movementComponent->getHeadForward() * i;
 							if (plane->getBlock(cur) != 0)
 							{
 								plane->spawnBlock(cur, 0);

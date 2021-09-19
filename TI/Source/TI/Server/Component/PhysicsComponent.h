@@ -41,14 +41,13 @@ public:
 
 	void setVelocity(const glm::vec3& velocity);
 	const glm::vec3& getVelocity() const;
-
 	void addVelocity(const glm::vec3& velocity);
-
-	// Sets absolute velocity vector which will be applied to position directly
-	void setAbsoluteVelocity(const glm::vec3& absoluteVelocity);
 
 	void setGravityEnabled(bool gravityEnabled);
 	bool isGravityEnabled() const;
+
+	void setFrictionEnabled(bool frictionEnabled);
+	bool isFrictionEnabled() const;
 
 	bool isOnGround() const;
 
@@ -60,8 +59,8 @@ private:
 	float currentGravityVelocity;
 
 	glm::vec3 velocity;
-	glm::vec3 absoluteVelocity;
 
 	bool gravityEnabled;
 	bool onGround;
+	bool frictionEnabled;
 };

@@ -34,10 +34,10 @@ public:
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
 	const Plane* const getPlane() const;
+	Entity* const spawnEntity(const std::string& id, const std::string& templateName, const glm::vec3& position);
 
 protected:
 	void initEntityTemplates();
-	Entity* const spawnEntity(const std::string& id, const std::string& templateName, const glm::vec3& position);
 	void possesEntity(const std::string& entityName, Client* const client);
 
 protected:

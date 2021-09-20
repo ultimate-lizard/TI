@@ -68,7 +68,7 @@ void MovementComponent::tick(float dt)
 
 		glm::vec3 newForward;
 		newForward.x = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
-		newForward.y = sin(glm::radians(headRotation.x)); // We set Y axis later to prevent Y calculation for movement
+		newForward.y = sin(glm::radians(headRotation.x));
 		newForward.z = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
 
 		headForward = glm::normalize(newForward);

@@ -17,6 +17,7 @@
 #include <TI/Renderer/Renderer.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Client/LocalClient.h>
+#include <TI/Server/LocalServer.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
@@ -106,7 +107,18 @@ void PlayerController::releaseMouse()
 
 void PlayerController::castRayWithCollision()
 {
-	if (entity)
+	static int entityCount = 0;
+
+	auto playerPos = entity->findComponent<TransformComponent>()->getPosition();
+	auto playerForward = movementComp->getHeadForward();
+
+	auto spawnLocation = playerPos + playerForward * 1.5f;
+	auto spawnVelocity = playerForward * 400.0f;
+
+	auto projectile = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "123" + std::to_string(entityCount++), spawnLocation);
+	projectile->findComponent<PhysicsComponent>()->addVelocity(spawnVelocity);
+
+	/*if (entity)
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
@@ -148,7 +160,7 @@ void PlayerController::castRayWithCollision()
 				}
 			}			
 		}
-	}
+	}*/
 }
 
 void PlayerController::destroyBlock()

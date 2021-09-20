@@ -156,7 +156,8 @@ CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, cons
 						checkedVelocity.x = velocity.x;
 						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
 						{
-							result.adjustedVelocity.x = 0;
+							// result.adjustedVelocity.x = 0;
+							result.adjustedVelocity.x = -velocity.x / 2.0f;
 							result.collidedAxis.x = true;
 						}
 
@@ -164,7 +165,8 @@ CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, cons
 						checkedVelocity.y = velocity.y;
 						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
 						{
-							result.adjustedVelocity.y = 0;
+							result.adjustedVelocity.y = -velocity.y / 2.0f;
+							// result.adjustedVelocity.y = 0.0f;
 							result.collidedAxis.y = true;
 						}
 
@@ -172,7 +174,8 @@ CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, cons
 						checkedVelocity.z = velocity.z;
 						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
 						{
-							result.adjustedVelocity.z = 0;
+							// result.adjustedVelocity.z = 0;
+							result.adjustedVelocity.z -= velocity.z / 2.0f;
 							result.collidedAxis.z = true;
 						}
 					}

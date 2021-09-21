@@ -20,20 +20,21 @@ void Server::initEntityTemplates()
 
 	auto transformComponent = playerEntity->addComponent<TransformComponent>();
 
-	//auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
-	/*meshComponent->setParent(transformComponent);
+	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
+	meshComponent->setParent(transformComponent);
 	meshComponent->loadModel("Player");
-	meshComponent->setScale({ 0.3f, 0.3f, 0.3f });*/
+	meshComponent->setScale({ 0.6f, 0.6f, 0.6f });
 
 	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
-	physicsComponent->setCollisionBox({ { -0.2f, -1.9f, -0.2f }, { 0.2f, 0.0f, 0.2f } });
+	// physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
+	physicsComponent->setCollisionBox({ { 0.6f, 0.6f, 0.6f }, { 0.0f, -0.0f, 0.0f } });
 
 	auto movementComponent = playerEntity->addComponent<MovementComponent>();
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	auto camera = std::make_unique<Camera>();
 	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -0.0f, 0.0f, -0.0f });
+	camera->setPosition({ -3.0f, 0.0f, -0.0f });
 	camera->setParent(cameraComponent);
 	cameraComponent->setCamera(std::move(camera));
 	cameraComponent->setParent(transformComponent);
@@ -52,7 +53,7 @@ void Server::initEntityTemplates()
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
 	auto cubePhysicsComponent = cubeEntity->addComponent<PhysicsComponent>();
-	cubePhysicsComponent->setCollisionBox({ { -0.5f, -0.5, -0.5f },  { 0.5f, 0.5, 0.5f } });
+	cubePhysicsComponent->setCollisionBox({ glm::vec3(1.0f), glm::vec3(0.0f) });
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 }

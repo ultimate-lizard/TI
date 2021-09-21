@@ -9,7 +9,6 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
-#include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Client/Client.h>
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>

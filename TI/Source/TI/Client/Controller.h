@@ -1,6 +1,9 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <TI/Server/Entity.h>
+#include <TI/Server/Component/PhysicsComponent.h>
 
 class InputHandler;
 class MovementComponent;
@@ -25,6 +28,8 @@ public:
 	void posses(Entity* entity) override;
 
 private:
+	bool checkRayCollision(const glm::vec3& origin, const glm::vec3 direction, const glm::vec3& targetPosition, const CollisionBox& targetBox);
+
 	void setupInputHandler();
 
 	void handleMovementForward(float value);

@@ -14,8 +14,6 @@
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 
-float maxVelocity = 100.0f;
-
 MovementComponent::MovementComponent() :
 	transformComponent(nullptr),
 	physicsComponent(nullptr),
@@ -26,7 +24,8 @@ MovementComponent::MovementComponent() :
 	inAirSpeed(35.0f),
 	jumpVelocity({0.0f, 90.0f, 0.0f}),
 	lookSensivity(20.0f),
-	flightMode(false)
+	flightMode(false),
+	wasOnGround(false)
 {
 }
 
@@ -43,7 +42,8 @@ MovementComponent::MovementComponent(const MovementComponent& other) :
 	inAirSpeed(other.inAirSpeed),
 	jumpVelocity(other.jumpVelocity),
 	lookSensivity(other.lookSensivity),
-	flightMode(other.flightMode)
+	flightMode(other.flightMode),
+	wasOnGround(other.wasOnGround)
 {
 }
 
@@ -92,6 +92,14 @@ void MovementComponent::tick(float dt)
 		glm::vec3 velocity = velocityGoal;
 		velocity *= onGroundSpeed;
 
+		// Velocity penalty when landing
+		if (!wasOnGround && physicsComponent->isOnGround())
+		{
+			// physicsComponent->addVelocity(physicsComponent->getVelocity() * -1.0f);
+		}
+
+		wasOnGround = physicsComponent->isOnGround();
+
 		if (!flightMode)
 		{
 			if (physicsComponent->isOnGround())
@@ -108,7 +116,6 @@ void MovementComponent::tick(float dt)
 		else
 		{
 			// Flight mode movement calculation
-
 			glm::vec3 velocityGoal = headForward * movementDirection.x;
 			velocityGoal += right * movementDirection.z;
 
@@ -117,7 +124,7 @@ void MovementComponent::tick(float dt)
 				velocityGoal = glm::normalize(velocityGoal);
 			}
 
-			const float FLIGHT_SPEED = onGroundSpeed * 2.0f;
+			const float FLIGHT_SPEED = onGroundSpeed * 3.0f;
 			velocity = velocityGoal * FLIGHT_SPEED;
 			velocity = glm::clamp(velocity, glm::vec3(-FLIGHT_SPEED), glm::vec3(FLIGHT_SPEED));
 			physicsComponent->setVelocity(velocity);

@@ -11,19 +11,33 @@ class TransformComponent;
 
 struct CollisionBox
 {
-	glm::vec3 min = glm::vec3(0.0f);
-	glm::vec3 max = glm::vec3(0.0f);
+	glm::vec3 size;
+	glm::vec3 offset;
 };
 
 struct CollisionResult
 {
 	glm::bvec3 collidedAxis;
-	glm::vec3 adjustedPosition;
 	glm::vec3 adjustedVelocity;
+	glm::vec3 adjustedPosition;
+};
+
+struct RayCollisionResult
+{
+	float near;
+	float far;
+	glm::vec3 normal;
 };
 
 class PhysicsComponent : public Component
 {
+	enum class Axis
+	{
+		X,
+		Y,
+		Z
+	};
+
 public:
 	PhysicsComponent();
 	PhysicsComponent(const PhysicsComponent& other);
@@ -36,8 +50,12 @@ public:
 
 	void setCollisionBox(CollisionBox collisionBox);
 
-	CollisionResult applyCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt);
-	bool checkCollision(const glm::vec3& boxPosition, const glm::vec3& planePosition, const CollisionBox& testedCollisionBox);
+	CollisionResult resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt);
+	bool checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
+	glm::vec3 calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
+	// Returns near and far points of the direction vector where collision happened. Returns none if collision fails
+	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2);
+	// glm::vec3 calculateAabbDistanceTo(const CollisionBox& box1, const CollisionBox& box2);
 
 	void setVelocity(const glm::vec3& velocity);
 	const glm::vec3& getVelocity() const;
@@ -63,4 +81,6 @@ private:
 	bool gravityEnabled;
 	bool onGround;
 	bool frictionEnabled;
+
+	glm::vec3 previousPosition;
 };

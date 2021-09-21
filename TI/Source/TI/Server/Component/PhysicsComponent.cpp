@@ -1,6 +1,11 @@
 #include "PhysicsComponent.h"
 
+#include <algorithm>
+#include <iomanip>
+#include <limits>
+
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Entity.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/DebugInformation.h>
@@ -26,7 +31,8 @@ PhysicsComponent::PhysicsComponent(const PhysicsComponent& other) :
 	velocity(other.velocity),
 	gravityEnabled(other.gravityEnabled),
 	onGround(other.onGround),
-	frictionEnabled(other.frictionEnabled)
+	frictionEnabled(other.frictionEnabled),
+	previousPosition(other.previousPosition)
 {
 
 }
@@ -82,10 +88,12 @@ void PhysicsComponent::tick(float dt)
 {
 	if (transformComponent)
 	{
-		if (currentGravityVelocity >= maxGravityVelocity)
-		{
-			currentGravityVelocity = maxGravityVelocity;
-		}
+		// Gravity
+		if (!isGravityEnabled())
+			onGround = false;
+
+		if (velocity.y)
+			onGround = false;
 
 		if (gravityEnabled)
 		{
@@ -97,6 +105,7 @@ void PhysicsComponent::tick(float dt)
 			velocity += acceleration * dt;
 		}
 
+		// Friction
 		if (frictionEnabled)
 		{
 			if (isOnGround() && (velocity.x || velocity.z || velocity.y))
@@ -106,20 +115,29 @@ void PhysicsComponent::tick(float dt)
 		}
 
 		glm::vec3 position = transformComponent->getPosition();
-		CollisionResult result = applyCollision(position, velocity, collisionBox, dt);
 
-		if (result.collidedAxis.x) velocity.x = result.adjustedVelocity.x;
-		if (result.collidedAxis.y) velocity.y = result.adjustedVelocity.y;
-		if (result.collidedAxis.z) velocity.z = result.adjustedVelocity.z;
+		// Collision
+		drawDebugBox({position.x + collisionBox.offset.x - collisionBox.size.x / 2.0f, position.y + collisionBox.offset.y - collisionBox.size.y / 2.0f , position.z + collisionBox.offset.z - collisionBox.size.z / 2.0f }, collisionBox.size, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
 
-		position += velocity * dt;
+		CollisionResult result = resolveCollision(position, velocity, collisionBox, dt);
 
-		onGround = velocity.y ? false : true;
-		if (!isGravityEnabled()) onGround = false;
+		if (result.collidedAxis.y)
+		{
+			if (velocity.y < 0.0f)
+			{
+				onGround = true;
+			}
+		}
 
-		// Note: If there ever be velocity glitches during collision, implement adjusted position here
+		velocity = result.adjustedVelocity;
+		position = result.adjustedPosition;
 
-		transformComponent->setPosition(position);
+		// Clamp minimal values
+		if (velocity.x > -0.001f && velocity.x < 0.001f) velocity.x = 0.0f;
+		if (velocity.y > -0.001f && velocity.y < 0.001f) velocity.y = 0.0f;
+		if (velocity.z > -0.001f && velocity.z < 0.001f) velocity.z = 0.0f;
+
+		transformComponent->setPosition(position + velocity * dt);
 	}
 }
 
@@ -133,50 +151,123 @@ void PhysicsComponent::setCollisionBox(CollisionBox collisionBox)
 	this->collisionBox = collisionBox;
 }
 
-CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt)
+CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt)
 {
 	CollisionResult result;
+	result.adjustedPosition = position;
+	result.adjustedVelocity = velocity;
 
-	for (int x = -1 + testedCollisionBox.min.x; x <= 1 + testedCollisionBox.max.x; ++x)
+	std::vector<std::pair<float, glm::vec3>> collisions;
+
+	// With more speed take more blocks into account to prevent tunneling
+	float xRangeMin = velocity.x < 0.0f ? velocity.x * dt : 0.0f;
+	float xRangeMax = velocity.x > 0.0f ? velocity.x * dt : 0.0f;
+	float yRangeMin = velocity.y < 0.0f ? velocity.y * dt : 0.0f;
+	float yRangeMax = velocity.y > 0.0f ? velocity.y * dt : 0.0f;
+	float zRangeMin = velocity.z < 0.0f ? velocity.z * dt : 0.0f;
+	float zRangeMax = velocity.z > 0.0f ? velocity.z * dt : 0.0f;
+
+	for (int x = -1 - box.size.x / 2.0f + xRangeMin; x <= 1 + box.size.x / 2.0f + xRangeMax; ++x)
 	{
-		for (int y = -1 + testedCollisionBox.min.y; y <= 1 + testedCollisionBox.max.y; ++y)
+		for (int y = -1 - box.size.y / 2.0f + yRangeMin; y <= 1 + box.size.y / 2.0f + yRangeMax; ++y)
 		{
-			for (int z = -1 + testedCollisionBox.min.z; z <= 1 + testedCollisionBox.max.z; ++z)
+			for (int z = -1 - box.size.z / 2.0f + zRangeMin; z <= 1 + box.size.z / 2.0f + zRangeMax; ++z)
 			{
-				glm::vec3 currentPosition(position);
-				currentPosition.x += x;
-				currentPosition.y += y;
-				currentPosition.z += z;
-				
-				if (Plane* plane = transformComponent->getPlane())
+				glm::vec3 blockPosition = glm::ivec3(result.adjustedPosition);
+				blockPosition.x += x;
+				blockPosition.y += y;
+				blockPosition.z += z;
+
+				glm::vec3 blockCenterPosition = blockPosition;
+				blockCenterPosition.x += 0.5f;
+				blockCenterPosition.y += 0.5f;
+				blockCenterPosition.z += 0.5f;
+
+				if (transformComponent->getPlane()->getBlock(blockPosition) != 0)
 				{
-					if (plane->getBlock(currentPosition) != 0)
+					float differenceX = std::numeric_limits<float>::max();
+					float differenceY = std::numeric_limits<float>::max();
+					float differenceZ = std::numeric_limits<float>::max();
+
+					std::vector<std::pair<float, Axis>> differences;
+
+					glm::vec3 distance = calculateAabbDistanceTo(result.adjustedPosition, blockCenterPosition, box, { glm::vec3(1.0), glm::vec3(0.0f) });
+
+					if (result.adjustedVelocity.x)
 					{
-						glm::vec3 checkedVelocity(0.0f);
-						checkedVelocity.x = velocity.x;
-						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						differenceX = glm::abs(distance.x / result.adjustedVelocity.x);
+					}
+					if (result.adjustedVelocity.y)
+					{
+						differenceY = glm::abs(distance.y / result.adjustedVelocity.y);
+					}
+					if (result.adjustedVelocity.z)
+					{
+						differenceZ = glm::abs(distance.z / result.adjustedVelocity.z);
+					}
+					
+					differences.push_back({ differenceX, Axis::X });
+					differences.push_back({ differenceY, Axis::Y });
+					differences.push_back({ differenceZ, Axis::Z });
+
+					std::sort(differences.begin(), differences.end(), [](const std::pair<float, Axis>& a, const std::pair<float, Axis>& b) {
+						return a.first < b.first;
+					});
+
+					for (const std::pair<float, Axis>& pair : differences)
+					{
+						switch (pair.second)
 						{
-							// result.adjustedVelocity.x = 0;
-							result.adjustedVelocity.x = -velocity.x / 2.0f;
-							result.collidedAxis.x = true;
+						case Axis::X:
+						{
+							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(result.adjustedVelocity.x, 0.0f, 0.0f) * dt };
+							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							{
+								if (velocity.x < 0.0f)
+									result.adjustedPosition.x = blockPosition.x + 1.0f + box.size.x / 2.0f;
+								else if (velocity.x > 0.0f)
+									result.adjustedPosition.x = blockPosition.x - box.size.x / 2.0f;
+
+								result.adjustedVelocity.x = 0.0f;
+								result.collidedAxis.x = true;
+							}
+
+							break;
 						}
 
-						checkedVelocity = glm::vec3(0.0f);
-						checkedVelocity.y = velocity.y;
-						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						case Axis::Y:
 						{
-							result.adjustedVelocity.y = -velocity.y / 2.0f;
-							// result.adjustedVelocity.y = 0.0f;
-							result.collidedAxis.y = true;
+							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(0.0f, result.adjustedVelocity.y, 0.0f) * dt };
+							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							{
+								if (velocity.y < 0.0f)
+									result.adjustedPosition.y = blockPosition.y + 1.0f + box.size.y / 2.0f;
+								else if (velocity.y > 0.0f)
+									result.adjustedPosition.y = blockPosition.y - box.size.y / 2.0f;
+
+								result.adjustedVelocity.y = 0.0f;
+								result.collidedAxis.y = true;
+							}
+
+							break;
 						}
 
-						checkedVelocity = glm::vec3(0.0f);
-						checkedVelocity.z = velocity.z;
-						if (checkCollision(position + checkedVelocity * dt, currentPosition, testedCollisionBox))
+						case Axis::Z:
 						{
-							// result.adjustedVelocity.z = 0;
-							result.adjustedVelocity.z -= velocity.z / 2.0f;
-							result.collidedAxis.z = true;
+							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(0.0f, 0.0f, result.adjustedVelocity.z) * dt };
+							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							{
+								if (velocity.z < 0.0f)
+									result.adjustedPosition.z = blockPosition.z + 1.0f + box.size.z / 2.0f;
+								else if (velocity.z > 0.0f)
+									result.adjustedPosition.z = blockPosition.z - box.size.z / 2.0f;
+
+								result.adjustedVelocity.z = 0.0f;
+								result.collidedAxis.z = true;
+							}
+
+							break;
+						}
 						}
 					}
 				}
@@ -187,28 +278,151 @@ CollisionResult PhysicsComponent::applyCollision(const glm::vec3& position, cons
 	return result;
 }
 
-bool PhysicsComponent::checkCollision(const glm::vec3& boxPosition, const glm::vec3& planePosition, const CollisionBox& testedCollisionBox)
+bool PhysicsComponent::checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2)
 {
-	bool result = false;
+	const float PRECISION = 0.00001f;
 
-	CollisionBox box;
-	box.min = boxPosition;
-	box.min.x += testedCollisionBox.min.x;
-	box.min.y += testedCollisionBox.min.y;
-	box.min.z += testedCollisionBox.min.z;
-
-	box.max = boxPosition;
-	box.max.x += testedCollisionBox.max.x;
-	box.max.y += testedCollisionBox.max.y;
-	box.max.z += testedCollisionBox.max.z;
-
-	glm::ivec3 currentPlanePosition = planePosition;
-	if ((box.min.x <= currentPlanePosition.x + 1 && box.max.x >= currentPlanePosition.x) &&
-		(box.min.y <= currentPlanePosition.y + 1 && box.max.y >= currentPlanePosition.y) &&
-		(box.min.z <= currentPlanePosition.z + 1 && box.max.z >= currentPlanePosition.z))
+	if ((box1pos.x - box1.size.x / 2.0f + PRECISION < box2pos.x + box2.size.x / 2.0f - PRECISION && box1pos.x + box1.size.x / 2.0f - PRECISION > box2pos.x - box2.size.x / 2.0f + PRECISION) &&
+		(box1pos.y - box1.size.y / 2.0f + PRECISION < box2pos.y + box2.size.y / 2.0f - PRECISION && box1pos.y + box1.size.y / 2.0f - PRECISION > box2pos.y - box2.size.y / 2.0f + PRECISION) &&
+		(box1pos.z - box1.size.z / 2.0f + PRECISION < box2pos.z + box2.size.z / 2.0f - PRECISION && box1pos.z + box1.size.z / 2.0f - PRECISION > box2pos.z - box2.size.z / 2.0f + PRECISION))
 	{
-		result = true;
+		return true;
 	}
 
-	return result;
+	return false;
+}
+//
+//glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const CollisionBox& box1, const CollisionBox& box2)
+//{
+//	glm::vec3 distance;
+//
+//	if (box1.position.x < box2.position.x)
+//	{
+//		distance.x = (box2.position.x - box2.min.x) - (box1.position.x + box1.max.x);
+//	}
+//	else if (box1.position.x > box2.position.x)
+//	{
+//		distance.x = (box1.position.x - box1.min.x) - (box2.position.x + box2.max.x);
+//	}
+//
+//	if (box1.position.y < box2.position.y)
+//	{
+//		distance.y = (box2.position.y - box2.min.y) - (box1.position.y + box1.max.y);
+//	}
+//	else if (box1.position.y > box2.position.y)
+//	{
+//		distance.y = (box1.position.y - box1.min.y) - (box2.position.y + box2.max.y);
+//	}
+//
+//	if (box1.position.z < box2.position.z)
+//	{
+//		distance.z = (box2.position.z - box2.min.z) - (box1.position.z + box1.max.z);
+//	}
+//	else if (box1.position.z > box2.position.z)
+//	{
+//		distance.z = (box1.position.z - box1.min.z) - (box2.position.z + box2.max.z);
+//	}
+//
+//	drawDebugBox(box2.position, glm::vec3(1.0f), { 1.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+//
+//	return distance;
+//}
+
+glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2)
+{
+	glm::vec3 distance;
+
+	if (box1pos.x < box2pos.x)
+	{
+		distance.x = (box2pos.x - box2.size.x / 2.0f) - (box1pos.x + box1.size.x / 2.0f);
+	}
+	else if (box1pos.x > box2pos.x)
+	{
+		distance.x = (box1pos.x - box1.size.x / 2.0f) - (box2pos.x + box2.size.x / 2.0f);
+	}
+
+	if (box1pos.y < box2pos.y)
+	{
+		distance.y = (box2pos.y - box2.size.y / 2.0f) - (box1pos.y + box1.size.y / 2.0f);
+	}
+	else if (box1pos.y > box2pos.y)
+	{
+		distance.y = (box1pos.y - box1.size.y / 2.0f) - (box2pos.y + box2.size.y / 2.0f);
+	}
+
+	if (box1pos.z < box2pos.z)
+	{
+		distance.z = (box2pos.z - box2.size.z / 2.0f) - (box1pos.z + box1.size.z / 2.0f);
+	}
+	else if (box1pos.z > box2pos.z)
+	{
+		distance.z = (box1pos.z - box1.size.z / 2.0f) - (box2pos.z + box2.size.z / 2.0f);
+	}
+
+	return distance;
+}
+
+std::optional<RayCollisionResult> PhysicsComponent::checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2)
+{
+	glm::vec3 near;
+	near.x = (box2pos.x - (box1.size.x / 2.0f) - origin.x) / direction.x;
+	near.y = (box2pos.y - (box1.size.y / 2.0f) - origin.y) / direction.y;
+	near.z = (box2pos.z - (box1.size.z / 2.0f) - origin.z) / direction.z;
+
+	glm::vec3 far;
+	far.x = (box2pos.x + box2.size.x + (box1.size.x / 2.0f) - origin.x) / direction.x;
+	far.y = (box2pos.y + box2.size.y + (box1.size.y / 2.0f) - origin.y) / direction.y;
+	far.z = (box2pos.z + box2.size.z + (box1.size.z / 2.0f) - origin.z) / direction.z;
+
+	if (std::isnan(near.x) || std::isnan(near.y) || std::isnan(near.z)) return {};
+	if (std::isnan(far.x) || std::isnan(far.y) || std::isnan(far.z)) return {};
+
+	if (near.x > far.x) std::swap(near.x, far.x);
+	if (near.y > far.y) std::swap(near.y, far.y);
+	if (near.z > far.z) std::swap(near.z, far.z);
+
+	if (near.x > far.y || near.y > far.x || near.z > far.y || near.y > far.z || near.x > far.z || near.z > far.x) return {};
+
+	float hitNear = std::max({ near.x, near.y, near.z });
+	float hitFar = std::min({ far.x, far.y, far.z });
+
+	if (hitFar < 0.0f) return {};
+
+	glm::ivec3 normal;
+	
+	if (near.x > near.y && near.x > near.z)
+	{
+		if (direction.x < 0)
+		{
+			normal = glm::ivec3{ 1, 0, 0 };
+		}
+		else
+		{
+			normal = glm::ivec3{ -1, 0, 0 };
+		}
+	}
+	else if (near.x < near.y && near.z < near.y)
+	{
+		if (direction.y < 0)
+		{
+			normal = glm::ivec3{ 0, 1, 0 };
+		}
+		else
+		{
+			normal = glm::ivec3{ 0, -1, 0 };
+		}
+	}
+	else if (near.z > near.y && near.z > near.x)
+	{
+		if (direction.z < 0)
+		{
+			normal = glm::ivec3{ 0, 0, 1 };
+		}
+		else
+		{
+			normal = glm::ivec3{ 0, 0, -1 };
+		}
+	}
+
+	return { { hitNear, hitFar, normal } };
 }

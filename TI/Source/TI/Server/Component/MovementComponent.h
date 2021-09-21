@@ -63,6 +63,8 @@ private:
 	float lookSensivity;
 	bool flightMode;
 
+	bool wasOnGround;
+
 public:
 	void addHorizontalLook(float value);
 	void addVerticalLook(float value);

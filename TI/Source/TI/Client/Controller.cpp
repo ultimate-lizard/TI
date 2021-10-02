@@ -9,6 +9,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/CameraComponent.h>
 #include <TI/Client/Client.h>
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>
@@ -26,7 +27,8 @@ PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 	inputHandler(inputHandler),
 	// entity(nullptr),
 	movementComp(nullptr),
-	client(client)
+	client(client),
+	thirdperson(false)
 {
 	setupInputHandler();
 }
@@ -232,6 +234,40 @@ void PlayerController::toggleFlyMode()
 	}
 }
 
+void PlayerController::toggleCollisionInfo()
+{
+	if (client)
+	{
+		const std::map<std::string, std::unique_ptr<Entity>>& entities = client->getApplication()->getCurrentServer()->getEntities();
+		for (const auto& pair : entities)
+		{
+			if (PhysicsComponent* physicsComponent = pair.second->findComponent<PhysicsComponent>())
+			{
+				physicsComponent->setRenderCollisionBoxEnabled(!physicsComponent->isRenderCollisiobBoxEnabled());
+				physicsComponent->setRenderCollisions(!physicsComponent->isRenderCollisionsEnabled());
+			}
+		}
+	}
+}
+
+void PlayerController::toggleThirdperson()
+{
+	thirdperson = !thirdperson;
+
+	if (entity)
+	{
+		if (CameraComponent* cameraComponent = entity->findComponent<CameraComponent>())
+		{
+			if (Camera* camera = cameraComponent->getCamera())
+			{
+				glm::vec3 cameraPosition = camera->getPosition();
+				cameraPosition.x = thirdperson ? -3.0f : 0.0f;
+				camera->setPosition(cameraPosition);
+			}
+		}
+	}
+}
+
 void PlayerController::jump()
 {
 	if (entity)
@@ -259,15 +295,17 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindAxis("HorizontalLookRate", std::bind(&PlayerController::handleLookHorizontalRate, this, std::placeholders::_1));
 		inputHandler->bindAxis("VerticalLookRate", std::bind(&PlayerController::handleLookVerticalRate, this, std::placeholders::_1));
 
-		inputHandler->bindKey("QuitGame", ActionInputType::KeyPress, std::bind(&PlayerController::quitGame, this));
-		inputHandler->bindKey("ReleaseMouse", ActionInputType::KeyPress, std::bind(&PlayerController::releaseMouse, this));
+		inputHandler->bindKey("QuitGame", ActionInputType::Press, std::bind(&PlayerController::quitGame, this));
+		inputHandler->bindKey("ReleaseMouse", ActionInputType::Press, std::bind(&PlayerController::releaseMouse, this));
 
-		inputHandler->bindKey("SpawnBlock", ActionInputType::KeyPress, std::bind(&PlayerController::castRayWithCollision, this));
-		inputHandler->bindKey("DestroyBlock", ActionInputType::KeyPress, std::bind(&PlayerController::destroyBlock, this));
+		inputHandler->bindKey("SpawnBlock", ActionInputType::Press, std::bind(&PlayerController::castRayWithCollision, this));
+		inputHandler->bindKey("DestroyBlock", ActionInputType::Press, std::bind(&PlayerController::destroyBlock, this));
 
-		inputHandler->bindKey("TogglePolygonMode", ActionInputType::KeyPress, std::bind(&PlayerController::togglePolygonMode, this));
-		inputHandler->bindKey("ToggleFlyMode", ActionInputType::KeyPress, std::bind(&PlayerController::toggleFlyMode, this));
+		inputHandler->bindKey("TogglePolygonMode", ActionInputType::Press, std::bind(&PlayerController::togglePolygonMode, this));
+		inputHandler->bindKey("ToggleFlyMode", ActionInputType::Press, std::bind(&PlayerController::toggleFlyMode, this));
+		inputHandler->bindKey("ToggleCollisionInfo", ActionInputType::Press, std::bind(&PlayerController::toggleCollisionInfo, this));
+		inputHandler->bindKey("ToggleThirdperson", ActionInputType::Press, std::bind(&PlayerController::toggleThirdperson, this));
 
-		inputHandler->bindKey("Jump", ActionInputType::KeyPress, std::bind(&PlayerController::jump, this));
+		inputHandler->bindKey("Jump", ActionInputType::Press, std::bind(&PlayerController::jump, this));
 	}
 }

@@ -17,7 +17,9 @@ PhysicsComponent::PhysicsComponent() :
 	velocity(0.0f),
 	gravityEnabled(true),
 	onGround(false),
-	frictionEnabled(true)
+	frictionEnabled(true),
+	renderCollisionBox(false),
+	renderCollisions(false)
 {
 	
 }
@@ -32,7 +34,9 @@ PhysicsComponent::PhysicsComponent(const PhysicsComponent& other) :
 	gravityEnabled(other.gravityEnabled),
 	onGround(other.onGround),
 	frictionEnabled(other.frictionEnabled),
-	previousPosition(other.previousPosition)
+	previousPosition(other.previousPosition),
+	renderCollisionBox(other.renderCollisionBox),
+	renderCollisions(other.renderCollisions)
 {
 
 }
@@ -72,16 +76,37 @@ bool PhysicsComponent::isGravityEnabled() const
 
 void PhysicsComponent::setFrictionEnabled(bool frictionEnabled)
 {
+	this->frictionEnabled = frictionEnabled;
 }
 
 bool PhysicsComponent::isFrictionEnabled() const
 {
-	return false;
+	return frictionEnabled;
 }
 
 bool PhysicsComponent::isOnGround() const
 {
 	return onGround;
+}
+
+void PhysicsComponent::setRenderCollisionBoxEnabled(bool renderBoxEnabled)
+{
+	this->renderCollisionBox = renderBoxEnabled;
+}
+
+bool PhysicsComponent::isRenderCollisiobBoxEnabled() const
+{
+	return renderCollisionBox;
+}
+
+void PhysicsComponent::setRenderCollisions(bool renderCollisions)
+{
+	this->renderCollisions = renderCollisions;
+}
+
+bool PhysicsComponent::isRenderCollisionsEnabled() const
+{
+	return renderCollisions;
 }
 
 void PhysicsComponent::tick(float dt)
@@ -117,9 +142,12 @@ void PhysicsComponent::tick(float dt)
 		glm::vec3 position = transformComponent->getPosition();
 
 		// Collision
-		drawDebugBox({position.x + collisionBox.offset.x - collisionBox.size.x / 2.0f, position.y + collisionBox.offset.y - collisionBox.size.y / 2.0f , position.z + collisionBox.offset.z - collisionBox.size.z / 2.0f }, collisionBox.size, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+		if (renderCollisionBox)
+		{
+			drawDebugBox({ position.x + collisionBox.offset.x - collisionBox.size.x / 2.0f, position.y + collisionBox.offset.y - collisionBox.size.y / 2.0f , position.z + collisionBox.offset.z - collisionBox.size.z / 2.0f }, collisionBox.size, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+		}
 
-		CollisionResult result = resolveCollision(position, velocity, collisionBox, dt);
+		CollisionResult result = resolveCollision(position + collisionBox.offset, velocity, collisionBox, dt);
 
 		if (result.collidedAxis.y)
 		{
@@ -131,6 +159,7 @@ void PhysicsComponent::tick(float dt)
 
 		velocity = result.adjustedVelocity;
 		position = result.adjustedPosition;
+		position -= collisionBox.offset;
 
 		// Clamp minimal values
 		if (velocity.x > -0.001f && velocity.x < 0.001f) velocity.x = 0.0f;
@@ -151,7 +180,7 @@ void PhysicsComponent::setCollisionBox(CollisionBox collisionBox)
 	this->collisionBox = collisionBox;
 }
 
-CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt)
+CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& box, float dt)
 {
 	CollisionResult result;
 	result.adjustedPosition = position;
@@ -185,6 +214,11 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 
 				if (transformComponent->getPlane()->getBlock(blockPosition) != 0)
 				{
+					if (renderCollisions)
+					{
+						drawDebugBox(blockPosition, glm::vec3(1.0f), { 1.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+					}
+
 					float differenceX = std::numeric_limits<float>::max();
 					float differenceY = std::numeric_limits<float>::max();
 					float differenceZ = std::numeric_limits<float>::max();
@@ -286,47 +320,16 @@ bool PhysicsComponent::checkCollision(const glm::vec3& box1pos, const glm::vec3&
 		(box1pos.y - box1.size.y / 2.0f + PRECISION < box2pos.y + box2.size.y / 2.0f - PRECISION && box1pos.y + box1.size.y / 2.0f - PRECISION > box2pos.y - box2.size.y / 2.0f + PRECISION) &&
 		(box1pos.z - box1.size.z / 2.0f + PRECISION < box2pos.z + box2.size.z / 2.0f - PRECISION && box1pos.z + box1.size.z / 2.0f - PRECISION > box2pos.z - box2.size.z / 2.0f + PRECISION))
 	{
+		if (renderCollisions)
+		{
+			drawDebugBox(glm::vec3(box2pos.x - 0.5f, box2pos.y - 0.5f, box2pos.z - 0.5f), glm::vec3(1.0f), { 1.0f, 0.0f, 0.0f, 1.0f }, 5.0f, false);
+		}
+		
 		return true;
 	}
 
 	return false;
 }
-//
-//glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const CollisionBox& box1, const CollisionBox& box2)
-//{
-//	glm::vec3 distance;
-//
-//	if (box1.position.x < box2.position.x)
-//	{
-//		distance.x = (box2.position.x - box2.min.x) - (box1.position.x + box1.max.x);
-//	}
-//	else if (box1.position.x > box2.position.x)
-//	{
-//		distance.x = (box1.position.x - box1.min.x) - (box2.position.x + box2.max.x);
-//	}
-//
-//	if (box1.position.y < box2.position.y)
-//	{
-//		distance.y = (box2.position.y - box2.min.y) - (box1.position.y + box1.max.y);
-//	}
-//	else if (box1.position.y > box2.position.y)
-//	{
-//		distance.y = (box1.position.y - box1.min.y) - (box2.position.y + box2.max.y);
-//	}
-//
-//	if (box1.position.z < box2.position.z)
-//	{
-//		distance.z = (box2.position.z - box2.min.z) - (box1.position.z + box1.max.z);
-//	}
-//	else if (box1.position.z > box2.position.z)
-//	{
-//		distance.z = (box1.position.z - box1.min.z) - (box2.position.z + box2.max.z);
-//	}
-//
-//	drawDebugBox(box2.position, glm::vec3(1.0f), { 1.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
-//
-//	return distance;
-//}
 
 glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2)
 {

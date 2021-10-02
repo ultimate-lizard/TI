@@ -55,7 +55,6 @@ public:
 	glm::vec3 calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
 	// Returns near and far points of the direction vector where collision happened. Returns none if collision fails
 	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2);
-	// glm::vec3 calculateAabbDistanceTo(const CollisionBox& box1, const CollisionBox& box2);
 
 	void setVelocity(const glm::vec3& velocity);
 	const glm::vec3& getVelocity() const;
@@ -68,6 +67,12 @@ public:
 	bool isFrictionEnabled() const;
 
 	bool isOnGround() const;
+
+	void setRenderCollisionBoxEnabled(bool renderBoxEnabled);
+	bool isRenderCollisiobBoxEnabled() const;
+
+	void setRenderCollisions(bool renderCollisions);
+	bool isRenderCollisionsEnabled() const;
 
 private:
 	TransformComponent* transformComponent;
@@ -83,4 +88,7 @@ private:
 	bool frictionEnabled;
 
 	glm::vec3 previousPosition;
+
+	bool renderCollisionBox;
+	bool renderCollisions;
 };

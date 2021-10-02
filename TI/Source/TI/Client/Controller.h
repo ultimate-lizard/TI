@@ -28,8 +28,6 @@ public:
 	void posses(Entity* entity) override;
 
 private:
-	bool checkRayCollision(const glm::vec3& origin, const glm::vec3 direction, const glm::vec3& targetPosition, const CollisionBox& targetBox);
-
 	void setupInputHandler();
 
 	void handleMovementForward(float value);
@@ -50,10 +48,14 @@ private:
 
 	void togglePolygonMode();
 	void toggleFlyMode();
+	void toggleCollisionInfo();
+	void toggleThirdperson();
 
 	void jump();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComp;
 	Client* client;
+
+	bool thirdperson;
 };

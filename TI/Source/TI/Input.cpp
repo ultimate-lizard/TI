@@ -44,23 +44,23 @@ void Input::handleInput()
 				break;
 
 			case SDL_CONTROLLERBUTTONDOWN:
-				inputHandler->onKeyInput(event.cbutton.button, ActionInputType::KeyPress);
-				inputHandler->onAxisInput(event.cbutton.button, 1.0f);
+				inputHandler->onKeyInput(static_cast<Key>(event.cbutton.button), ActionInputType::Press);
+				inputHandler->onAxisInput(static_cast<Axis>(event.cbutton.button), 1.0f);
 				break;
 
 			case SDL_KEYDOWN:
-				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyPress);
-				inputHandler->onAxisInput(event.key.keysym.scancode, 1.0f);
+				inputHandler->onKeyInput(static_cast<Key>(event.key.keysym.scancode), ActionInputType::Press);
+				inputHandler->onAxisInput(static_cast<Axis>(event.key.keysym.scancode), 1.0f);
 				break;
 
 			case SDL_CONTROLLERBUTTONUP:
-				inputHandler->onKeyInput(event.cbutton.button, ActionInputType::KeyRelease);
-				inputHandler->onAxisInput(event.cbutton.button, 0.0f);
+				inputHandler->onKeyInput(static_cast<Key>(event.cbutton.button), ActionInputType::Release);
+				inputHandler->onAxisInput(static_cast<Axis>(event.cbutton.button), 0.0f);
 				break;
 
 			case SDL_KEYUP:
-				inputHandler->onKeyInput(event.key.keysym.scancode, ActionInputType::KeyRelease);
-				inputHandler->onAxisInput(event.key.keysym.scancode, 0.0f);
+				inputHandler->onKeyInput(static_cast<Key>(event.key.keysym.scancode), ActionInputType::Release);
+				inputHandler->onAxisInput(static_cast<Axis>(event.key.keysym.scancode), 0.0f);
 				break;
 
 			case SDL_MOUSEMOTION:
@@ -68,9 +68,26 @@ void Input::handleInput()
 				break;
 
 			case SDL_MOUSEBUTTONDOWN:
-				if (event.button.button == SDL_BUTTON_LEFT)
+				switch (event.button.button)
 				{
+				case SDL_BUTTON_LEFT:
+					inputHandler->onKeyInput(Key::MouseLeft, ActionInputType::Press);
 					handleWindowFocus(true);
+					break;
+				case SDL_BUTTON_RIGHT:
+					inputHandler->onKeyInput(Key::MouseRight, ActionInputType::Press);
+					break;
+				}
+				break;
+			case SDL_MOUSEBUTTONUP:
+				switch (event.button.button)
+				{
+				case SDL_BUTTON_LEFT:
+					inputHandler->onKeyInput(Key::MouseLeft, ActionInputType::Release);
+					break;
+				case SDL_BUTTON_RIGHT:
+					inputHandler->onKeyInput(Key::MouseRight, ActionInputType::Release);
+					break;
 				}
 				break;
 

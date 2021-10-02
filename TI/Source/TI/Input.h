@@ -7,6 +7,18 @@
 enum Key
 {
 	UnknownKey = 0,
+	F1 = SDL_SCANCODE_F1,
+	F2,
+	F3,
+	F4,
+	F5,
+	F6,
+	F7,
+	F8,
+	F9,
+	F10,
+	F11,
+	F12,
 	A = SDL_SCANCODE_A,
 	B,
 	C,
@@ -45,6 +57,8 @@ enum Key
 	Left,
 	Down,
 	Up,
+	MouseLeft = SDL_NUM_SCANCODES,
+	MouseRight
 };
 
 enum Axis
@@ -58,10 +72,10 @@ enum Axis
 	ControllerRightStickY
 };
 
-enum ActionInputType
+enum class ActionInputType
 {
-	KeyPress,
-	KeyRelease
+	Press,
+	Release
 };
 
 class Input

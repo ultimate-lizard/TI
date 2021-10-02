@@ -138,6 +138,18 @@ void Config::save()
 
 Key Config::stringToKey(const std::string& string)
 {
+	if (string == "F1") return Key::F1;
+	if (string == "F2") return Key::F2;
+	if (string == "F3") return Key::F3;
+	if (string == "F4") return Key::F4;
+	if (string == "F5") return Key::F5;
+	if (string == "F6") return Key::F6;
+	if (string == "F7") return Key::F7;
+	if (string == "F8") return Key::F8;
+	if (string == "F9") return Key::F9;
+	if (string == "F10") return Key::F10;
+	if (string == "F11") return Key::F11;
+	if (string == "F12") return Key::F12;
 	if (string == "A") return Key::A;
 	if (string == "B") return Key::B;
 	if (string == "C") return Key::C;
@@ -176,12 +188,26 @@ Key Config::stringToKey(const std::string& string)
 	if (string == "Left") return Key::Left;
 	if (string == "Down") return Key::Down;
 	if (string == "Up") return Key::Up;
+	if (string == "MouseLeft") return Key::MouseLeft;
+	if (string == "MouseRight") return Key::MouseRight;
 
 	return Key::UnknownKey;
 }
 
 std::string Config::keyToString(Key key)
 {
+	if (key == Key::F1) return "F1";
+	if (key == Key::F2) return "F2";
+	if (key == Key::F3) return "F3";
+	if (key == Key::F4) return "F4";
+	if (key == Key::F5) return "F5";
+	if (key == Key::F6) return "F6";
+	if (key == Key::F7) return "F7";
+	if (key == Key::F8) return "F8";
+	if (key == Key::F9) return "F9";
+	if (key == Key::F10) return "F10";
+	if (key == Key::F11) return "F11";
+	if (key == Key::F12) return "F12";
 	if (key == Key::A) return "A";
 	if (key == Key::B) return "B";
 	if (key == Key::C) return "C";
@@ -220,6 +246,8 @@ std::string Config::keyToString(Key key)
 	if (key == Key::Left) return "Left";
 	if (key == Key::Down) return "Down";
 	if (key == Key::Up) return "Up";
+	if (key == Key::MouseLeft) return "MouseLeft";
+	if (key == Key::MouseRight) return "MouseRight";
 
 	return "UnknownKey";
 }

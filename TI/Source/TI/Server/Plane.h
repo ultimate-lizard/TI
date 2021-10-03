@@ -28,6 +28,9 @@ public:
 
 	bool isPositionInPlaneBounds(const glm::vec3& position) const;
 
+	void setGravityEnabled(bool gravityEnabled);
+	bool isGravityEnabled() const;
+
 private:
 	glm::vec3 position;
 	glm::ivec3 size;
@@ -35,4 +38,6 @@ private:
 	const unsigned int chunkSize;
 
 	std::vector<Chunk> chunks;
+
+	bool gravityEnabled;
 };

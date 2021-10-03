@@ -5,7 +5,8 @@
 Plane::Plane(const glm::vec3& pos, const glm::ivec3& size, unsigned int chunkSize) :
 	position(pos),
 	size(size),
-	chunkSize(chunkSize)
+	chunkSize(chunkSize),
+	gravityEnabled(true)
 {
 	for (int z = 0; z < size.z; ++z)
 	{
@@ -97,4 +98,14 @@ bool Plane::isPositionInPlaneBounds(const glm::vec3& position) const
 	}
 
 	return true;
+}
+
+void Plane::setGravityEnabled(bool gravityEnabled)
+{
+	this->gravityEnabled = gravityEnabled;
+}
+
+bool Plane::isGravityEnabled() const
+{
+	return gravityEnabled;
 }

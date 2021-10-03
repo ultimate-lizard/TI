@@ -212,6 +212,7 @@
     <ClCompile Include="Source\TI\SplitScreenManager.cpp" />
     <ClCompile Include="Source\TI\Util\Config.cpp" />
     <ClCompile Include="Source\TI\Util\File.cpp" />
+    <ClCompile Include="Source\TI\Util\Math.cpp" />
     <ClCompile Include="Source\TI\Util\Serialization.cpp" />
     <ClCompile Include="Source\TI\Window.cpp" />
   </ItemGroup>
@@ -259,6 +260,7 @@
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />
     <ClInclude Include="Source\TI\Util\Config.h" />
     <ClInclude Include="Source\TI\Util\File.h" />
+    <ClInclude Include="Source\TI\Util\Math.h" />
     <ClInclude Include="Source\TI\Util\Random.h" />
     <ClInclude Include="Source\TI\Util\Serialization.h" />
     <ClInclude Include="Source\TI\Window.h" />

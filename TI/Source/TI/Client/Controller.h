@@ -54,7 +54,7 @@ private:
 	void jump();
 
 	InputHandler* inputHandler;
-	MovementComponent* movementComp;
+	MovementComponent* movementComponent;
 	Client* client;
 
 	bool thirdperson;

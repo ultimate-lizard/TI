@@ -50,24 +50,8 @@ public:
 
 	void setCollisionBox(CollisionBox collisionBox);
 
-	CollisionResult resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& testedCollisionBox, float dt);
-	bool checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
-	glm::vec3 calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
-	// Returns near and far points of the direction vector where collision happened. Returns none if collision fails
-	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2);
-
-	void setVelocity(const glm::vec3& velocity);
-	const glm::vec3& getVelocity() const;
-	void addVelocity(const glm::vec3& velocity);
-
-	void setGravityEnabled(bool gravityEnabled);
-	bool isGravityEnabled() const;
-
-	void setFrictionEnabled(bool frictionEnabled);
-	bool isFrictionEnabled() const;
-
-	bool isOnGround() const;
-
+	CollisionResult resolveCollision(const glm::vec3& position, const glm::vec3& velocity, float dt);
+	
 	void setRenderCollisionBoxEnabled(bool renderBoxEnabled);
 	bool isRenderCollisiobBoxEnabled() const;
 
@@ -75,19 +59,13 @@ public:
 	bool isRenderCollisionsEnabled() const;
 
 private:
+	bool checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
+	glm::vec3 calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
+	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2);
+
+private:
 	TransformComponent* transformComponent;
 	CollisionBox collisionBox;
-
-	float maxGravityVelocity;
-	float currentGravityVelocity;
-
-	glm::vec3 velocity;
-
-	bool gravityEnabled;
-	bool onGround;
-	bool frictionEnabled;
-
-	glm::vec3 previousPosition;
 
 	bool renderCollisionBox;
 	bool renderCollisions;

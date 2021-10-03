@@ -10,9 +10,16 @@ class PhysicsComponent;
 
 class MovementComponent : public Component
 {
+	enum class MovementState
+	{
+		Walk,
+		Fall,
+		Fly
+	};
+
 public:
 	MovementComponent();
-	MovementComponent(const MovementComponent& otherMovementComp);
+	MovementComponent(const MovementComponent&) = default;
 	MovementComponent(MovementComponent&&) = delete;
 
 	void init() override;
@@ -20,13 +27,10 @@ public:
 
 	std::unique_ptr<Component> clone() const override;
 
-	void setVelocity(const glm::vec3& velocity);
-	const glm::vec3& getVelocity() const;
+	void jump();
 
-	void setOnGroundSpeed(float speed);
-	float getOnGroundSpeed() const;
-
-	float getSensivity() const;
+	float getLookSensivity() const;
+	void setLookSensivity(float sensivity);
 
 	void setPitchRate(float pitchRate);
 	float getPitchRate() const;
@@ -34,38 +38,65 @@ public:
 	void setYawRate(float yawRate);
 	float getYawRate() const;
 
+	void addHorizontalLook(float value);
+	void addVerticalLook(float value);
+
 	void setMovementForward(float value);
 	void setMovementSideways(float value);
 
-	void jump();
+	void setWalkAcceleration(float acceleration);
+	float getWalkAcceleration() const;
+
+	void setWalkAccelerationInAir(float acceleration);
+	float getWalkAccelerationInAir() const;
+
+	void setWalkMaxSpeed(float maxSpeed);
+	float getWalkMaxSpeed() const;
+
+	void setFlightSpeed(float flightSpeed);
+	float getFlightSpeed() const;
+
+	void setBreakingFactor(float breakingFactor);
+	float getBreakingFactor() const;
 
 	void setFlyModeEnabled(bool flyMode);
-	bool isFlyModeEnabled() const;
+	bool isFlightModeEnabled() const;
 
-	const glm::vec3& getHeadForward() const;
+	const glm::vec3& getHeadDirection() const;
 	const glm::vec3& getHeadRotation() const;
+
+private:
+	void handleInput(float dt);
+
+	void handleWalk(float dt);
+	void handleFall(float dt);
+	void handleFlight(float dt);
 
 private:
 	TransformComponent* transformComponent;
 	PhysicsComponent* physicsComponent;
 
 	glm::vec3 headRotation;
-	glm::vec3 headForward;
-	glm::vec3 movementDirection;
+	glm::vec3 headDirection;
+	glm::vec3 walkDirection;
+	glm::vec3 input;
 
 	float yawRate;
 	float pitchRate;
 
-	float onGroundSpeed;
-	float inAirSpeed;
+	glm::vec3 velocity;
+
+	float walkAcceleration;
+	float walkAccelerationInAir;
+	float walkMaxSpeed;
+	float flightSpeed;
+	float breakingFactor;
+
 	glm::vec3 jumpVelocity;
 
 	float lookSensivity;
+
 	bool flightMode;
 
-	bool wasOnGround;
-
-public:
-	void addHorizontalLook(float value);
-	void addVerticalLook(float value);
+	MovementState movementState;
 };

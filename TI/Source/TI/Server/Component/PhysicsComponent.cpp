@@ -11,13 +11,8 @@
 #include <TI/Client/DebugInformation.h>
 
 PhysicsComponent::PhysicsComponent() :
+	Component(),
 	transformComponent(nullptr),
-	currentGravityVelocity(0.0f),
-	maxGravityVelocity(300.0f),
-	velocity(0.0f),
-	gravityEnabled(true),
-	onGround(false),
-	frictionEnabled(true),
 	renderCollisionBox(false),
 	renderCollisions(false)
 {
@@ -27,66 +22,11 @@ PhysicsComponent::PhysicsComponent() :
 PhysicsComponent::PhysicsComponent(const PhysicsComponent& other) :
 	Component(other),
 	transformComponent(other.transformComponent),
-	currentGravityVelocity(other.currentGravityVelocity),
 	collisionBox(other.collisionBox),
-	maxGravityVelocity(other.maxGravityVelocity),
-	velocity(other.velocity),
-	gravityEnabled(other.gravityEnabled),
-	onGround(other.onGround),
-	frictionEnabled(other.frictionEnabled),
-	previousPosition(other.previousPosition),
 	renderCollisionBox(other.renderCollisionBox),
 	renderCollisions(other.renderCollisions)
 {
 
-}
-
-void PhysicsComponent::init()
-{
-	if (entity)
-	{
-		transformComponent = entity->findComponent<TransformComponent>();
-	}
-}
-
-void PhysicsComponent::setVelocity(const glm::vec3& velocity)
-{
-	this->velocity = velocity;
-}
-
-const glm::vec3& PhysicsComponent::getVelocity() const
-{
-	return velocity;
-}
-
-void PhysicsComponent::addVelocity(const glm::vec3& velocity)
-{
-	this->velocity += velocity;
-}
-
-void PhysicsComponent::setGravityEnabled(bool gravityEnabled)
-{
-	this->gravityEnabled = gravityEnabled;
-}
-
-bool PhysicsComponent::isGravityEnabled() const
-{
-	return gravityEnabled;
-}
-
-void PhysicsComponent::setFrictionEnabled(bool frictionEnabled)
-{
-	this->frictionEnabled = frictionEnabled;
-}
-
-bool PhysicsComponent::isFrictionEnabled() const
-{
-	return frictionEnabled;
-}
-
-bool PhysicsComponent::isOnGround() const
-{
-	return onGround;
 }
 
 void PhysicsComponent::setRenderCollisionBoxEnabled(bool renderBoxEnabled)
@@ -109,64 +49,23 @@ bool PhysicsComponent::isRenderCollisionsEnabled() const
 	return renderCollisions;
 }
 
+void PhysicsComponent::init()
+{
+	if (entity)
+	{
+		transformComponent = entity->findComponent<TransformComponent>();
+	}
+}
+
 void PhysicsComponent::tick(float dt)
 {
-	if (transformComponent)
+	if (renderCollisionBox)
 	{
-		// Gravity
-		if (!isGravityEnabled())
-			onGround = false;
-
-		if (velocity.y)
-			onGround = false;
-
-		if (gravityEnabled)
+		if (transformComponent)
 		{
-			glm::vec3 gravityVector{ 0.0f, -1.0f, 0.0f };
-			float gravityConstant = 3000.0f;
-			glm::vec3 forces = gravityVector * gravityConstant;
-			float mass = 1.0f;
-			glm::vec3 acceleration = forces * mass;
-			velocity += acceleration * dt;
-		}
-
-		// Friction
-		if (frictionEnabled)
-		{
-			if (isOnGround() && (velocity.x || velocity.z || velocity.y))
-			{
-				velocity += -velocity * 120.0f * dt;
-			}
-		}
-
-		glm::vec3 position = transformComponent->getPosition();
-
-		// Collision
-		if (renderCollisionBox)
-		{
+			glm::vec3 position = transformComponent->getPosition();
 			drawDebugBox({ position.x + collisionBox.offset.x - collisionBox.size.x / 2.0f, position.y + collisionBox.offset.y - collisionBox.size.y / 2.0f , position.z + collisionBox.offset.z - collisionBox.size.z / 2.0f }, collisionBox.size, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
 		}
-
-		CollisionResult result = resolveCollision(position + collisionBox.offset, velocity, collisionBox, dt);
-
-		if (result.collidedAxis.y)
-		{
-			if (velocity.y < 0.0f)
-			{
-				onGround = true;
-			}
-		}
-
-		velocity = result.adjustedVelocity;
-		position = result.adjustedPosition;
-		position -= collisionBox.offset;
-
-		// Clamp minimal values
-		if (velocity.x > -0.001f && velocity.x < 0.001f) velocity.x = 0.0f;
-		if (velocity.y > -0.001f && velocity.y < 0.001f) velocity.y = 0.0f;
-		if (velocity.z > -0.001f && velocity.z < 0.001f) velocity.z = 0.0f;
-
-		transformComponent->setPosition(position + velocity * dt);
 	}
 }
 
@@ -180,10 +79,10 @@ void PhysicsComponent::setCollisionBox(CollisionBox collisionBox)
 	this->collisionBox = collisionBox;
 }
 
-CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, const CollisionBox& box, float dt)
+CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, float dt)
 {
 	CollisionResult result;
-	result.adjustedPosition = position;
+	result.adjustedPosition = position + collisionBox.offset;
 	result.adjustedVelocity = velocity;
 
 	std::vector<std::pair<float, glm::vec3>> collisions;
@@ -196,11 +95,11 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 	float zRangeMin = velocity.z < 0.0f ? velocity.z * dt : 0.0f;
 	float zRangeMax = velocity.z > 0.0f ? velocity.z * dt : 0.0f;
 
-	for (int x = -1 - box.size.x / 2.0f + xRangeMin; x <= 1 + box.size.x / 2.0f + xRangeMax; ++x)
+	for (int x = -1 - collisionBox.size.x / 2.0f + xRangeMin; x <= 1 + collisionBox.size.x / 2.0f + xRangeMax; ++x)
 	{
-		for (int y = -1 - box.size.y / 2.0f + yRangeMin; y <= 1 + box.size.y / 2.0f + yRangeMax; ++y)
+		for (int y = -1 - collisionBox.size.y / 2.0f + yRangeMin; y <= 1 + collisionBox.size.y / 2.0f + yRangeMax; ++y)
 		{
-			for (int z = -1 - box.size.z / 2.0f + zRangeMin; z <= 1 + box.size.z / 2.0f + zRangeMax; ++z)
+			for (int z = -1 - collisionBox.size.z / 2.0f + zRangeMin; z <= 1 + collisionBox.size.z / 2.0f + zRangeMax; ++z)
 			{
 				glm::vec3 blockPosition = glm::ivec3(result.adjustedPosition);
 				blockPosition.x += x;
@@ -225,7 +124,7 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 
 					std::vector<std::pair<float, Axis>> differences;
 
-					glm::vec3 distance = calculateAabbDistanceTo(result.adjustedPosition, blockCenterPosition, box, { glm::vec3(1.0), glm::vec3(0.0f) });
+					glm::vec3 distance = calculateAabbDistanceTo(result.adjustedPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0), glm::vec3(0.0f) });
 
 					if (result.adjustedVelocity.x)
 					{
@@ -255,12 +154,12 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 						case Axis::X:
 						{
 							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(result.adjustedVelocity.x, 0.0f, 0.0f) * dt };
-							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.x < 0.0f)
-									result.adjustedPosition.x = blockPosition.x + 1.0f + box.size.x / 2.0f;
+									result.adjustedPosition.x = blockPosition.x + 1.0f + collisionBox.size.x / 2.0f;
 								else if (velocity.x > 0.0f)
-									result.adjustedPosition.x = blockPosition.x - box.size.x / 2.0f;
+									result.adjustedPosition.x = blockPosition.x - collisionBox.size.x / 2.0f;
 
 								result.adjustedVelocity.x = 0.0f;
 								result.collidedAxis.x = true;
@@ -272,12 +171,12 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 						case Axis::Y:
 						{
 							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(0.0f, result.adjustedVelocity.y, 0.0f) * dt };
-							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.y < 0.0f)
-									result.adjustedPosition.y = blockPosition.y + 1.0f + box.size.y / 2.0f;
+									result.adjustedPosition.y = blockPosition.y + 1.0f + collisionBox.size.y / 2.0f;
 								else if (velocity.y > 0.0f)
-									result.adjustedPosition.y = blockPosition.y - box.size.y / 2.0f;
+									result.adjustedPosition.y = blockPosition.y - collisionBox.size.y / 2.0f;
 
 								result.adjustedVelocity.y = 0.0f;
 								result.collidedAxis.y = true;
@@ -289,12 +188,12 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 						case Axis::Z:
 						{
 							glm::vec3 newPosition{ result.adjustedPosition + glm::vec3(0.0f, 0.0f, result.adjustedVelocity.z) * dt };
-							if (checkCollision(newPosition, blockCenterPosition, box, { glm::vec3(1.0f), glm::vec3(0.0f) }))
+							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.z < 0.0f)
-									result.adjustedPosition.z = blockPosition.z + 1.0f + box.size.z / 2.0f;
+									result.adjustedPosition.z = blockPosition.z + 1.0f + collisionBox.size.z / 2.0f;
 								else if (velocity.z > 0.0f)
-									result.adjustedPosition.z = blockPosition.z - box.size.z / 2.0f;
+									result.adjustedPosition.z = blockPosition.z - collisionBox.size.z / 2.0f;
 
 								result.adjustedVelocity.z = 0.0f;
 								result.collidedAxis.z = true;
@@ -309,6 +208,7 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 		}
 	}
 
+	result.adjustedPosition -= collisionBox.offset;
 	return result;
 }
 

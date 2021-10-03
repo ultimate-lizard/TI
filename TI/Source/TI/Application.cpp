@@ -15,7 +15,7 @@
 
 static const char* GAME_TITLE = "TI";
 
-static const float DELTA_MODIFIER = 0.0001f;
+static const float DELTA_MODIFIER = 0.001f;
 
 Application::Application() :
 	simulating(false),

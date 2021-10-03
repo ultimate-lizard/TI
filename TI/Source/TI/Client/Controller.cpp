@@ -26,7 +26,7 @@ static const float CONTROLLER_SENSIVITY_ADJUSTER = 100.0f;
 PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 	inputHandler(inputHandler),
 	// entity(nullptr),
-	movementComp(nullptr),
+	movementComponent(nullptr),
 	client(client),
 	thirdperson(false)
 {
@@ -35,49 +35,49 @@ PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 
 void PlayerController::handleMovementForward(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->setMovementForward(value);
+		movementComponent->setMovementForward(value);
 	}
 }
 
 void PlayerController::handleMovementSideways(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->setMovementSideways(value);
+		movementComponent->setMovementSideways(value);
 	}
 }
 
 void PlayerController::handleLookVertical(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->addVerticalLook(value);
+		movementComponent->addVerticalLook(value);
 	}
 }
 
 void PlayerController::handleLookHorizontal(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->addHorizontalLook(value);
+		movementComponent->addHorizontalLook(value);
 	}
 }
 
 void PlayerController::handleLookVerticalRate(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->setPitchRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComponent->setPitchRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
 	}
 }
 
 void PlayerController::handleLookHorizontalRate(float value)
 {
-	if (movementComp)
+	if (movementComponent)
 	{
-		movementComp->setYawRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComponent->setYawRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
 	}
 }
 
@@ -87,7 +87,7 @@ void PlayerController::posses(Entity* entity)
 	this->entity = entity;
 	if (entity)
 	{
-		movementComp = entity->findComponent<MovementComponent>();
+		movementComponent = entity->findComponent<MovementComponent>();
 	}
 }
 
@@ -111,13 +111,12 @@ void PlayerController::castRayWithCollision()
 	static int entityCount = 0;
 
 	auto playerPos = entity->findComponent<TransformComponent>()->getPosition();
-	auto playerForward = movementComp->getHeadForward();
+	auto playerForward = movementComponent->getHeadDirection();
 
 	auto spawnLocation = playerPos + playerForward * 1.5f;
-	auto spawnVelocity = playerForward * 400.0f;
+	auto spawnVelocity = playerForward * 50.0f;
 
 	auto projectile = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "123" + std::to_string(entityCount++), spawnLocation);
-	projectile->findComponent<PhysicsComponent>()->addVelocity(spawnVelocity);
 
 	/*if (entity)
 	{
@@ -166,6 +165,7 @@ void PlayerController::castRayWithCollision()
 
 void PlayerController::destroyBlock()
 {
+	SDL_Delay(400);
 	if (entity)
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
@@ -181,7 +181,7 @@ void PlayerController::destroyBlock()
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
-							glm::vec3 cur = start + movementComponent->getHeadForward() * i;
+							glm::vec3 cur = start + movementComponent->getHeadDirection() * i;
 							if (plane->getBlock(cur) != 0)
 							{
 								plane->spawnBlock(cur, 0);
@@ -222,14 +222,15 @@ void PlayerController::toggleFlyMode()
 {
 	if (entity)
 	{
-		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			physicsComponent->setGravityEnabled(!physicsComponent->isGravityEnabled());
+			Plane* const plane = transformComponent->getPlane();
+			plane->setGravityEnabled(!plane->isGravityEnabled());
 		}
 
-		if (movementComp)
+		if (movementComponent)
 		{
-			movementComp->setFlyModeEnabled(!movementComp->isFlyModeEnabled());
+			movementComponent->setFlyModeEnabled(!movementComponent->isFlightModeEnabled());
 		}
 	}
 }
@@ -270,15 +271,9 @@ void PlayerController::toggleThirdperson()
 
 void PlayerController::jump()
 {
-	if (entity)
+	if (movementComponent)
 	{
-		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
-		{
-			if (physicsComponent->isGravityEnabled())
-			{
-				movementComp->jump();
-			}
-		}
+		movementComponent->jump();
 	}
 }
 

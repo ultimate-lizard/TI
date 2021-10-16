@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <sstream>
+#include <iomanip>
 
 #include <TI/Renderer/Renderer.h>
 #include <TI/Input.h>
@@ -14,8 +15,6 @@
 #include <TI/ResourceManager.h>
 
 static const char* GAME_TITLE = "TI";
-
-static const float DELTA_MODIFIER = 0.001f;
 
 Application::Application() :
 	simulating(false),
@@ -59,22 +58,33 @@ void Application::start()
 
 	simulating = true;
 
-	int startFrame = 0;
-	int endFrame = 0;
+	uint64_t currentFrame = SDL_GetPerformanceCounter();
+	uint64_t lastFrame = 0;
+
+	const float DT = 0.001f;
+	float accumulator = 0.0f;
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_CaptureMouse(SDL_TRUE);
 
 	while (simulating)
 	{
-		startFrame = SDL_GetTicks();
-		float dt = endFrame * DELTA_MODIFIER;
-
+		lastFrame = currentFrame;
+		currentFrame = SDL_GetPerformanceCounter();
+		
+		float frameTime = (currentFrame - lastFrame) / static_cast<float>(SDL_GetPerformanceFrequency());
+		
 		input->handleInput();
 
-		if (server)
+		accumulator += frameTime;
+		while (accumulator >= DT)
 		{
-			server->update(dt);
+			accumulator -= DT;
+
+			if (server)
+			{
+				server->update(DT);
+			}
 		}
 
 		for (auto& client : clients)
@@ -87,10 +97,10 @@ void Application::start()
 					continue;
 				}
 
-				client->update(dt);
+				client->update(frameTime);
 			}
 		}
-
+		
 		renderer->render();
 
 		if (!getLocalClients().empty())
@@ -99,8 +109,6 @@ void Application::start()
 		}
 
 		window.swap();
-
-		endFrame = SDL_GetTicks() - startFrame;
 
 		if (clients.empty())
 		{

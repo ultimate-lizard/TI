@@ -62,8 +62,8 @@ void ChunkMesh::rebuildMesh()
 		if (!mesh->isDynamic())
 		{
 			MeshBuilder builder;
-			unsigned long long s = (chunkSize * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
-			unsigned long long e = (chunkSize * chunkSize * chunkSize) * 3 * sizeof(unsigned int) * 36;
+			size_t s = (static_cast<size_t>(chunkSize) * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
+			size_t e = (static_cast<size_t>(chunkSize) * chunkSize * chunkSize) * 3 * sizeof(unsigned int) * 36;
 			mesh = builder.buildDyanmic(s, e);
 		}
 
@@ -105,11 +105,10 @@ const glm::vec3& ChunkMesh::getPosition() const
 	return chunk->getPosition();
 }
 
-void ChunkMesh::updateBlock(const glm::vec3& updatedBlockPosition)
+void ChunkMesh::updateBlock(const glm::uvec3& updatedBlockPosition)
 {
 	// TODO: getBlockNextToFace
-	glm::ivec3 iPosition = updatedBlockPosition;
-	unsigned long long index = (iPosition.z * chunkSize * chunkSize) + (iPosition.y * chunkSize) + iPosition.x;
+	size_t index = (static_cast<size_t>(updatedBlockPosition.z) * chunkSize * chunkSize) + (static_cast<size_t>(updatedBlockPosition.y) * chunkSize) + updatedBlockPosition.x;
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
@@ -147,7 +146,7 @@ void ChunkMesh::updateBlock(const glm::vec3& updatedBlockPosition)
 	{
 		if (chunk->getBlock(checkedBlockPosition) != 0)
 		{
-			unsigned long long idx = (checkedBlockPosition.z * chunkSize * chunkSize) + (checkedBlockPosition.y * chunkSize) + checkedBlockPosition.x;
+			size_t idx = (static_cast<size_t>(checkedBlockPosition.z) * chunkSize * chunkSize) + (static_cast<size_t>(checkedBlockPosition.y) * chunkSize) + checkedBlockPosition.x;
 			for (int i = 0; i < 6; ++i)
 			{
 				Face face = static_cast<Face>(i);
@@ -315,7 +314,7 @@ void ChunkMesh::setFace(Face face, glm::ivec3 position)
 	}
 
 	glm::ivec3 iPosition = position;
-	unsigned long long index = (iPosition.z * chunkSize * chunkSize) + (iPosition.y * chunkSize) + iPosition.x;
+	size_t index = (static_cast<size_t>(iPosition.z) * chunkSize * chunkSize) + (static_cast<size_t>(iPosition.y) * chunkSize) + iPosition.x;
 
 	this->faceVerticesMap[{index, face}] = *faceData;
 }

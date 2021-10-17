@@ -37,7 +37,7 @@ public:
 
 	const glm::vec3& getPosition() const;
 
-	void updateBlock(const glm::vec3& position);
+	void updateBlock(const glm::uvec3& position);
 
 private:
 	bool isFaceNextToAir(Face face, const glm::ivec3& blockPosition);
@@ -45,7 +45,7 @@ private:
 	void setFace(Face face, glm::ivec3 position);
 
 private:
-	unsigned long long chunkSize;
+	unsigned int chunkSize;
 
 	std::unique_ptr<Mesh> mesh;
 

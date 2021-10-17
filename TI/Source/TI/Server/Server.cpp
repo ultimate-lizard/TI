@@ -61,7 +61,7 @@ void Server::initEntityTemplates()
 Server::Server(Application* app) :
 	app(app), shuttingDown(false), plane(nullptr)
 {
-	plane = new Plane(glm::vec3(1.0f), { 4, 1, 4 });
+	plane = new Plane(glm::vec3(1.0f), { 4, 1, 4 }, 16);
 }
 
 Server::~Server()

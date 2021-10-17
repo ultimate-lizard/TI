@@ -89,6 +89,17 @@ unsigned long long Plane::planePositionToChunkIndex(const glm::vec3& position) c
 	return x + y + z;
 }
 
+glm::uvec3 Plane::planePositionToChunkPosition(const glm::vec3& position) const
+{
+	glm::uvec3 iPosition = position;
+
+	iPosition.x %= chunkSize;
+	iPosition.y %= chunkSize;
+	iPosition.z %= chunkSize;
+
+	return iPosition;
+}
+
 bool Plane::isPositionInPlaneBounds(const glm::vec3& position) const
 {
 	if (position.x < 0.0f || position.y < 0.0f || position.z < 0.0f ||

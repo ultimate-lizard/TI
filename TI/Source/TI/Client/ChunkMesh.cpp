@@ -26,8 +26,7 @@ Mesh& ChunkMesh::getMesh()
 
 void ChunkMesh::rebuildMesh()
 {
-	data.clear();
-	elements.clear();
+	faceVerticesMap.clear();
 	elementsCount = 0;
 
 	if (chunk)
@@ -68,6 +67,31 @@ void ChunkMesh::rebuildMesh()
 			mesh = builder.buildDyanmic(s, e);
 		}
 
+		std::vector<float> data;
+		std::vector<unsigned int> elements;
+		for (auto& faceDataMapPair : faceVerticesMap)
+		{
+			for (size_t i = 0; i < faceDataMapPair.second.size(); ++i)
+			{
+				data.push_back(faceDataMapPair.second[i]);
+			}
+
+			// Calculate and push indices
+			std::array<unsigned int, 6> faceIndices = {
+				0, 1, 2,
+				0, 2, 3,
+			};
+			for (unsigned int& index : faceIndices)
+			{
+				if (elements.size())
+				{
+					index += elements.size() / 6 * 4;
+				}
+			}
+
+			elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
+		}
+
 		mesh->setBufferSubData(0, data);
 		mesh->setElementsSubData(0, elements);
 
@@ -79,6 +103,98 @@ void ChunkMesh::rebuildMesh()
 const glm::vec3& ChunkMesh::getPosition() const
 {
 	return chunk->getPosition();
+}
+
+void ChunkMesh::updateBlock(const glm::vec3& updatedBlockPosition)
+{
+	// TODO: getBlockNextToFace
+	glm::ivec3 iPosition = updatedBlockPosition;
+	unsigned long long index = (iPosition.z * chunkSize * chunkSize) + (iPosition.y * chunkSize) + iPosition.x;
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		Face face = static_cast<Face>(i);
+		faceVerticesMap.erase({ index, face });
+	}
+
+	std::vector<glm::uvec3> checkedPositions;
+	if (updatedBlockPosition.x - 1 >= 0)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x - 1, updatedBlockPosition.y, updatedBlockPosition.z });
+	}
+	if (updatedBlockPosition.x + 1 < chunkSize)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x + 1, updatedBlockPosition.y, updatedBlockPosition.z });
+	}
+	if (updatedBlockPosition.y - 1 >= 0)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x, updatedBlockPosition.y - 1, updatedBlockPosition.z });
+	}
+	if (updatedBlockPosition.y + 1 < chunkSize)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x, updatedBlockPosition.y + 1, updatedBlockPosition.z });
+	}
+	if (updatedBlockPosition.z - 1 >= 0)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x, updatedBlockPosition.y, updatedBlockPosition.z - 1});
+	}
+	if (updatedBlockPosition.z + 1 < chunkSize)
+	{
+		checkedPositions.push_back({ updatedBlockPosition.x, updatedBlockPosition.y, updatedBlockPosition.z + 1});
+	}
+
+	for (const glm::uvec3& checkedBlockPosition : checkedPositions)
+	{
+		if (chunk->getBlock(checkedBlockPosition) != 0)
+		{
+			unsigned long long idx = (checkedBlockPosition.z * chunkSize * chunkSize) + (checkedBlockPosition.y * chunkSize) + checkedBlockPosition.x;
+			for (int i = 0; i < 6; ++i)
+			{
+				Face face = static_cast<Face>(i);
+				if (isFaceNextToAir(face, checkedBlockPosition))
+				{
+					setFace(face, checkedBlockPosition);
+				}
+				else
+				{
+					faceVerticesMap.erase({ idx, face });
+				}
+			}
+		}
+	}
+
+	// Send data to OpenGL
+	std::vector<float> data;
+	std::vector<unsigned int> elements;
+
+	for (auto& faceDataMapPair : faceVerticesMap)
+	{
+		for (size_t i = 0; i < faceDataMapPair.second.size(); ++i)
+		{
+			data.push_back(faceDataMapPair.second[i]);
+		}
+
+		// Calculate and push indices
+		std::array<unsigned int, 6> faceIndices = {
+			0, 1, 2,
+			0, 2, 3,
+		};
+		for (unsigned int& index : faceIndices)
+		{
+			if (elements.size())
+			{
+				index += elements.size() / 6 * 4;
+			}
+		}
+
+		elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
+	}
+
+	mesh->setBufferSubData(0, data);
+	mesh->setElementsSubData(0, elements);
+
+	mesh->setPositionsCount(data.size() / 5);
+	mesh->setIndicesCount(elements.size());
 }
 
 bool ChunkMesh::isFaceNextToAir(Face face, const glm::ivec3& blockPosition)
@@ -165,9 +281,9 @@ void ChunkMesh::setFace(Face face, glm::ivec3 position)
 
 	for (unsigned int& index : faceIndices)
 	{
-		if (elements.size())
+		if (this->faceVerticesMap.size())
 		{
-			index += elements.size() / 6 * 4;
+			index += this->faceVerticesMap.size() * 4;
 		}
 	}
 
@@ -193,8 +309,13 @@ void ChunkMesh::setFace(Face face, glm::ivec3 position)
 	case ChunkMesh::Face::Bottom:
 		faceData = &BOTTOM_DATA;
 		break;
+	default:
+		throw std::exception();
+		break;
 	}
 
-	data.insert(data.end(), faceData->begin(), faceData->end());
-	elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
+	glm::ivec3 iPosition = position;
+	unsigned long long index = (iPosition.z * chunkSize * chunkSize) + (iPosition.y * chunkSize) + iPosition.x;
+
+	this->faceVerticesMap[{index, face}] = *faceData;
 }

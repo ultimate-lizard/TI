@@ -25,6 +25,7 @@ public:
 	const Chunk* getChunk(const glm::vec3& pos) const;
 
 	unsigned long long planePositionToChunkIndex(const glm::vec3& position) const;
+	glm::uvec3 planePositionToChunkPosition(const glm::vec3& position) const;
 
 	bool isPositionInPlaneBounds(const glm::vec3& position) const;
 

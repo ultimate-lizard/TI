@@ -165,7 +165,6 @@ void PlayerController::castRayWithCollision()
 
 void PlayerController::destroyBlock()
 {
-	SDL_Delay(400);
 	if (entity)
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
@@ -181,17 +180,16 @@ void PlayerController::destroyBlock()
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
-							glm::vec3 cur = start + movementComponent->getHeadDirection() * i;
-							if (plane->getBlock(cur) != 0)
+							glm::vec3 rayEndPosition = start + movementComponent->getHeadDirection() * i;
+							if (plane->getBlock(rayEndPosition) != 0)
 							{
-								plane->spawnBlock(cur, 0);
+								plane->spawnBlock(rayEndPosition, 0);
 
-								/*unsigned int chunkIndex = plane->planePositionToChunkIndex(cur);
-								localClient->getChunkMeshes()[chunkIndex]->rebuildMesh();*/
-
-								for (ChunkMesh* mesh : localClient->getChunkMeshes())
+								size_t chunkIndex = plane->planePositionToChunkIndex(rayEndPosition);
+								std::vector<ChunkMesh*>& chunkMeshes = localClient->getChunkMeshes();
+								if (chunkMeshes.size() >= chunkIndex)
 								{
-									mesh->rebuildMesh();
+									chunkMeshes[chunkIndex]->updateBlock(plane->planePositionToChunkPosition(rayEndPosition));
 								}
 
 								break;

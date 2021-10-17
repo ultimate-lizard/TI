@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <array>
 
 #include <glm/glm.hpp>
 
@@ -36,6 +37,8 @@ public:
 
 	const glm::vec3& getPosition() const;
 
+	void updateBlock(const glm::vec3& position);
+
 private:
 	bool isFaceNextToAir(Face face, const glm::ivec3& blockPosition);
 
@@ -46,8 +49,10 @@ private:
 
 	std::unique_ptr<Mesh> mesh;
 
-	std::vector<float> data;
-	std::vector<unsigned int> elements;
+	//std::vector<float> data;
+	//std::vector<unsigned int> elements;
+	std::map<std::pair<size_t, Face>, std::array<float, 20>> faceVerticesMap;
+
 	size_t elementsCount;
 
 	const Chunk* const chunk;

@@ -62,9 +62,7 @@ void ChunkMesh::rebuildMesh()
 		if (!mesh->isDynamic())
 		{
 			MeshBuilder builder;
-			size_t s = (static_cast<size_t>(chunkSize) * chunkSize * chunkSize) * 5 * sizeof(float) * 36;
-			size_t e = (static_cast<size_t>(chunkSize) * chunkSize * chunkSize) * 3 * sizeof(unsigned int) * 36;
-			mesh = builder.buildDyanmic(s, e);
+			mesh = builder.buildDyanmic(0, 0);
 		}
 
 		std::vector<float> data;
@@ -91,6 +89,9 @@ void ChunkMesh::rebuildMesh()
 
 			elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
 		}
+
+		mesh->setBufferSize(data.size() * sizeof(float));
+		mesh->setElementsSize(elements.size() * sizeof(unsigned int));
 
 		mesh->setBufferSubData(0, data);
 		mesh->setElementsSubData(0, elements);
@@ -188,6 +189,9 @@ void ChunkMesh::updateBlock(const glm::uvec3& updatedBlockPosition)
 
 		elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
 	}
+
+	mesh->setBufferSize(data.size() * sizeof(float));
+	mesh->setElementsSize(elements.size() * sizeof(unsigned int));
 
 	mesh->setBufferSubData(0, data);
 	mesh->setElementsSubData(0, elements);

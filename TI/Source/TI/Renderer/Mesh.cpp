@@ -148,6 +148,18 @@ void Mesh::setElementsSubData(unsigned int offset, const std::vector<unsigned in
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void Mesh::setBufferSize(unsigned int size)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+}
+
+void Mesh::setElementsSize(unsigned int size)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+}
+
 void MeshBuilder::setPositions(std::vector<glm::vec3> positions)
 {
 	this->positions = positions;

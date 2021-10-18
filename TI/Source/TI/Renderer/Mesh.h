@@ -30,6 +30,9 @@ public:
 	void setBufferSubData(unsigned int offset, const std::vector<float>& data);
 	void setElementsSubData(unsigned int offset, const std::vector<unsigned int>& data);
 
+	void setBufferSize(unsigned int size);
+	void setElementsSize(unsigned int size);
+
 private:
 	Mesh(unsigned long long vboSize, unsigned long long eboSize);
 	Mesh(std::vector<glm::vec3> positions, std::vector<glm::vec2> uvs, std::vector<unsigned int> indices);

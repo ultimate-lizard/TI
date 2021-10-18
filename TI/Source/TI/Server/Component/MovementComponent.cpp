@@ -27,8 +27,8 @@ MovementComponent::MovementComponent() :
 	walkMaxSpeed(3.5f),
 	flightSpeed(25.0f),
 	breakingFactor(1.0f),
-	jumpVelocity({0.0f, 11.2f, 0.0f}),
-	lookSensivity(20.0f),
+	jumpVelocity({0.0f, 8.5f, 0.0f}),
+	lookSensivity(13.0f),
 	flightMode(false),
 	movementState(MovementState::Fall)
 {

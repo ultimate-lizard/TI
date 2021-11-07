@@ -28,7 +28,6 @@ MovementComponent::MovementComponent() :
 	flightSpeed(25.0f),
 	breakingFactor(1.0f),
 	jumpVelocity({0.0f, 8.5f, 0.0f}),
-	lookSensivity(13.0f),
 	flightMode(false),
 	movementState(MovementState::Fall)
 {
@@ -66,19 +65,9 @@ std::unique_ptr<Component> MovementComponent::clone() const
 	return std::make_unique<MovementComponent>(*this);
 }
 
-float MovementComponent::getLookSensivity() const
-{
-	return lookSensivity;
-}
-
-void MovementComponent::setLookSensivity(float sensivity)
-{
-	this->lookSensivity = sensivity;
-}
-
 void MovementComponent::setPitchRate(float pitchRate)
 {
-	this->pitchRate = pitchRate * lookSensivity;
+	this->pitchRate = pitchRate;
 }
 
 float MovementComponent::getPitchRate() const
@@ -88,7 +77,7 @@ float MovementComponent::getPitchRate() const
 
 void MovementComponent::setYawRate(float yawRate)
 {
-	this->yawRate = yawRate * lookSensivity;
+	this->yawRate = yawRate;
 }
 
 float MovementComponent::getYawRate() const
@@ -346,12 +335,10 @@ void MovementComponent::handleFlight(float dt)
 
 void MovementComponent::addHorizontalLook(float value)
 {
-	float movement = value * lookSensivity;
-	headRotation.y = headRotation.y + movement;
+	headRotation.y = headRotation.y + value;
 }
 
 void MovementComponent::addVerticalLook(float value)
 {
-	float movement = value * lookSensivity;
-	headRotation.x = headRotation.x + movement;
+	headRotation.x = headRotation.x + value;
 }

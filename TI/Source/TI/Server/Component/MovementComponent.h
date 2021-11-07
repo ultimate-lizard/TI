@@ -94,8 +94,6 @@ private:
 
 	glm::vec3 jumpVelocity;
 
-	float lookSensivity;
-
 	bool flightMode;
 
 	MovementState movementState;

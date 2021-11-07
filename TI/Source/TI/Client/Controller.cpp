@@ -28,7 +28,9 @@ PlayerController::PlayerController(Client* client, InputHandler* inputHandler) :
 	// entity(nullptr),
 	movementComponent(nullptr),
 	client(client),
-	thirdperson(false)
+	thirdperson(false),
+	mouseLookSensivity(13.0f),
+	controllerLookSensivity(2.5f)
 {
 	setupInputHandler();
 }
@@ -53,7 +55,7 @@ void PlayerController::handleLookVertical(float value)
 {
 	if (movementComponent)
 	{
-		movementComponent->addVerticalLook(value);
+		movementComponent->addVerticalLook(value * mouseLookSensivity);
 	}
 }
 
@@ -61,7 +63,7 @@ void PlayerController::handleLookHorizontal(float value)
 {
 	if (movementComponent)
 	{
-		movementComponent->addHorizontalLook(value);
+		movementComponent->addHorizontalLook(value * mouseLookSensivity);
 	}
 }
 
@@ -69,7 +71,7 @@ void PlayerController::handleLookVerticalRate(float value)
 {
 	if (movementComponent)
 	{
-		movementComponent->setPitchRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComponent->setPitchRate(value * CONTROLLER_SENSIVITY_ADJUSTER * controllerLookSensivity);
 	}
 }
 
@@ -77,7 +79,7 @@ void PlayerController::handleLookHorizontalRate(float value)
 {
 	if (movementComponent)
 	{
-		movementComponent->setYawRate(value * CONTROLLER_SENSIVITY_ADJUSTER);
+		movementComponent->setYawRate(value * CONTROLLER_SENSIVITY_ADJUSTER * controllerLookSensivity);
 	}
 }
 

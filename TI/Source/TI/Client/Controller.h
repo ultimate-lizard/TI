@@ -58,4 +58,7 @@ private:
 	Client* client;
 
 	bool thirdperson;
+
+	float mouseLookSensivity;
+	float controllerLookSensivity;
 };

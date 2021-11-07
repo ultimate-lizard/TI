@@ -10,12 +10,9 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
-#include <TI/Client/Client.h>
 #include <TI/Application.h>
 #include <TI/Server/Plane.h>
-#include <TI/Client/ChunkMesh.h>
 #include <TI/Renderer/Renderer.h>
-#include <TI/Client/DebugInformation.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Server/LocalServer.h>
 
@@ -119,50 +116,6 @@ void PlayerController::castRayWithCollision()
 	auto spawnVelocity = playerForward * 50.0f;
 
 	auto projectile = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "123" + std::to_string(entityCount++), spawnLocation);
-
-	/*if (entity)
-	{
-		if (auto transformComponent = entity->findComponent<TransformComponent>())
-		{
-			if (Plane* plane = transformComponent->getPlane())
-			{
-				if (auto localClient = dynamic_cast<LocalClient*>(client))
-				{
-					if (auto movementComponent = entity->findComponent<MovementComponent>())
-					{
-						const float COLLISION_PRECISION = 0.01f;
-
-						glm::vec3 start = transformComponent->getPosition();
-
-						float distance = 10.0f;
-						glm::vec3 end = start + movementComponent->getHeadForward() * distance;
-
-						bool found = false;
-
-						for (float i = 0.0f; i < distance; i += COLLISION_PRECISION)
-						{
-							glm::vec3 cur = start + movementComponent->getHeadForward() * i;
-
-							if (plane->getBlock(cur) != 0)
-							{
-								drawDebugPoint(cur, { 1.0f, 0.0f, 0.0f, 1.0f }, 20.0f);
-								drawDebugLine(start, cur, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
-
-								found = true;
-
-								break;
-							}
-						}
-
-						if (!found)
-						{
-							drawDebugLine(start, end, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f);
-						}
-					}
-				}
-			}			
-		}
-	}*/
 }
 
 void PlayerController::destroyBlock()
@@ -182,17 +135,12 @@ void PlayerController::destroyBlock()
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
-							glm::vec3 rayEndPosition = start + movementComponent->getHeadDirection() * i;
+							glm::uvec3 rayEndPosition = start + movementComponent->getHeadDirection() * i;
 							if (plane->getBlock(rayEndPosition) != 0)
 							{
 								plane->spawnBlock(rayEndPosition, 0);
 
-								size_t chunkIndex = plane->planePositionToChunkIndex(rayEndPosition);
-								std::vector<ChunkMesh*>& chunkMeshes = localClient->getChunkMeshes();
-								if (chunkMeshes.size() >= chunkIndex)
-								{
-									chunkMeshes[chunkIndex]->updateBlock(plane->planePositionToChunkPosition(rayEndPosition));
-								}
+								localClient->updateBlock(rayEndPosition);
 
 								break;
 							}

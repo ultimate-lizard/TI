@@ -1,42 +1,48 @@
 #pragma once
 
-#include <TI/Server/Chunk.h>
+#include <vector>
 
 #include <glm/glm.hpp>
 
-#include <vector>
+#include <TI/Server/Chunk.h>
+#include <TI/Server/Block.h>
+
+static const size_t DEFAULT_CHUNK_SIZE = 16;
 
 class Plane
 {
 public:
-	Plane(const glm::vec3& pos = glm::vec3(0.0f), const glm::ivec3& size = glm::ivec3(4, 4, 4), unsigned int chunkSize = DEFAULT_CHUNK_SIZE);
+	Plane(const glm::vec3& position, const glm::uvec3& size, size_t chunkSize = DEFAULT_CHUNK_SIZE);
 	Plane(const Plane&) = delete;
 	Plane(Plane&&) = delete;
 
-	const glm::ivec3& getSize() const;
-	unsigned int getChunkSize() const;
+	const glm::uvec3& getSize() const;
+	size_t getChunkSize() const;
 
 	const std::vector<Chunk>& getChunks() const;
 
 	void spawnRandomBlock();
-	void spawnBlock(const glm::vec3& position, unsigned int blockType);
+	void spawnBlock(const glm::uvec3& position, unsigned int blockType);
 
-	unsigned int getBlock(const glm::vec3& pos) const;
-	const Chunk* getChunk(const glm::vec3& pos) const;
+	unsigned int getBlock(const glm::uvec3& position) const;
+	unsigned int getNeighborBlock(const glm::uvec3& position, BlockFace direction) const;
+	const Chunk* getChunk(const glm::uvec3& position) const;
 
-	unsigned long long planePositionToChunkIndex(const glm::vec3& position) const;
-	glm::uvec3 planePositionToChunkPosition(const glm::vec3& position) const;
-
-	bool isPositionInPlaneBounds(const glm::vec3& position) const;
+	bool isPositionInPlaneBounds(const glm::uvec3& position) const;
 
 	void setGravityEnabled(bool gravityEnabled);
 	bool isGravityEnabled() const;
 
+	glm::uvec3 positionToChunkPosition(const glm::uvec3& position) const;
+
+	// Converts position to chunk's local position
+	glm::uvec3 positionToChunkLocalPosition(const glm::uvec3& position) const;
+
 private:
 	glm::vec3 position;
-	glm::ivec3 size;
+	glm::uvec3 size;
 
-	const unsigned int chunkSize;
+	const size_t chunkSize;
 
 	std::vector<Chunk> chunks;
 

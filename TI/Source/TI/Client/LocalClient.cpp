@@ -1,28 +1,21 @@
 #include "LocalClient.h"
 
 #include <filesystem>
-#include <functional>
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
 
-#include <TI/Client/ClientConnectionRequest.h>
 #include <TI/Server/Server.h>
 #include <TI/Application.h>
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/Controller.h>
-#include <TI/Util/Config.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
-#include <TI/Server/Entity.h>
 #include <TI/Renderer/Renderer.h>
-#include <TI/Renderer/Material.h>
-#include <TI/Renderer/Mesh.h>
 #include <TI/ResourceManager.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Server/Plane.h>
-#include <TI/Util/Random.h>
 #include <TI/Client/DebugInformation.h>
+#include <TI/Util/Utils.h>
 
 std::unique_ptr<DebugInformation> LocalClient::debugInformation = nullptr;
 
@@ -30,7 +23,8 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	Client(app),
 	viewportId(0),
 	renderer(app->getRenderer()),
-	chunkMaterial(app->getResourceManager()->getMaterial("Chunk"))
+	chunkMaterial(app->getResourceManager()->getMaterial("Chunk")),
+	plane(nullptr)
 {
 	// TODO: assert(app);
 	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
@@ -73,6 +67,8 @@ void LocalClient::connect(const std::string& ip, int port)
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+
+		plane = server->getPlane();
 	}
 }
 
@@ -149,6 +145,39 @@ std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()
 DebugInformation* LocalClient::getDebugInformation()
 {
 	return debugInformation.get();
+}
+
+void LocalClient::updateBlock(const glm::uvec3& position)
+{
+	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
+	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
+
+	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
+
+	chunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
+
+	glm::uvec3 blockPositionInNeighborChunk = position;
+	const unsigned int maxBlockPosition = static_cast<unsigned int>(plane->getChunkSize()) - 1;
+
+	for (unsigned int axis = 0; axis < 3; ++axis)
+	{
+		if (blockLocalPosition[axis] == 0)
+		{
+			blockPositionInNeighborChunk[axis] -= 1;
+		}
+		else if (blockLocalPosition[axis] == maxBlockPosition)
+		{
+			blockPositionInNeighborChunk[axis] += 1;
+		}
+
+		if (blockLocalPosition != blockPositionInNeighborChunk && plane->isPositionInPlaneBounds(blockPositionInNeighborChunk))
+		{
+			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
+			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());
+
+			chunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
+		}
+	}
 }
 
 void LocalClient::loadConfig()

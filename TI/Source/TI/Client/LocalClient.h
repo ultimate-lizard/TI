@@ -17,6 +17,7 @@ class Mesh;
 class ChunkMesh;
 class Renderer;
 class DebugInformation;
+class Plane;
 
 class LocalClient : public Client
 {
@@ -42,6 +43,8 @@ public:
 
 	static DebugInformation* getDebugInformation();
 
+	void updateBlock(const glm::uvec3& position);
+
 private:
 	void loadConfig();
 	void loadMappings();
@@ -64,4 +67,6 @@ private:
 	Material* chunkMaterial;
 
 	static std::unique_ptr<DebugInformation> debugInformation;
+
+	const Plane* plane;
 };

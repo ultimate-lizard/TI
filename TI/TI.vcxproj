@@ -214,6 +214,7 @@
     <ClCompile Include="Source\TI\Util\File.cpp" />
     <ClCompile Include="Source\TI\Util\Math.cpp" />
     <ClCompile Include="Source\TI\Util\Serialization.cpp" />
+    <ClCompile Include="Source\TI\Util\Utils.cpp" />
     <ClCompile Include="Source\TI\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -240,6 +241,7 @@
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />
     <ClInclude Include="Source\TI\Renderer\Viewport.h" />
+    <ClInclude Include="Source\TI\Server\Block.h" />
     <ClInclude Include="Source\TI\Server\Chunk.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
@@ -263,6 +265,7 @@
     <ClInclude Include="Source\TI\Util\Math.h" />
     <ClInclude Include="Source\TI\Util\Random.h" />
     <ClInclude Include="Source\TI\Util\Serialization.h" />
+    <ClInclude Include="Source\TI\Util\Utils.h" />
     <ClInclude Include="Source\TI\Window.h" />
   </ItemGroup>
   <ItemGroup>

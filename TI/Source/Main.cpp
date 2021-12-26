@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[])
 {
-	srand(time(NULL));
+	srand(static_cast<unsigned int>(time(0)));
 
 	std::vector<std::string> args;
 

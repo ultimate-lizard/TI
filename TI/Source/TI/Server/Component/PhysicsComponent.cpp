@@ -95,11 +95,11 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 	float zRangeMin = velocity.z < 0.0f ? velocity.z * dt : 0.0f;
 	float zRangeMax = velocity.z > 0.0f ? velocity.z * dt : 0.0f;
 
-	for (int x = -1 - collisionBox.size.x / 2.0f + xRangeMin; x <= 1 + collisionBox.size.x / 2.0f + xRangeMax; ++x)
+	for (int x = -1 - static_cast<int>(collisionBox.size.x / 2.0f + xRangeMin); x <= 1 + static_cast<int>(collisionBox.size.x / 2.0f + xRangeMax); ++x)
 	{
-		for (int y = -1 - collisionBox.size.y / 2.0f + yRangeMin; y <= 1 + collisionBox.size.y / 2.0f + yRangeMax; ++y)
+		for (int y = -1 - static_cast<int>(collisionBox.size.y / 2.0f + yRangeMin); y <= 1 + static_cast<int>(collisionBox.size.y / 2.0f + yRangeMax); ++y)
 		{
-			for (int z = -1 - collisionBox.size.z / 2.0f + zRangeMin; z <= 1 + collisionBox.size.z / 2.0f + zRangeMax; ++z)
+			for (int z = -1 - static_cast<int>(collisionBox.size.z / 2.0f + zRangeMin); z <= 1 + static_cast<int>(collisionBox.size.z / 2.0f + zRangeMax); ++z)
 			{
 				glm::vec3 blockPosition = glm::ivec3(result.adjustedPosition);
 				blockPosition.x += x;

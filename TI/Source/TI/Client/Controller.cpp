@@ -15,6 +15,7 @@
 #include <TI/Renderer/Renderer.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Server/LocalServer.h>
+#include <TI/Client/DebugInformation.h>
 
 // A number to multiply camera sensivity during controller camera
 // vertical and horizontal movements to match the sensivity of the mouse input
@@ -152,6 +153,53 @@ void PlayerController::destroyBlock()
 	}
 }
 
+void PlayerController::placeBlock()
+{
+	if (entity)
+	{
+		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+		{
+			if (movementComponent)
+			{
+				auto transformComponent = entity->findComponent<TransformComponent>();
+				glm::vec3 entityPosition = transformComponent->getPosition();
+
+				for (float i = 0; i < 5.0f; i += 0.1f)
+				{
+					if (Plane* plane = transformComponent->getPlane())
+					{
+						if (plane->getBlock(entityPosition + movementComponent->getHeadDirection() * i) == 1)
+						{
+							std::optional<RayCollisionResult> raycastResult = physicsComponent->checkRayVsAabb(entityPosition, movementComponent->getHeadDirection(), glm::uvec3(entityPosition + movementComponent->getHeadDirection() * i), { { 1.0f, 1.0f, 1.0f }, {0.0f, 0.0f, 0.0f} });
+							if (raycastResult.has_value())
+							{
+								/*drawDebugLine(entityPosition, entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f);
+								drawDebugLine(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, entityPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f, { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f);
+								drawDebugPoint(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 1.0f, 0.0f, 0.0f, 1.0f }, 10.0f);*/
+								glm::uvec3 blockPosition = entityPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
+								if (plane->getBlock(blockPosition) == 0)
+								{
+									plane->spawnBlock(blockPosition, 1);
+									if (client)
+									{
+										if (auto localClient = dynamic_cast<LocalClient*>(client))
+										{
+											localClient->updateBlock(blockPosition);
+										}
+									}
+								}
+							}
+
+							break;
+						}
+					}
+					
+				}
+			}
+		}
+	}
+}
+
 void PlayerController::togglePolygonMode()
 {
 	static bool polygon = false;
@@ -241,7 +289,7 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("QuitGame", ActionInputType::Press, std::bind(&PlayerController::quitGame, this));
 		inputHandler->bindKey("ReleaseMouse", ActionInputType::Press, std::bind(&PlayerController::releaseMouse, this));
 
-		inputHandler->bindKey("SpawnBlock", ActionInputType::Press, std::bind(&PlayerController::castRayWithCollision, this));
+		inputHandler->bindKey("SpawnBlock", ActionInputType::Press, std::bind(&PlayerController::placeBlock, this));
 		inputHandler->bindKey("DestroyBlock", ActionInputType::Press, std::bind(&PlayerController::destroyBlock, this));
 
 		inputHandler->bindKey("TogglePolygonMode", ActionInputType::Press, std::bind(&PlayerController::togglePolygonMode, this));

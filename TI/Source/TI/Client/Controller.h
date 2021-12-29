@@ -45,6 +45,7 @@ private:
 	void castRayWithCollision();
 
 	void destroyBlock();
+	void placeBlock();
 
 	void togglePolygonMode();
 	void toggleFlyMode();

@@ -79,6 +79,11 @@ void PhysicsComponent::setCollisionBox(CollisionBox collisionBox)
 	this->collisionBox = collisionBox;
 }
 
+CollisionBox PhysicsComponent::getCollisionBox() const
+{
+	return collisionBox;
+}
+
 CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, float dt)
 {
 	CollisionResult result;
@@ -265,17 +270,17 @@ glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const glm::vec3& box1pos, co
 	return distance;
 }
 
-std::optional<RayCollisionResult> PhysicsComponent::checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2)
+std::optional<RayCollisionResult> PhysicsComponent::checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box2pos, const CollisionBox& box2)
 {
 	glm::vec3 near;
-	near.x = (box2pos.x - (box1.size.x / 2.0f) - origin.x) / direction.x;
-	near.y = (box2pos.y - (box1.size.y / 2.0f) - origin.y) / direction.y;
-	near.z = (box2pos.z - (box1.size.z / 2.0f) - origin.z) / direction.z;
+	near.x = (box2pos.x - origin.x) / direction.x;
+	near.y = (box2pos.y - origin.y) / direction.y;
+	near.z = (box2pos.z - origin.z) / direction.z;
 
 	glm::vec3 far;
-	far.x = (box2pos.x + box2.size.x + (box1.size.x / 2.0f) - origin.x) / direction.x;
-	far.y = (box2pos.y + box2.size.y + (box1.size.y / 2.0f) - origin.y) / direction.y;
-	far.z = (box2pos.z + box2.size.z + (box1.size.z / 2.0f) - origin.z) / direction.z;
+	far.x = (box2pos.x + box2.size.x - origin.x) / direction.x;
+	far.y = (box2pos.y + box2.size.y - origin.y) / direction.y;
+	far.z = (box2pos.z + box2.size.z - origin.z) / direction.z;
 
 	if (std::isnan(near.x) || std::isnan(near.y) || std::isnan(near.z)) return {};
 	if (std::isnan(far.x) || std::isnan(far.y) || std::isnan(far.z)) return {};

@@ -49,6 +49,7 @@ public:
 	std::unique_ptr<Component> clone() const override;
 
 	void setCollisionBox(CollisionBox collisionBox);
+	CollisionBox getCollisionBox() const;
 
 	CollisionResult resolveCollision(const glm::vec3& position, const glm::vec3& velocity, float dt);
 	
@@ -58,10 +59,11 @@ public:
 	void setRenderCollisions(bool renderCollisions);
 	bool isRenderCollisionsEnabled() const;
 
-private:
+	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& box2pos, const CollisionBox& box2);
 	bool checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
+
+private:
 	glm::vec3 calculateAabbDistanceTo(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2);
-	std::optional<RayCollisionResult> checkRayVsAabb(const glm::vec3& origin, const glm::vec3& direction, const CollisionBox& box1, const glm::vec3& box2pos, const CollisionBox& box2);
 
 private:
 	TransformComponent* transformComponent;

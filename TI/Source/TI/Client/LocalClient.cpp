@@ -152,25 +152,24 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
 	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
 
-	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
-
 	chunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
 
-	glm::uvec3 blockPositionInNeighborChunk = position;
-	const unsigned int maxBlockPosition = static_cast<unsigned int>(plane->getChunkSize()) - 1;
+	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
 
 	for (unsigned int axis = 0; axis < 3; ++axis)
 	{
+		glm::uvec3 blockPositionInNeighborChunk = position;
+
 		if (blockLocalPosition[axis] == 0)
 		{
 			blockPositionInNeighborChunk[axis] -= 1;
 		}
-		else if (blockLocalPosition[axis] == maxBlockPosition)
+		else if (blockLocalPosition[axis] == static_cast<unsigned int>(plane->getChunkSize()) - 1)
 		{
 			blockPositionInNeighborChunk[axis] += 1;
 		}
 
-		if (blockLocalPosition != blockPositionInNeighborChunk && plane->isPositionInPlaneBounds(blockPositionInNeighborChunk))
+		if (blockPositionInNeighborChunk != position && plane->isPositionInPlaneBounds(blockPositionInNeighborChunk))
 		{
 			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
 			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());

@@ -10,11 +10,11 @@ Plane::Plane(const glm::vec3& position, const glm::uvec3& size, size_t chunkSize
 	chunkSize(chunkSize),
 	gravityEnabled(true)
 {
-	for (unsigned int x = 0; x < size.x; ++x)
+	for (unsigned int z = 0; z < size.z; ++z)
 	{
 		for (unsigned int y = 0; y < size.y; ++y)
 		{
-			for (unsigned int z = 0; z < size.z; ++z)
+			for (unsigned int x = 0; x < size.x; ++x)
 			{
 				chunks.emplace_back(chunkSize, glm::vec3(static_cast<float>(x * chunkSize), static_cast<float>(y * chunkSize), static_cast<float>(z * chunkSize)));
 			}

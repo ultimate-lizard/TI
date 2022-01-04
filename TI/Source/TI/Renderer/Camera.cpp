@@ -24,19 +24,19 @@ void Camera::setPerspective(float fov, float aspect, float near, float far)
 
 void Camera::updateView()
 {
-	glm::vec3 position;
-	glm::quat rotation;
-	glm::vec3 scale;
-	glm::vec3 scew;
-	glm::vec4 perspective;
+	//glm::vec3 position;
+	//glm::quat rotation;
+	//glm::vec3 scale;
+	//glm::vec3 scew;
+	//glm::vec4 perspective;
 
-	glm::decompose(transform, scale, rotation, position, scew, perspective);
-	rotation = glm::conjugate(rotation);
+	//glm::decompose(transform, scale, rotation, position, scew, perspective);
+	//rotation = glm::conjugate(rotation);
 
-	glm::vec3 forward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 up = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
+	//glm::vec3 forward = rotation * glm::vec3(0.0f, 0.0f, -1.0f);
+	//glm::vec3 up = rotation * glm::vec3(0.0f, 1.0f, 0.0f);
 
-	view = glm::lookAt(position, position + forward, up);
+	//view = glm::lookAt(position, position + forward, up);
 }
 
 const glm::mat4& Camera::getProjection() const

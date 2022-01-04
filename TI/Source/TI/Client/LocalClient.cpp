@@ -10,6 +10,7 @@
 #include <TI/Client/Controller.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Component/TransformComponent.h>
 #include <TI/Renderer/Renderer.h>
 #include <TI/ResourceManager.h>
 #include <TI/Client/ChunkMesh.h>
@@ -41,15 +42,15 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 LocalClient::~LocalClient()
 {
-	for (auto& mesh : chunkMeshes)
+	for (auto& mesh : visibleChunkMeshes)
 	{
-		if (mesh)
+		if (mesh.second)
 		{
-			delete mesh;
+			delete mesh.second;
 		}
 	}
 
-	chunkMeshes.clear();
+	visibleChunkMeshes.clear();
 }
 
 void LocalClient::connect(const std::string& ip, int port)
@@ -58,11 +59,11 @@ void LocalClient::connect(const std::string& ip, int port)
 	{
 		server->connectClient(this, ip, port);
 
-		const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
-		for (unsigned int i = 0; i < chunks.size(); ++i)
-		{
-			chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
-		}
+		//const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
+		//for (unsigned int i = 0; i < chunks.size(); ++i)
+		//{
+		//	chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
+		//}
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -104,6 +105,84 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
+	if (possessedEntity)
+	{
+		if (const auto transformComponent = possessedEntity->findComponent<TransformComponent>())
+		{
+			if (Plane* currentPlane = transformComponent->getPlane())
+			{
+				const int VIEW_DISTANCE = 16;
+				const size_t CHUNK_SIZE = plane->getChunkSize();
+
+				glm::uvec3 entityPosition = transformComponent->getPosition();
+
+				std::vector<size_t> visibleChunksIndices;
+
+				bool insertedVisible = false;
+				if (playerLastChunkLocation != plane->positionToChunkPosition(entityPosition))
+				{
+					for (int x = -VIEW_DISTANCE; x <= VIEW_DISTANCE; ++x)
+					{
+						for (int y = -10; y <= 10; ++y)
+						{
+							for (int z = -VIEW_DISTANCE; z <= VIEW_DISTANCE; ++z)
+							{
+								glm::uvec3 visibleChunkAbsolutePosition(entityPosition.x + x * CHUNK_SIZE, entityPosition.y + y * CHUNK_SIZE, entityPosition.z + z * CHUNK_SIZE);
+								glm::uvec3 visibleChunkPosition = plane->positionToChunkPosition(visibleChunkAbsolutePosition);
+								size_t chunkIndex = utils::positionToIndex(visibleChunkPosition, plane->getSize());
+
+								if (const Chunk* const serverChunk = currentPlane->getChunk(visibleChunkPosition))
+								{
+									visibleChunksIndices.push_back(chunkIndex);
+
+									if (visibleChunkMeshes.find(chunkIndex) == visibleChunkMeshes.end())
+									{
+										if (cachedChunkMeshes.find(chunkIndex) != cachedChunkMeshes.end())
+										{
+											visibleChunkMeshes.insert(cachedChunkMeshes.extract(chunkIndex));
+											insertedVisible = true;
+										}
+										else
+										{
+											visibleChunkMeshes.emplace(chunkIndex, new ChunkMesh(serverChunk, currentPlane));
+											insertedVisible = true;
+										}
+									}
+								}
+
+							}
+						}
+					}
+
+					if (insertedVisible)
+					{
+						std::cout << "Visible chunks: " << visibleChunkMeshes.size() << std::endl;
+					}
+
+					bool insertedCached = false;
+					for (auto visibleChunkMeshPair : visibleChunkMeshes)
+					{
+						if (std::find(visibleChunksIndices.begin(), visibleChunksIndices.end(), visibleChunkMeshPair.first) == visibleChunksIndices.end())
+						{
+							cachedChunkMeshes.insert(visibleChunkMeshes.extract(visibleChunkMeshPair.first));
+							insertedCached = true;
+						}
+					}
+
+					if (insertedCached)
+					{
+						std::cout << "Cached  chunks: " << cachedChunkMeshes.size() << std::endl;
+					}
+				}
+
+				playerLastChunkLocation = plane->positionToChunkPosition(entityPosition);
+				
+				
+			}
+			
+		}
+	}
+
 	// TODO: assert(renderer)
 	renderDebugMeshes();
 	renderWorld();
@@ -137,11 +216,6 @@ unsigned int LocalClient::getViewportId() const
 	return viewportId;
 }
 
-std::vector<ChunkMesh*>& LocalClient::getChunkMeshes()
-{
-	return chunkMeshes;
-}
-
 DebugInformation* LocalClient::getDebugInformation()
 {
 	return debugInformation.get();
@@ -152,7 +226,10 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
 	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
 
-	chunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
+	if (visibleChunkMeshes.find(chunkIndex) != visibleChunkMeshes.end())
+	{
+		visibleChunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
+	}
 
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
 
@@ -174,7 +251,10 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
 			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());
 
-			chunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
+			if (visibleChunkMeshes.find(neighborChunkIndex) != visibleChunkMeshes.end())
+			{
+				visibleChunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
+			}
 		}
 	}
 }
@@ -220,10 +300,10 @@ void LocalClient::loadMappings()
 
 void LocalClient::renderWorld()
 {
-	for (ChunkMesh* chunkMesh : chunkMeshes)
+	for (auto chunkMeshPair : visibleChunkMeshes)
 	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMesh->getPosition());
-		renderer->pushRender({ &chunkMesh->getMesh(), chunkMaterial, transform, viewportId });
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMeshPair.second->getPosition());
+		renderer->pushRender({ &chunkMeshPair.second->getMesh(), chunkMaterial, transform, viewportId });
 	}
 }
 

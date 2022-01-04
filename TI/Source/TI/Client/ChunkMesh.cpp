@@ -37,7 +37,7 @@ void ChunkMesh::rebuild()
 		{
 			if (blocks[i] != 0) // if block is not air
 			{
-				glm::uvec3 position = utils::indexToVector(i, chunkSize);
+				glm::uvec3 position = utils::indexToPosition(i, glm::uvec3(static_cast<unsigned int>(chunkSize)));
 
 				for (size_t i = 0; i < 6; ++i)
 				{

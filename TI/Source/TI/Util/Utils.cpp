@@ -2,12 +2,12 @@
 
 namespace utils
 {
-	glm::uvec3 indexToVector(size_t index, size_t volumeSize)
+	glm::uvec3 indexToPosition(size_t index, const glm::uvec3& volumeDimensions)
 	{
-		size_t z = index / (volumeSize * volumeSize);
-		index -= (z * volumeSize * volumeSize);
-		size_t y = index / volumeSize;
-		size_t x = index % volumeSize;
+		size_t z = index / (static_cast<size_t>(volumeDimensions.x) * volumeDimensions.y);
+		index -= (z * volumeDimensions.x * volumeDimensions.y);
+		size_t y = index / volumeDimensions.x;
+		size_t x = index % volumeDimensions.x;
 
 		return { x, y, z };
 	}

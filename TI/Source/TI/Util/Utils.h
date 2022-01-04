@@ -4,6 +4,6 @@
 
 namespace utils
 {
-	glm::uvec3 indexToVector(size_t index, size_t volumeSize);
+	glm::uvec3 indexToPosition(size_t index, const glm::uvec3& volumeDimensions);
 	size_t positionToIndex(const glm::uvec3& position, const glm::uvec3& volumeDimensions);
 }

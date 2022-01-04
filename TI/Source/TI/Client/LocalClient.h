@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <map>
 #include <memory>
 
@@ -38,9 +37,6 @@ public:
 	void setViewportId(unsigned int id);
 	unsigned int getViewportId() const;
 
-	// This is a temporary method
-	std::vector<ChunkMesh*>& getChunkMeshes();
-
 	static DebugInformation* getDebugInformation();
 
 	void updateBlock(const glm::uvec3& position);
@@ -63,10 +59,13 @@ private:
 
 	Renderer* renderer;
 
-	std::vector<ChunkMesh*> chunkMeshes;
+	std::map<size_t, ChunkMesh*> visibleChunkMeshes;
+	std::map<size_t, ChunkMesh*> cachedChunkMeshes;
 	Material* chunkMaterial;
 
 	static std::unique_ptr<DebugInformation> debugInformation;
 
 	const Plane* plane;
+
+	glm::uvec3 playerLastChunkLocation;
 };

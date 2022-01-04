@@ -112,7 +112,7 @@ unsigned int Plane::getNeighborBlock(const glm::uvec3& position, BlockFace direc
 
 const Chunk* Plane::getChunk(const glm::uvec3& position) const
 {
-	if (!isPositionInPlaneBounds(position))
+	if (!isPositionInPlaneBounds({position.x * chunkSize, position.y * chunkSize, position.z * chunkSize }))
 	{
 		return nullptr;
 	}

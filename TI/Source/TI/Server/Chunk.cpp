@@ -8,6 +8,12 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 {
 	unsigned long long longSize = size;
 	blocks.resize(longSize * longSize * longSize, position.y == 0.0f ? 1 : 0);
+	//blocks.resize(longSize * longSize * longSize, 1);
+	//blocks[utils::positionToIndex({ 4, 5, 1 }, glm::uvec3(size))] = 0;
+	//blocks[utils::positionToIndex({ 3, 5, 2 }, glm::uvec3(size))] = 0;
+	//blocks[utils::positionToIndex({ 4, 5, 2 }, glm::uvec3(size))] = 0;
+	//blocks[utils::positionToIndex({ 0, 5, 5 }, glm::uvec3(size))] = 0;
+	//blocks[utils::positionToIndex({ 2, 5, 5 }, glm::uvec3(size))] = 0;
 }
 
 unsigned int Chunk::getBlock(const glm::uvec3& pos) const

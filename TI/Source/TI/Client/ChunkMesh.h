@@ -27,11 +27,14 @@ public:
 	void rebuild();
 	void updateBlock(const glm::uvec3& position);
 
+	void buildGreedy();
+
 	const glm::vec3& getPosition() const;
 
 private:
 	bool isFaceNextToAir(BlockFace face, const glm::uvec3& blockPosition);
 	void setFace(BlockFace face, const glm::uvec3& position);
+	void setFace(BlockFace face, const glm::uvec3& position, const glm::uvec3& size);
 	void copyDataToMesh();
 
 private:

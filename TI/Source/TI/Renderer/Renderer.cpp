@@ -120,6 +120,7 @@ void Renderer::render()
 			{
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
 				glDrawElements(renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
+				// glMultiDrawElements(renderMode, )
 			}
 			else
 			{

@@ -62,14 +62,20 @@ void LocalClient::connect(const std::string& ip, int port)
 		//const std::vector<Chunk>& chunks = server->getPlane()->getChunks();
 		//for (unsigned int i = 0; i < chunks.size(); ++i)
 		//{
-		//	chunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
+		//	// visibleChunkMeshes.push_back(new ChunkMesh(&chunks[i], server->getPlane()));
+		//	visibleChunkMeshes.emplace(utils::positionToIndex(chunks.at(i).getPosition(), plane->getSize()), new ChunkMesh(&chunks[i], server->getPlane()));
 		//}
+
+		plane = server->getPlane();
+
+		for (const Chunk& chunk: plane->getChunks())
+		{
+			visibleChunkMeshes.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
+		}
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
-
-		plane = server->getPlane();
 	}
 }
 
@@ -105,7 +111,7 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	if (possessedEntity)
+	/*if (possessedEntity)
 	{
 		if (const auto transformComponent = possessedEntity->findComponent<TransformComponent>())
 		{
@@ -118,7 +124,6 @@ void LocalClient::update(float dt)
 
 				std::vector<size_t> visibleChunksIndices;
 
-				bool insertedVisible = false;
 				if (playerLastChunkLocation != plane->positionToChunkPosition(entityPosition))
 				{
 					for (int x = -VIEW_DISTANCE; x <= VIEW_DISTANCE; ++x)
@@ -140,12 +145,10 @@ void LocalClient::update(float dt)
 										if (cachedChunkMeshes.find(chunkIndex) != cachedChunkMeshes.end())
 										{
 											visibleChunkMeshes.insert(cachedChunkMeshes.extract(chunkIndex));
-											insertedVisible = true;
 										}
 										else
 										{
 											visibleChunkMeshes.emplace(chunkIndex, new ChunkMesh(serverChunk, currentPlane));
-											insertedVisible = true;
 										}
 									}
 								}
@@ -154,34 +157,17 @@ void LocalClient::update(float dt)
 						}
 					}
 
-					if (insertedVisible)
-					{
-						std::cout << "Visible chunks: " << visibleChunkMeshes.size() << std::endl;
-					}
-
-					bool insertedCached = false;
 					for (auto visibleChunkMeshPair : visibleChunkMeshes)
 					{
 						if (std::find(visibleChunksIndices.begin(), visibleChunksIndices.end(), visibleChunkMeshPair.first) == visibleChunksIndices.end())
 						{
 							cachedChunkMeshes.insert(visibleChunkMeshes.extract(visibleChunkMeshPair.first));
-							insertedCached = true;
 						}
 					}
-
-					if (insertedCached)
-					{
-						std::cout << "Cached  chunks: " << cachedChunkMeshes.size() << std::endl;
-					}
 				}
-
-				playerLastChunkLocation = plane->positionToChunkPosition(entityPosition);
-				
-				
 			}
-			
 		}
-	}
+	}*/
 
 	// TODO: assert(renderer)
 	renderDebugMeshes();
@@ -228,8 +214,11 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 
 	if (visibleChunkMeshes.find(chunkIndex) != visibleChunkMeshes.end())
 	{
-		visibleChunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
+		// visibleChunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
+		visibleChunkMeshes[chunkIndex]->buildGreedy();
 	}
+
+	return;
 
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
 
@@ -304,6 +293,7 @@ void LocalClient::renderWorld()
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMeshPair.second->getPosition());
 		renderer->pushRender({ &chunkMeshPair.second->getMesh(), chunkMaterial, transform, viewportId });
+
 	}
 }
 

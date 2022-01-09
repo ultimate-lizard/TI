@@ -4,8 +4,8 @@ enum class BlockFace
 {
 	Front,
 	Back,
-	Left,
 	Right,
+	Left,
 	Top,
 	Bottom
 };

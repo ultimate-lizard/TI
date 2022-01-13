@@ -41,6 +41,8 @@ public:
 
 	void updateBlock(const glm::uvec3& position);
 
+	void rebuildPlaneMesh();
+
 private:
 	void loadConfig();
 	void loadMappings();
@@ -68,4 +70,8 @@ private:
 	const Plane* plane;
 
 	glm::uvec3 playerLastChunkLocation;
+
+	std::unique_ptr<Mesh> planeMesh;
+	std::vector<unsigned int> indicesCount;
+	std::vector<void*> indices;
 };

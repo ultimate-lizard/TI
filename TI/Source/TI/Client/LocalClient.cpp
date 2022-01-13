@@ -76,6 +76,8 @@ void LocalClient::connect(const std::string& ip, int port)
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+
+		rebuildPlaneMesh();
 	}
 }
 
@@ -218,8 +220,6 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 		visibleChunkMeshes[chunkIndex]->buildGreedy();
 	}
 
-	return;
-
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
 
 	for (unsigned int axis = 0; axis < 3; ++axis)
@@ -242,10 +242,86 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 
 			if (visibleChunkMeshes.find(neighborChunkIndex) != visibleChunkMeshes.end())
 			{
-				visibleChunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
+				// visibleChunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
+				visibleChunkMeshes[neighborChunkIndex]->buildGreedy();
 			}
 		}
 	}
+
+	rebuildPlaneMesh();
+}
+
+void LocalClient::rebuildPlaneMesh()
+{
+	indicesCount.clear();
+	indices.clear();
+
+	if (!planeMesh)
+	{
+		planeMesh = std::make_unique<Mesh>();
+	}
+
+	if (!planeMesh->isDynamic())
+	{
+		MeshBuilder builder;
+		planeMesh = builder.buildDyanmic(0, 0);
+	}
+
+
+	size_t vboSize = 0;
+	size_t eboSize = 0;
+
+	std::vector<float> verticesData;
+	std::vector<unsigned int> indicesData;
+
+	// std::vector<size_t> eboOffsets
+
+	// size_t i = 0;
+	size_t i = 0;
+	// indicesData.resize(visibleChunkMeshes.)
+
+	int lastSize = 0;
+	int offset = 0;
+	for (auto& mapPair : visibleChunkMeshes)
+	{
+		// indices[i] = new unsigned int[mapPair.second->elements.size()];
+		// indices.push_back(reinterpret_cast<void*>(mapPair.second));
+
+		//for (unsigned int j = 0; j < mapPair.second->elements.size(); ++j)
+		//{
+		//	// indices[i][j] = mapPair.second->elements[j];
+		//	indices.push_back(reinterpret_cast<void*>(mapPair.second->elements[j]));
+		//}
+
+		indices.push_back(reinterpret_cast<void*>(offset));
+		offset += mapPair.second->elements.size() * sizeof(unsigned int);
+
+		// eboOffset += mapPair.second->elements.size();
+
+		vboSize += mapPair.second->data.size() * sizeof(float);
+		eboSize += mapPair.second->elements.size() * sizeof(unsigned int);
+
+		verticesData.insert(verticesData.end(), mapPair.second->data.begin(), mapPair.second->data.end());
+		// indicesData.insert(indicesData.end(), mapPair.second->elements.begin(), mapPair.second->elements.end());
+		for (size_t i = 0; i < mapPair.second->elements.size(); ++i)
+		{
+			indicesData.push_back(mapPair.second->elements[i] + lastSize / 6 * 4);
+		}
+
+
+		lastSize += mapPair.second->elements.size();
+		indicesCount.push_back(mapPair.second->elements.size());
+
+		++i;
+	}
+
+	planeMesh->setBufferSize(vboSize);
+	planeMesh->setBufferSubData(0, verticesData);
+	planeMesh->setPositionsCount(verticesData.size());
+
+	planeMesh->setElementsSize(eboSize);
+	planeMesh->setElementsSubData(0, indicesData);
+	planeMesh->setIndicesCount(indicesData.size());
 }
 
 void LocalClient::loadConfig()
@@ -289,12 +365,7 @@ void LocalClient::loadMappings()
 
 void LocalClient::renderWorld()
 {
-	for (auto chunkMeshPair : visibleChunkMeshes)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), chunkMeshPair.second->getPosition());
-		renderer->pushRender({ &chunkMeshPair.second->getMesh(), chunkMaterial, transform, viewportId });
-
-	}
+	renderer->pushRender({ planeMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
 }
 
 void LocalClient::renderEntities()

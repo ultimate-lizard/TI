@@ -13,17 +13,17 @@
 ChunkMesh::ChunkMesh(const Chunk* const chunk, const Plane* const plane) :
 	chunkSize(chunk->getSize()), // Fix the hardcode
 	chunk(chunk),
-	plane(plane),
-	mesh(std::make_unique<Mesh>())
+	plane(plane)
+	// mesh(std::make_unique<Mesh>())
 {
 	// rebuild();
 	buildGreedy();
 }
 
-Mesh& ChunkMesh::getMesh()
-{
-	return *mesh.get();
-}
+//Mesh& ChunkMesh::getMesh()
+//{
+//	return *mesh.get();
+//}
 
 void ChunkMesh::rebuild()
 {
@@ -51,11 +51,11 @@ void ChunkMesh::rebuild()
 			}
 		}
 
-		if (!mesh->isDynamic())
-		{
-			MeshBuilder builder;
-			mesh = builder.buildDyanmic(0, 0);
-		}
+		//if (!mesh->isDynamic())
+		//{
+		//	MeshBuilder builder;
+		//	mesh = builder.buildDyanmic(0, 0);
+		//}
 
 		copyDataToMesh();
 	}
@@ -63,14 +63,14 @@ void ChunkMesh::rebuild()
 
 void ChunkMesh::copyDataToMesh()
 {
-	if (!mesh->isDynamic())
-	{
-		MeshBuilder builder;
-		mesh = builder.buildDyanmic(0, 0);
-	}
+	//if (!mesh->isDynamic())
+	//{
+	//	MeshBuilder builder;
+	//	mesh = builder.buildDyanmic(0, 0);
+	//}
 
-	std::vector<float> data;
-	std::vector<unsigned int> elements;
+	data.clear();
+	elements.clear();
 
 	for (auto& faceDataMapPair : faceVerticesMap)
 	{
@@ -94,14 +94,16 @@ void ChunkMesh::copyDataToMesh()
 		elements.insert(elements.end(), faceIndices.begin(), faceIndices.end());
 	}
 
-	mesh->setBufferSize(static_cast<unsigned int>(data.size()) * sizeof(float));
+	/*mesh->setBufferSize(static_cast<unsigned int>(data.size()) * sizeof(float));
 	mesh->setElementsSize(static_cast<unsigned int>(elements.size()) * sizeof(unsigned int));
 
 	mesh->setBufferSubData(0, data);
 	mesh->setElementsSubData(0, elements);
 
 	mesh->setPositionsCount(data.size() / 5);
-	mesh->setIndicesCount(elements.size());
+	mesh->setIndicesCount(elements.size());*/
+
+	// std::cout << mesh->getIndicesCount() << std::endl;
 }
 
 const glm::vec3& ChunkMesh::getPosition() const
@@ -504,8 +506,13 @@ void ChunkMesh::setFace(BlockFace face, const glm::uvec3& position)
 	this->faceVerticesMap[{index, face}] = *faceData;
 }
 
-void ChunkMesh::setFace(BlockFace face, const glm::uvec3& position, const glm::uvec3& size)
+void ChunkMesh::setFace(BlockFace face, const glm::uvec3& inPosition, const glm::uvec3& size)
 {
+	glm::uvec3 position = inPosition;
+	position.x += chunk->getPosition().x;
+	position.y += chunk->getPosition().y;
+	position.z += chunk->getPosition().z;
+
 	const std::array<float, 20> FRONT_DATA{
 		1.0f * size.x + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z, 1.0f, 1.0f,
 		0.0f + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z, 0.0f, 1.0f,

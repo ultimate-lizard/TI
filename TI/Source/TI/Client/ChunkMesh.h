@@ -22,7 +22,7 @@ public:
 	ChunkMesh(const ChunkMesh&) = delete;
 	ChunkMesh(ChunkMesh&&) = delete;
 
-	Mesh& getMesh();
+	// Mesh& getMesh();
 
 	void rebuild();
 	void updateBlock(const glm::uvec3& position);
@@ -30,6 +30,9 @@ public:
 	void buildGreedy();
 
 	const glm::vec3& getPosition() const;
+
+	std::vector<float> data;
+	std::vector<unsigned int> elements;
 
 private:
 	bool isFaceNextToAir(BlockFace face, const glm::uvec3& blockPosition);
@@ -40,7 +43,7 @@ private:
 private:
 	size_t chunkSize;
 
-	std::unique_ptr<Mesh> mesh;
+	// std::unique_ptr<Mesh> mesh;
 
 	std::map<std::pair<size_t, BlockFace>, std::array<float, 20>> faceVerticesMap;
 

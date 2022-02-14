@@ -53,8 +53,8 @@ void Renderer::pushRender(RenderCommand command)
 
 void Renderer::render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+	/*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);*/
 
 	for (auto& viewportIter : viewportsMap)
 	{
@@ -127,6 +127,57 @@ void Renderer::render()
 				glDrawArrays(renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
 			}
 		}
+	}
+}
+
+void Renderer::renderMultidraw(Mesh* mesh, Material* material, GLsizei* counts, void** indices, GLsizei drawCount)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+
+	for (auto& viewportIter : viewportsMap)
+	{
+		Viewport& viewport = viewportIter.second;
+
+		viewport.bind();
+
+		Camera* camera = viewport.getActiveCamera();
+		if (!camera)
+		{
+			continue;
+		}
+
+		if (!mesh)
+		{
+			return;
+		}
+
+		if (material)
+		{
+			if (Texture* texture = material->getTexture())
+			{
+				texture->bind();
+			}
+
+			Shader* shader = material->getShader();
+			// assert
+			shader->use();
+
+			const glm::mat4& projection = camera->getProjection();
+			const glm::mat4& view = camera->getView();
+
+			shader->setMatrix("projection", projection);
+			shader->setMatrix("view", view);
+			shader->setMatrix("model", glm::mat4(1.0f));
+
+			shader->setVector("color", material->getColor());
+		}
+
+		glBindVertexArray(mesh->getVAO());
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
+
+		// int renderMode = static_cast<int>(command.renderMode);
+		glMultiDrawElements(GL_TRIANGLES, counts, GL_UNSIGNED_INT, indices, drawCount);
 	}
 }
 

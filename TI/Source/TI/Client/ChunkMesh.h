@@ -30,6 +30,7 @@ public:
 	void buildGreedy();
 
 	const glm::vec3& getPosition() const;
+	const Chunk* getChunk() const;
 
 	std::vector<float> data;
 	std::vector<unsigned int> elements;

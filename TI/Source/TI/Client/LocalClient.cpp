@@ -25,7 +25,8 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	viewportId(0),
 	renderer(app->getRenderer()),
 	chunkMaterial(app->getResourceManager()->getMaterial("Chunk")),
-	plane(nullptr)
+	plane(nullptr),
+	pool(1'500'000'000, 500'000'000)
 {
 	// TODO: assert(app);
 	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
@@ -73,12 +74,62 @@ void LocalClient::connect(const std::string& ip, int port)
 			visibleChunkMeshes.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
 		}
 
+		for (const auto& pair : visibleChunkMeshes)
+		{
+			pool.insertChunkMesh(plane, pair.second);
+		}
+
+		cachedPoolData = pool.buildMesh();
+
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
 
-		rebuildPlaneMesh();
+		// rebuildPlaneMesh();
 	}
+
+	const std::vector<float> FRONT_DATA{
+		1.0f + 0, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
+		0.0f + 0, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
+		0.0f + 0, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
+		1.0f + 0, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
+
+		1.0f + 1, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
+		0.0f + 1, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
+		0.0f + 1, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
+		1.0f + 1, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
+
+		1.0f + 2, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
+		0.0f + 2, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
+		0.0f + 2, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
+		1.0f + 2, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
+
+		0.0f + 0, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
+		0.0f + 0, 1.0f + 0, 0.0f + 0, 0.0f, 1.0f,
+		0.0f + 0, 0.0f + 0, 0.0f + 0, 0.0f, 0.0f,
+		0.0f + 0, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f
+	};
+
+	std::vector<unsigned int> faceIndices = {
+		0, 1, 2,
+		0, 2, 3,
+
+		4, 5, 6,
+		4, 6, 7,
+
+		8, 9, 10,
+		8, 10, 11,
+
+		12, 13, 14,
+		12, 14, 15,
+	};
+
+	MeshBuilder builder;
+	testMesh = builder.buildDyanmic(0, 0);
+	testMesh->setBufferSize(100000);
+	testMesh->setElementsSize(100000);
+	testMesh->setBufferSubData(0, FRONT_DATA);
+	testMesh->setElementsSubData(0, faceIndices);
 }
 
 void LocalClient::setPossesedEntity(Entity* entity)
@@ -218,6 +269,8 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	{
 		// visibleChunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
 		visibleChunkMeshes[chunkIndex]->buildGreedy();
+		pool.freeChunkMesh(chunkIndex);
+		pool.insertChunkMesh(plane, visibleChunkMeshes[chunkIndex]);
 	}
 
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
@@ -244,11 +297,14 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 			{
 				// visibleChunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
 				visibleChunkMeshes[neighborChunkIndex]->buildGreedy();
+				pool.freeChunkMesh(neighborChunkIndex);
+				pool.insertChunkMesh(plane, visibleChunkMeshes[neighborChunkIndex]);
 			}
 		}
 	}
 
-	rebuildPlaneMesh();
+	cachedPoolData = pool.buildMesh();
+	// rebuildPlaneMesh();
 }
 
 void LocalClient::rebuildPlaneMesh()
@@ -258,15 +314,9 @@ void LocalClient::rebuildPlaneMesh()
 
 	if (!planeMesh)
 	{
-		planeMesh = std::make_unique<Mesh>();
-	}
-
-	if (!planeMesh->isDynamic())
-	{
 		MeshBuilder builder;
 		planeMesh = builder.buildDyanmic(0, 0);
 	}
-
 
 	size_t vboSize = 0;
 	size_t eboSize = 0;
@@ -365,7 +415,22 @@ void LocalClient::loadMappings()
 
 void LocalClient::renderWorld()
 {
-	renderer->pushRender({ planeMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
+	// renderer->pushRender({ planeMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
+	// renderer->pushRender({ testMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
+
+
+	renderer->renderMultidraw(cachedPoolData.poolMesh, chunkMaterial, cachedPoolData.sizes.data(), cachedPoolData.offsets.data(), cachedPoolData.drawCount);
+
+	
+	 //std::vector<GLsizei> sizes { 6, 6, 6 };
+
+	 //std::vector<void*> voids;
+	 //// voids.push_back((void*)0);
+	 //voids.push_back((void*)(6 * sizeof(unsigned int)));
+	 //voids.push_back((void*)(12 * sizeof(unsigned int)));
+	 //voids.push_back((void*)(18 * sizeof(unsigned int)));
+
+	 //renderer->renderMultidraw(testMesh.get(), chunkMaterial, sizes.data(), voids.data(), 3);
 }
 
 void LocalClient::renderEntities()

@@ -39,13 +39,16 @@ void ChunkMesh::rebuild()
 			if (blocks[i] != 0) // if block is not air
 			{
 				glm::uvec3 position = utils::indexToPosition(i, glm::uvec3(static_cast<unsigned int>(chunkSize)));
+				//position.x += chunk->getPosition().x;
+				//position.y += chunk->getPosition().y;
+				//position.z += chunk->getPosition().z;
 
 				for (size_t i = 0; i < 6; ++i)
 				{
 					BlockFace face = static_cast<BlockFace>(i);
 					if (isFaceNextToAir(face, position))
 					{
-						setFace(face, position);
+						setFace(face, position, { 1, 1, 1 });
 					}
 				}
 			}
@@ -109,6 +112,11 @@ void ChunkMesh::copyDataToMesh()
 const glm::vec3& ChunkMesh::getPosition() const
 {
 	return chunk->getPosition();
+}
+
+const Chunk* ChunkMesh::getChunk() const
+{
+	return chunk;
 }
 
 void ChunkMesh::updateBlock(const glm::uvec3& position)

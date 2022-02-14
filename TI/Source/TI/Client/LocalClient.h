@@ -9,6 +9,7 @@
 #include <TI/Util/Config.h>
 #include <TI/Renderer/Material.h>
 #include <TI/Renderer/RenderCommand.h>
+#include <TI/Client/ChunkPool.h>
 
 class InputHandler;
 class IController;
@@ -74,4 +75,9 @@ private:
 	std::unique_ptr<Mesh> planeMesh;
 	std::vector<unsigned int> indicesCount;
 	std::vector<void*> indices;
+
+	std::unique_ptr<Mesh> testMesh;
+
+	ChunkPool pool;
+	MultiDrawData cachedPoolData;
 };

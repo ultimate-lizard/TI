@@ -141,7 +141,7 @@ bool Plane::isGravityEnabled() const
 	return gravityEnabled;
 }
 
-glm::uvec3 Plane::positionToChunkPosition(const glm::uvec3& position) const
+glm::ivec3 Plane::positionToChunkPosition(const glm::vec3& position) const
 {
 	return glm::uvec3(
 		position.x / chunkSize,

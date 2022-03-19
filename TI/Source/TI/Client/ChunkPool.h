@@ -20,9 +20,10 @@ class ChunkPool
 {
 	struct ChunkData
 	{
-		size_t offset;
-		size_t size;
+		size_t elementOffset;
+		size_t elementSize;
 		ChunkMesh* mesh;
+		bool visible = true;
 	};
 
 public:
@@ -31,11 +32,9 @@ public:
 
 	void insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh);
 	void freeChunkMesh(size_t index);
+	void setChunkMeshVisibility(size_t index, bool visible);
 
 	MultiDrawData buildMesh();
-
-private:
-	size_t getFreeOffset() const;
 
 private:
 	std::unique_ptr<Mesh> poolMesh;
@@ -49,4 +48,6 @@ private:
 	size_t freeElementOffset;
 	size_t vboSize;
 	size_t eboSize;
+
+	std::vector<size_t> invisibleChunkMeshes;
 };

@@ -21,8 +21,8 @@ ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
 
 void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
 {
-	size_t offset = getFreeOffset();
-	poolMesh->setBufferSubData(offset, chunkMesh->data);
+	size_t vertexOffset = freeVertexOffset;
+	poolMesh->setBufferSubData(vertexOffset, chunkMesh->data);
 
 	if (plane)
 	{
@@ -30,7 +30,7 @@ void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
 	}
 	
 	freeElementOffset += chunkMesh->elements.size() * sizeof(unsigned int);
-	freeVertexOffset = offset + chunkMesh->data.size() * sizeof(float);
+	freeVertexOffset = vertexOffset + chunkMesh->data.size() * sizeof(float);
 
 	for (size_t i = 0; i < chunkMesh->elements.size() / 6; ++i)
 	{
@@ -56,26 +56,34 @@ void ChunkPool::freeChunkMesh(size_t index)
 	}
 }
 
+void ChunkPool::setChunkMeshVisibility(size_t index, bool visible)
+{
+	if (auto foundPair = chunks.find(index); foundPair != chunks.end())
+	{
+		foundPair->second.visible = visible;
+	}
+}
+
 MultiDrawData ChunkPool::buildMesh()
 {
-	// size_t faceCount = 0;
-	
 	std::vector<int> sizes;
 	std::vector<void*> offsets;
-	//size_t lastOffset = 0;
 
-	// Analytics:
+	size_t invisibleCount = 0;
 
 	for (auto& pair : chunks)
 	{
+		if (!pair.second.visible)
+		{
+			++invisibleCount;
+			continue;
+		}
+
 		const short ATTR_COUNT = 5;
 		const short VERTICES_PER_FACE = 4;
 		const short ELEMENTS_PER_FACE = 6;
-		// faceCount += pair.second.size;
-
-		sizes.push_back(pair.second.size);
-		offsets.push_back(reinterpret_cast<void*>(pair.second.offset));
-		//lastOffset += pair.second.size * sizeof(unsigned int);
+		sizes.push_back(pair.second.elementSize);
+		offsets.push_back(reinterpret_cast<void*>(pair.second.elementOffset));
 
 		// Analytics:
 		vboSize += pair.second.mesh->data.size() * sizeof(float);
@@ -96,10 +104,5 @@ MultiDrawData ChunkPool::buildMesh()
 		throw std::exception();
 	}
 
-	return MultiDrawData { poolMesh.get(), std::move(sizes), std::move(offsets), chunks.size() };
-}
-
-size_t ChunkPool::getFreeOffset() const
-{
-	return freeVertexOffset;
+	return MultiDrawData { poolMesh.get(), std::move(sizes), std::move(offsets), chunks.size() - invisibleCount };
 }

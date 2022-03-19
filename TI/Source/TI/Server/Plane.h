@@ -33,7 +33,7 @@ public:
 	void setGravityEnabled(bool gravityEnabled);
 	bool isGravityEnabled() const;
 
-	glm::uvec3 positionToChunkPosition(const glm::uvec3& position) const;
+	glm::ivec3 positionToChunkPosition(const glm::vec3& position) const;
 
 	// Converts position to chunk's local position
 	glm::uvec3 positionToChunkLocalPosition(const glm::uvec3& position) const;

@@ -70,7 +70,7 @@ private:
 
 	const Plane* plane;
 
-	glm::uvec3 playerLastChunkLocation;
+	glm::ivec3 playerLastChunkPosition;
 
 	std::unique_ptr<Mesh> planeMesh;
 	std::vector<unsigned int> indicesCount;

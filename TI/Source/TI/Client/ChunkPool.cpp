@@ -65,6 +65,8 @@ MultiDrawData ChunkPool::buildMesh()
 {
 	std::vector<int> sizes;
 	std::vector<void*> offsets;
+	sizes.reserve(chunks.size());
+	offsets.reserve(chunks.size());
 
 	size_t invisibleCount = 0;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 #include <glm/glm.hpp>
@@ -63,7 +63,7 @@ private:
 
 	Renderer* renderer;
 
-	std::map<size_t, ChunkMesh*> visibleChunkMeshes;
+	std::unordered_map<size_t, ChunkMesh*> visibleChunkMeshes;
 	std::vector<glm::ivec3> visibleChunksPositions;
 	std::vector<glm::ivec3> frustumedVisibleChunksPositions;
 	Material* chunkMaterial;

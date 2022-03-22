@@ -65,7 +65,7 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		plane = server->getPlane();
 
-		/*for (const Chunk& chunk: plane->getChunks())
+		for (const Chunk& chunk: plane->getChunks())
 		{
 			visibleChunkMeshes.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
 		}
@@ -73,15 +73,13 @@ void LocalClient::connect(const std::string& ip, int port)
 		for (const auto& pair : visibleChunkMeshes)
 		{
 			pool.insertChunkMesh(plane, pair.second);
-		}*/
+		}
 
 		cachedPoolData = pool.buildMesh();
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
-
-		// rebuildPlaneMesh();
 	}
 }
 
@@ -127,18 +125,20 @@ void LocalClient::update(float dt)
 			
 			if (playerLastChunkPosition != plane->positionToChunkPosition(playerPosition))
 			{
-				visibleChunksPositions.clear();
+				std::cout << visibleChunkMeshes.size() << std::endl;
 
-				for (const auto& pair : visibleChunkMeshes)
+				for (const auto& position : visibleChunksPositions)
 				{
-					pool.setChunkMeshVisibility(pair.first, false);
+					pool.setChunkMeshVisibility(utils::positionToIndex(position, plane->getSize()), false);
 				}
+
+				visibleChunksPositions.clear();
 
 				playerLastChunkPosition = plane->positionToChunkPosition(playerPosition);
 
 				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
 
-				const int RENDER_DISTANCE = 8;
+				const int RENDER_DISTANCE = 32;
 				for (int i = playerChunkPosition.x - RENDER_DISTANCE; i <= playerChunkPosition.x + RENDER_DISTANCE; ++i)
 				{
 					for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
@@ -175,52 +175,41 @@ void LocalClient::update(float dt)
 					cachedPoolData = pool.buildMesh();
 				}
 			}
-			// Frustum begin
 
-			
 			if (frustumCullingEnabled)
 			{
-				frustumedVisibleChunksPositions = visibleChunksPositions;
+				// frustumedVisibleChunksPositions = visibleChunksPositions;
+
 				if (auto cameraComponent = possessedEntity->findComponent<CameraComponent>())
 				{
 					if (Camera* camera = cameraComponent->getCamera())
 					{
 						Frustum frustum(camera->getProjection() * camera->getView());
 
-						for (size_t i = 0; i < frustumedVisibleChunksPositions.size(); ++i)
+						for (size_t i = 0; i < visibleChunksPositions.size(); ++i)
 						{
-							const glm::ivec3& visibleChunkPosition = frustumedVisibleChunksPositions[i];
+							const glm::ivec3& visibleChunkPosition = visibleChunksPositions[i];
 
-							if (auto foundIter = visibleChunkMeshes.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())); foundIter != visibleChunkMeshes.end())
+							const size_t chunkSize = plane->getChunkSize();
+							glm::ivec3 chunkPosition(visibleChunkPosition.x * chunkSize, visibleChunkPosition.y * chunkSize, visibleChunkPosition.z * chunkSize);
+							if (frustum.IsBoxVisible(chunkPosition, { chunkPosition.x + chunkSize, chunkPosition.y + chunkSize, chunkPosition.z + chunkSize }))
 							{
-								glm::ivec3 chunkPosition = foundIter->second->getPosition();
-								const size_t chunkSize = plane->getChunkSize();
-								if (!frustum.IsBoxVisible(chunkPosition, { chunkPosition.x + chunkSize, chunkPosition.y + chunkSize, chunkPosition.z + chunkSize }))
+								if (visibleChunkMeshes.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())) != visibleChunkMeshes.end())
 								{
-									frustumedVisibleChunksPositions.erase(frustumedVisibleChunksPositions.begin() + i);
-									--i;
+									pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), true);
+								}
+								else
+								{
+									ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(visibleChunkPosition), plane);
+									visibleChunkMeshes.emplace(utils::positionToIndex(visibleChunkPosition, plane->getSize()), newMesh);
+									pool.insertChunkMesh(plane, newMesh);
 								}
 							}
+							else
+							{
+								pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), false);
+							}
 						}
-					}
-				}
-			}
-				
-			// Frustum end
-
-			if (frustumCullingEnabled)
-			{
-				for (const glm::ivec3& chunkPosition : frustumedVisibleChunksPositions)
-				{
-					if (visibleChunkMeshes.find(utils::positionToIndex(chunkPosition, plane->getSize())) != visibleChunkMeshes.end())
-					{
-						pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), true);
-					}
-					else
-					{
-						ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
-						visibleChunkMeshes.emplace(utils::positionToIndex(chunkPosition, plane->getSize()), newMesh);
-						pool.insertChunkMesh(plane, newMesh);
 					}
 				}
 

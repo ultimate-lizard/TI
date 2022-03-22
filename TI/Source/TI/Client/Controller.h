@@ -51,8 +51,10 @@ private:
 	void toggleFlyMode();
 	void toggleCollisionInfo();
 	void toggleThirdperson();
+	void toggleFrustumCulling();
 
 	void jump();
+
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;

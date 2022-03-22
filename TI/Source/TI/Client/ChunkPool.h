@@ -36,6 +36,9 @@ public:
 
 	MultiDrawData buildMesh();
 
+	float analyticVboSize = 0.0f;
+	float analyticEboSize = 0.0f;
+
 private:
 	std::unique_ptr<Mesh> poolMesh;
 	

@@ -42,7 +42,8 @@ public:
 
 	void updateBlock(const glm::uvec3& position);
 
-	void rebuildPlaneMesh();
+	void setFrustumCullingEnabled(bool enabled);
+	bool isFrustumCullingEnabled() const;
 
 private:
 	void loadConfig();
@@ -63,7 +64,8 @@ private:
 	Renderer* renderer;
 
 	std::map<size_t, ChunkMesh*> visibleChunkMeshes;
-	std::map<size_t, ChunkMesh*> cachedChunkMeshes;
+	std::vector<glm::ivec3> visibleChunksPositions;
+	std::vector<glm::ivec3> frustumedVisibleChunksPositions;
 	Material* chunkMaterial;
 
 	static std::unique_ptr<DebugInformation> debugInformation;
@@ -72,12 +74,8 @@ private:
 
 	glm::ivec3 playerLastChunkPosition;
 
-	std::unique_ptr<Mesh> planeMesh;
-	std::vector<unsigned int> indicesCount;
-	std::vector<void*> indices;
-
-	std::unique_ptr<Mesh> testMesh;
-
 	ChunkPool pool;
 	MultiDrawData cachedPoolData;
+
+	bool frustumCullingEnabled;
 };

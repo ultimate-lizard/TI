@@ -6,9 +6,6 @@
 #include <TI/Util/Utils.h>
 #include <TI/Server/Plane.h>
 
-static float analyticVboSize = 0;
-static float analyticEboSize = 0;
-
 ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
 	freeVertexOffset(0),
 	freeElementOffset(0),
@@ -95,9 +92,6 @@ MultiDrawData ChunkPool::buildMesh()
 	elements.clear();
 
 	float eboSize = static_cast<float>(elements.size()) * sizeof(unsigned int);
-
-	std::cout << "EBO size: " << analyticEboSize / 1024 / 1024 << " MB" << std::endl;
-	std::cout << "VBO size: " << analyticVboSize / 1024 / 1024 << " MB" << std::endl;
 
 	if (eboSize > this->eboSize || vboSize > this->vboSize)
 	{

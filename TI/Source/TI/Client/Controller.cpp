@@ -265,6 +265,14 @@ void PlayerController::toggleThirdperson()
 	}
 }
 
+void PlayerController::toggleFrustumCulling()
+{
+	if (auto localClient = dynamic_cast<LocalClient*>(client))
+	{
+		localClient->setFrustumCullingEnabled(!localClient->isFrustumCullingEnabled());
+	}
+}
+
 void PlayerController::jump()
 {
 	if (movementComponent)
@@ -296,6 +304,7 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("ToggleFlyMode", ActionInputType::Press, std::bind(&PlayerController::toggleFlyMode, this));
 		inputHandler->bindKey("ToggleCollisionInfo", ActionInputType::Press, std::bind(&PlayerController::toggleCollisionInfo, this));
 		inputHandler->bindKey("ToggleThirdperson", ActionInputType::Press, std::bind(&PlayerController::toggleThirdperson, this));
+		inputHandler->bindKey("ToggleFrustumCulling", ActionInputType::Press, std::bind(&PlayerController::toggleFrustumCulling, this));
 
 		inputHandler->bindKey("Jump", ActionInputType::Press, std::bind(&PlayerController::jump, this));
 	}

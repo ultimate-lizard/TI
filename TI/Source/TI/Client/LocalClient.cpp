@@ -17,6 +17,8 @@
 #include <TI/Server/Plane.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Util/Utils.h>
+#include <TI/Util/Math.h>
+#include <TI/Renderer/Camera.h>
 
 std::unique_ptr<DebugInformation> LocalClient::debugInformation = nullptr;
 
@@ -26,7 +28,8 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	renderer(app->getRenderer()),
 	chunkMaterial(app->getResourceManager()->getMaterial("Chunk")),
 	plane(nullptr),
-	pool(1'500'000'000, 500'000'000)
+	pool(1'500'000'000, 500'000'000),
+	frustumCullingEnabled(true)
 {
 	// TODO: assert(app);
 	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
@@ -72,7 +75,7 @@ void LocalClient::connect(const std::string& ip, int port)
 			pool.insertChunkMesh(plane, pair.second);
 		}*/
 
-		// cachedPoolData = pool.buildMesh();
+		cachedPoolData = pool.buildMesh();
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -80,49 +83,6 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		// rebuildPlaneMesh();
 	}
-
-	const std::vector<float> FRONT_DATA{
-		1.0f + 0, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
-		0.0f + 0, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
-		0.0f + 0, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
-		1.0f + 0, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
-
-		1.0f + 1, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
-		0.0f + 1, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
-		0.0f + 1, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
-		1.0f + 1, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
-
-		1.0f + 2, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
-		0.0f + 2, 1.0f + 0, 1.0f + 0, 0.0f, 1.0f,
-		0.0f + 2, 0.0f + 0, 1.0f + 0, 0.0f, 0.0f,
-		1.0f + 2, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f,
-
-		0.0f + 0, 1.0f + 0, 1.0f + 0, 1.0f, 1.0f,
-		0.0f + 0, 1.0f + 0, 0.0f + 0, 0.0f, 1.0f,
-		0.0f + 0, 0.0f + 0, 0.0f + 0, 0.0f, 0.0f,
-		0.0f + 0, 0.0f + 0, 1.0f + 0, 1.0f, 0.0f
-	};
-
-	std::vector<unsigned int> faceIndices = {
-		0, 1, 2,
-		0, 2, 3,
-
-		4, 5, 6,
-		4, 6, 7,
-
-		8, 9, 10,
-		8, 10, 11,
-
-		12, 13, 14,
-		12, 14, 15,
-	};
-
-	MeshBuilder builder;
-	testMesh = builder.buildDyanmic(0, 0);
-	testMesh->setBufferSize(100000);
-	testMesh->setElementsSize(100000);
-	testMesh->setBufferSubData(0, FRONT_DATA);
-	testMesh->setElementsSubData(0, faceIndices);
 }
 
 void LocalClient::setPossesedEntity(Entity* entity)
@@ -167,6 +127,8 @@ void LocalClient::update(float dt)
 			
 			if (playerLastChunkPosition != plane->positionToChunkPosition(playerPosition))
 			{
+				visibleChunksPositions.clear();
+
 				for (const auto& pair : visibleChunkMeshes)
 				{
 					pool.setChunkMeshVisibility(pair.first, false);
@@ -176,8 +138,7 @@ void LocalClient::update(float dt)
 
 				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
 
-				const int RENDER_DISTANCE = 3;
-				std::vector<glm::ivec3> scannedPositions;
+				const int RENDER_DISTANCE = 8;
 				for (int i = playerChunkPosition.x - RENDER_DISTANCE; i <= playerChunkPosition.x + RENDER_DISTANCE; ++i)
 				{
 					for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
@@ -186,22 +147,79 @@ void LocalClient::update(float dt)
 						{
 							if (!(i < 0 || j < 0 || k < 0 || i >= plane->getSize().x || j >= plane->getSize().y || k >= plane->getSize().z))
 							{
-								scannedPositions.push_back({ i, j, k });
+								visibleChunksPositions.push_back({ i, j, k });
 							}
 						}
 					}
 				}
 
-				for (const glm::ivec3& scannedPosition : scannedPositions)
+				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
+				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
+
+				if (!frustumCullingEnabled)
 				{
-					if (visibleChunkMeshes.find(utils::positionToIndex(scannedPosition, plane->getSize())) != visibleChunkMeshes.end())
+					for (const glm::ivec3& chunkPosition : frustumedVisibleChunksPositions)
 					{
-						pool.setChunkMeshVisibility(utils::positionToIndex(scannedPosition, plane->getSize()), true);
+						if (visibleChunkMeshes.find(utils::positionToIndex(chunkPosition, plane->getSize())) != visibleChunkMeshes.end())
+						{
+							pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), true);
+						}
+						else
+						{
+							ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
+							visibleChunkMeshes.emplace(utils::positionToIndex(chunkPosition, plane->getSize()), newMesh);
+							pool.insertChunkMesh(plane, newMesh);
+						}
+					}
+
+					cachedPoolData = pool.buildMesh();
+				}
+			}
+			// Frustum begin
+
+			
+			if (frustumCullingEnabled)
+			{
+				frustumedVisibleChunksPositions = visibleChunksPositions;
+				if (auto cameraComponent = possessedEntity->findComponent<CameraComponent>())
+				{
+					if (Camera* camera = cameraComponent->getCamera())
+					{
+						Frustum frustum(camera->getProjection() * camera->getView());
+
+						for (size_t i = 0; i < frustumedVisibleChunksPositions.size(); ++i)
+						{
+							const glm::ivec3& visibleChunkPosition = frustumedVisibleChunksPositions[i];
+
+							if (auto foundIter = visibleChunkMeshes.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())); foundIter != visibleChunkMeshes.end())
+							{
+								glm::ivec3 chunkPosition = foundIter->second->getPosition();
+								const size_t chunkSize = plane->getChunkSize();
+								if (!frustum.IsBoxVisible(chunkPosition, { chunkPosition.x + chunkSize, chunkPosition.y + chunkSize, chunkPosition.z + chunkSize }))
+								{
+									frustumedVisibleChunksPositions.erase(frustumedVisibleChunksPositions.begin() + i);
+									--i;
+								}
+							}
+						}
+					}
+				}
+			}
+				
+			// Frustum end
+
+			if (frustumCullingEnabled)
+			{
+				for (const glm::ivec3& chunkPosition : frustumedVisibleChunksPositions)
+				{
+					if (visibleChunkMeshes.find(utils::positionToIndex(chunkPosition, plane->getSize())) != visibleChunkMeshes.end())
+					{
+						pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), true);
 					}
 					else
 					{
-						ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(scannedPosition), plane);
-						visibleChunkMeshes.emplace(utils::positionToIndex(scannedPosition, plane->getSize()), newMesh);
+						ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
+						visibleChunkMeshes.emplace(utils::positionToIndex(chunkPosition, plane->getSize()), newMesh);
 						pool.insertChunkMesh(plane, newMesh);
 					}
 				}
@@ -296,71 +314,14 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	// rebuildPlaneMesh();
 }
 
-void LocalClient::rebuildPlaneMesh()
+void LocalClient::setFrustumCullingEnabled(bool enabled)
 {
-	indicesCount.clear();
-	indices.clear();
+	frustumCullingEnabled = enabled;
+}
 
-	if (!planeMesh)
-	{
-		MeshBuilder builder;
-		planeMesh = builder.buildDyanmic(0, 0);
-	}
-
-	size_t vboSize = 0;
-	size_t eboSize = 0;
-
-	std::vector<float> verticesData;
-	std::vector<unsigned int> indicesData;
-
-	// std::vector<size_t> eboOffsets
-
-	// size_t i = 0;
-	size_t i = 0;
-	// indicesData.resize(visibleChunkMeshes.)
-
-	int lastSize = 0;
-	int offset = 0;
-	for (auto& mapPair : visibleChunkMeshes)
-	{
-		// indices[i] = new unsigned int[mapPair.second->elements.size()];
-		// indices.push_back(reinterpret_cast<void*>(mapPair.second));
-
-		//for (unsigned int j = 0; j < mapPair.second->elements.size(); ++j)
-		//{
-		//	// indices[i][j] = mapPair.second->elements[j];
-		//	indices.push_back(reinterpret_cast<void*>(mapPair.second->elements[j]));
-		//}
-
-		indices.push_back(reinterpret_cast<void*>(offset));
-		offset += mapPair.second->elements.size() * sizeof(unsigned int);
-
-		// eboOffset += mapPair.second->elements.size();
-
-		vboSize += mapPair.second->data.size() * sizeof(float);
-		eboSize += mapPair.second->elements.size() * sizeof(unsigned int);
-
-		verticesData.insert(verticesData.end(), mapPair.second->data.begin(), mapPair.second->data.end());
-		// indicesData.insert(indicesData.end(), mapPair.second->elements.begin(), mapPair.second->elements.end());
-		for (size_t i = 0; i < mapPair.second->elements.size(); ++i)
-		{
-			indicesData.push_back(mapPair.second->elements[i] + lastSize / 6 * 4);
-		}
-
-
-		lastSize += mapPair.second->elements.size();
-		indicesCount.push_back(mapPair.second->elements.size());
-
-		++i;
-	}
-
-	planeMesh->setBufferSize(vboSize);
-	planeMesh->setBufferSubData(0, verticesData);
-	planeMesh->setPositionsCount(verticesData.size());
-
-	planeMesh->setElementsSize(eboSize);
-	planeMesh->setElementsSubData(0, indicesData);
-	planeMesh->setIndicesCount(indicesData.size());
+bool LocalClient::isFrustumCullingEnabled() const
+{
+	return frustumCullingEnabled;
 }
 
 void LocalClient::loadConfig()

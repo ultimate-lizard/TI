@@ -49,7 +49,6 @@ void ChunkPool::freeChunkMesh(size_t index)
 	if (auto foundIter = chunks.find(index); foundIter != chunks.end())
 	{
 		chunks.erase(foundIter);
-		// clear vbo
 	}
 }
 
@@ -84,7 +83,6 @@ MultiDrawData ChunkPool::buildMesh()
 		sizes.push_back(pair.second.elementSize);
 		offsets.push_back(reinterpret_cast<void*>(pair.second.elementOffset));
 
-		// Analytics:
 		vboSize += pair.second.mesh->data.size() * sizeof(float);
 	}
 

@@ -29,7 +29,8 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	chunkMaterial(app->getResourceManager()->getMaterial("Chunk")),
 	plane(nullptr),
 	pool(1'500'000'000, 500'000'000),
-	frustumCullingEnabled(true)
+	frustumCullingEnabled(true),
+	cachedEntityCamera(nullptr)
 {
 	// TODO: assert(app);
 	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
@@ -46,7 +47,7 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 LocalClient::~LocalClient()
 {
-	for (auto& mesh : visibleChunkMeshes)
+	for (auto& mesh : chunkMeshesBank)
 	{
 		if (mesh.second)
 		{
@@ -54,7 +55,13 @@ LocalClient::~LocalClient()
 		}
 	}
 
-	visibleChunkMeshes.clear();
+	// TODO: Replace storing chunk meshes from raw pointers to smart pointers
+	for (auto pair : chunkMeshesBank)
+	{
+		delete pair.second;
+	}
+
+	chunkMeshesBank.clear();
 }
 
 void LocalClient::connect(const std::string& ip, int port)
@@ -67,10 +74,10 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		for (const Chunk& chunk: plane->getChunks())
 		{
-			visibleChunkMeshes.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
+			chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
 		}
 
-		for (const auto& pair : visibleChunkMeshes)
+		for (const auto& pair : chunkMeshesBank)
 		{
 			pool.insertChunkMesh(plane, pair.second);
 		}
@@ -89,62 +96,56 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 	playerController->posses(entity);
 
-	if (!entity)
+	if (entity)
 	{
-		return;
-	}
+		if (auto cameraComp = entity->findComponent<CameraComponent>())
+		{
+			cachedEntityCamera = cameraComp->getCamera();
 
-	auto cameraComp = entity->findComponent<CameraComponent>();
-	if (!cameraComp)
-	{
-		return;
-	}
-
-	auto renderer = app->getRenderer();
-	if (!renderer)
-	{
-		return;
-	}
-
-	auto viewport = renderer->getViewport(viewportId);
-	if (viewport)
-	{
-		viewport->setActiveCamera(cameraComp->getCamera());
+			if (Renderer* renderer = app->getRenderer())
+			{
+				Viewport* viewport = renderer->getViewport(viewportId);
+				if (viewport)
+				{
+					viewport->setActiveCamera(cameraComp->getCamera());
+				}
+			}
+		}
 	}
 }
 
 void LocalClient::update(float dt)
 {
-	static bool done = false;
-	if (possessedEntity && plane && !done)
+	if (possessedEntity && plane)
 	{
 		if (auto transformComponent = possessedEntity->findComponent<TransformComponent>())
 		{
+			// TODO: Find a way to get the chunk an entity stands on
 			glm::vec3 playerPosition = transformComponent->getPosition();
 			playerPosition.y -= 3.0f;
 			
 			if (playerLastChunkPosition != plane->positionToChunkPosition(playerPosition))
 			{
-				std::cout << visibleChunkMeshes.size() << std::endl;
+				playerLastChunkPosition = plane->positionToChunkPosition(playerPosition);
 
+				// TODO: Pass the chunk pool a list of visible chunks?
 				for (const auto& position : visibleChunksPositions)
 				{
 					pool.setChunkMeshVisibility(utils::positionToIndex(position, plane->getSize()), false);
 				}
-
 				visibleChunksPositions.clear();
 
-				playerLastChunkPosition = plane->positionToChunkPosition(playerPosition);
-
-				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
-
 				const int RENDER_DISTANCE = 32;
+
+				// Find surrounding chunks
+				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
 				for (int i = playerChunkPosition.x - RENDER_DISTANCE; i <= playerChunkPosition.x + RENDER_DISTANCE; ++i)
 				{
 					for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
 					{
 						for (int k = playerChunkPosition.z - RENDER_DISTANCE; k <= playerChunkPosition.z + RENDER_DISTANCE; ++k)
 						{
+							// TODO: Find proper way to check validity of chunk position
 							if (!(i < 0 || j < 0 || k < 0 || i >= plane->getSize().x || j >= plane->getSize().y || k >= plane->getSize().z))
 							{
 								visibleChunksPositions.push_back({ i, j, k });
@@ -155,61 +156,33 @@ void LocalClient::update(float dt)
 
 				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
 				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
+			}
 
-				if (!frustumCullingEnabled)
+			// Apply frustum culling
+			if (cachedEntityCamera)
+			{
+				Frustum frustum(cachedEntityCamera->getProjection() * cachedEntityCamera->getView());
+
+				for (const glm::ivec3& visibleChunkPosition : visibleChunksPositions)
 				{
-					for (const glm::ivec3& chunkPosition : frustumedVisibleChunksPositions)
+					const size_t chunkSize = plane->getChunkSize();
+					glm::ivec3 absoluteChunkPosition(visibleChunkPosition.x * chunkSize, visibleChunkPosition.y * chunkSize, visibleChunkPosition.z * chunkSize);
+					if (frustum.IsBoxVisible(absoluteChunkPosition, { absoluteChunkPosition.x + chunkSize, absoluteChunkPosition.y + chunkSize, absoluteChunkPosition.z + chunkSize }))
 					{
-						if (visibleChunkMeshes.find(utils::positionToIndex(chunkPosition, plane->getSize())) != visibleChunkMeshes.end())
+						if (chunkMeshesBank.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())) != chunkMeshesBank.end())
 						{
-							pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), true);
+							pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), true);
 						}
 						else
 						{
-							ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
-							visibleChunkMeshes.emplace(utils::positionToIndex(chunkPosition, plane->getSize()), newMesh);
+							ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(visibleChunkPosition), plane);
+							chunkMeshesBank.emplace(utils::positionToIndex(visibleChunkPosition, plane->getSize()), newMesh);
 							pool.insertChunkMesh(plane, newMesh);
 						}
 					}
-
-					cachedPoolData = pool.buildMesh();
-				}
-			}
-
-			if (frustumCullingEnabled)
-			{
-				// frustumedVisibleChunksPositions = visibleChunksPositions;
-
-				if (auto cameraComponent = possessedEntity->findComponent<CameraComponent>())
-				{
-					if (Camera* camera = cameraComponent->getCamera())
+					else
 					{
-						Frustum frustum(camera->getProjection() * camera->getView());
-
-						for (size_t i = 0; i < visibleChunksPositions.size(); ++i)
-						{
-							const glm::ivec3& visibleChunkPosition = visibleChunksPositions[i];
-
-							const size_t chunkSize = plane->getChunkSize();
-							glm::ivec3 chunkPosition(visibleChunkPosition.x * chunkSize, visibleChunkPosition.y * chunkSize, visibleChunkPosition.z * chunkSize);
-							if (frustum.IsBoxVisible(chunkPosition, { chunkPosition.x + chunkSize, chunkPosition.y + chunkSize, chunkPosition.z + chunkSize }))
-							{
-								if (visibleChunkMeshes.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())) != visibleChunkMeshes.end())
-								{
-									pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), true);
-								}
-								else
-								{
-									ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(visibleChunkPosition), plane);
-									visibleChunkMeshes.emplace(utils::positionToIndex(visibleChunkPosition, plane->getSize()), newMesh);
-									pool.insertChunkMesh(plane, newMesh);
-								}
-							}
-							else
-							{
-								pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), false);
-							}
-						}
+						pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), false);
 					}
 				}
 
@@ -218,7 +191,6 @@ void LocalClient::update(float dt)
 		}
 	}
 
-	// TODO: assert(renderer)
 	renderDebugMeshes();
 	renderWorld();
 	renderEntities();
@@ -261,12 +233,11 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
 	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
 
-	if (visibleChunkMeshes.find(chunkIndex) != visibleChunkMeshes.end())
+	if (chunkMeshesBank.find(chunkIndex) != chunkMeshesBank.end())
 	{
-		// visibleChunkMeshes[chunkIndex]->updateBlock(plane->positionToChunkLocalPosition(position));
-		visibleChunkMeshes[chunkIndex]->buildGreedy();
+		chunkMeshesBank[chunkIndex]->buildGreedy();
 		pool.freeChunkMesh(chunkIndex);
-		pool.insertChunkMesh(plane, visibleChunkMeshes[chunkIndex]);
+		pool.insertChunkMesh(plane, chunkMeshesBank[chunkIndex]);
 	}
 
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
@@ -289,18 +260,16 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
 			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());
 
-			if (visibleChunkMeshes.find(neighborChunkIndex) != visibleChunkMeshes.end())
+			if (chunkMeshesBank.find(neighborChunkIndex) != chunkMeshesBank.end())
 			{
-				// visibleChunkMeshes[neighborChunkIndex]->updateBlock(plane->positionToChunkLocalPosition(blockPositionInNeighborChunk));
-				visibleChunkMeshes[neighborChunkIndex]->buildGreedy();
+				chunkMeshesBank[neighborChunkIndex]->buildGreedy();
 				pool.freeChunkMesh(neighborChunkIndex);
-				pool.insertChunkMesh(plane, visibleChunkMeshes[neighborChunkIndex]);
+				pool.insertChunkMesh(plane, chunkMeshesBank[neighborChunkIndex]);
 			}
 		}
 	}
 
 	cachedPoolData = pool.buildMesh();
-	// rebuildPlaneMesh();
 }
 
 void LocalClient::setFrustumCullingEnabled(bool enabled)
@@ -354,22 +323,7 @@ void LocalClient::loadMappings()
 
 void LocalClient::renderWorld()
 {
-	// renderer->pushRender({ planeMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
-	// renderer->pushRender({ testMesh.get(), chunkMaterial, glm::mat4(1.0f), viewportId });
-
-
 	renderer->renderMultidraw(cachedPoolData.poolMesh, chunkMaterial, cachedPoolData.sizes.data(), cachedPoolData.offsets.data(), cachedPoolData.drawCount);
-
-	
-	 //std::vector<GLsizei> sizes { 6, 6, 6 };
-
-	 //std::vector<void*> voids;
-	 //// voids.push_back((void*)0);
-	 //voids.push_back((void*)(6 * sizeof(unsigned int)));
-	 //voids.push_back((void*)(12 * sizeof(unsigned int)));
-	 //voids.push_back((void*)(18 * sizeof(unsigned int)));
-
-	 //renderer->renderMultidraw(testMesh.get(), chunkMaterial, sizes.data(), voids.data(), 3);
 }
 
 void LocalClient::renderEntities()

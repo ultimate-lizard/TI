@@ -98,6 +98,8 @@ inline bool Frustum::IsBoxVisible(const glm::vec3& minp, const glm::vec3& maxp) 
 		}
 	}
 
+	return true;
+
 	// check frustum outside/inside box
 	int out;
 	out = 0; for (int i = 0; i < 8; i++) out += ((m_points[i].x > maxp.x) ? 1 : 0); if (out == 8) return false;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 class Mesh;
@@ -42,7 +42,7 @@ public:
 private:
 	std::unique_ptr<Mesh> poolMesh;
 	
-	std::map<size_t, ChunkData> chunks;
+	std::unordered_map<size_t, ChunkData> chunks;
 	unsigned int lastElement = 0;
 	std::vector<unsigned int> elements;
 	size_t cachedElementOffset = 0;
@@ -51,6 +51,4 @@ private:
 	size_t freeElementOffset;
 	size_t vboSize;
 	size_t eboSize;
-
-	std::vector<size_t> invisibleChunkMeshes;
 };

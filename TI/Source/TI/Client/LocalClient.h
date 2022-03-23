@@ -18,6 +18,7 @@ class ChunkMesh;
 class Renderer;
 class DebugInformation;
 class Plane;
+class Camera;
 
 class LocalClient : public Client
 {
@@ -63,9 +64,9 @@ private:
 
 	Renderer* renderer;
 
-	std::unordered_map<size_t, ChunkMesh*> visibleChunkMeshes;
+	std::unordered_map<size_t, ChunkMesh*> chunkMeshesBank;
 	std::vector<glm::ivec3> visibleChunksPositions;
-	std::vector<glm::ivec3> frustumedVisibleChunksPositions;
+
 	Material* chunkMaterial;
 
 	static std::unique_ptr<DebugInformation> debugInformation;
@@ -78,4 +79,6 @@ private:
 	MultiDrawData cachedPoolData;
 
 	bool frustumCullingEnabled;
+
+	Camera* cachedEntityCamera;
 };

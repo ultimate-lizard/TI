@@ -7,8 +7,8 @@
 #include <TI/Server/Plane.h>
 
 ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
-	freeVertexOffset(0),
-	freeElementOffset(0),
+	freeVertexOffsetEnd(0),
+	freeElementOffsetEnd(0),
 	vboSize(vboSize),
 	eboSize(eboSize)
 {
@@ -18,16 +18,87 @@ ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
 
 void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
 {
-	size_t vertexOffset = freeVertexOffset;
+	if (chunkMesh->data.empty())
+	{
+		return;
+	}
+
+	size_t vertexOffset = freeVertexOffsetEnd;
+	size_t elementOffset = freeElementOffsetEnd;
+
+	bool addingNew = true;
+
+	const size_t MIN_VERTEX_SIZE = 240;
+	const size_t MIN_ELEMENT_SIZE = 72;
+
+	size_t requiredVertexSize = chunkMesh->data.size() * sizeof(float);
+	if (auto foundIter = freeVertexOffsets.lower_bound({ requiredVertexSize, 0 }); foundIter != freeVertexOffsets.end())
+	{
+		// std::cout << "Found free vertex memory with size " << foundIter->size << " at offset " << foundIter->offset << ".Required: " << requiredVertexSize << std::endl;
+
+		vertexOffset = foundIter->offset;
+
+		size_t remainingSize = foundIter->size - requiredVertexSize;
+		if (remainingSize >= MIN_VERTEX_SIZE)
+		{
+			freeVertexOffsets.emplace(MemoryChunk{ remainingSize, vertexOffset + requiredVertexSize });
+			// std::cout << "Adding remaining free chunk with size " << remainingSize << " at " << vertexOffset + requiredVertexSize << std::endl;
+		}
+
+		freeVertexOffsets.erase(foundIter);
+
+		addingNew = false;
+	}
+
+	size_t requiredElementSize = chunkMesh->elements.size() * sizeof(unsigned int);
+	if (auto foundIter = freeElementOffsets.lower_bound({ requiredElementSize, 0 }); foundIter != freeElementOffsets.end())
+	{
+		// std::cout << "Found free element memory with size " << foundIter->size << " at offset " << foundIter->offset << ".Required: " << requiredElementSize << std::endl;
+
+		elementOffset = foundIter->offset;
+
+		size_t remainingSize = foundIter->size - requiredElementSize;
+		if (remainingSize >= MIN_ELEMENT_SIZE)
+		{
+			freeElementOffsets.emplace(MemoryChunk{ remainingSize, elementOffset + requiredElementSize });
+			// std::cout << "Adding remaining free element memory with size " << remainingSize << " at " << elementOffset + requiredElementSize << std::endl;
+		}
+
+		freeElementOffsets.erase(foundIter);
+
+		addingNew = false;
+	}
+
 	poolMesh->setBufferSubData(vertexOffset, chunkMesh->data);
 
 	if (plane)
 	{
-		chunks.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunkMesh->getPosition()), plane->getSize()), ChunkData{ freeElementOffset, chunkMesh->elements.size(), chunkMesh });
+		chunks.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunkMesh->getPosition()), plane->getSize()), ChunkData{ vertexOffset, elementOffset, chunkMesh->data.size() * sizeof(float), chunkMesh->elements.size() * sizeof(unsigned int), chunkMesh });
 	}
 	
-	freeElementOffset += chunkMesh->elements.size() * sizeof(unsigned int);
-	freeVertexOffset = vertexOffset + chunkMesh->data.size() * sizeof(float);
+	// Adding new
+	if (addingNew)
+	{
+		freeElementOffsetEnd += chunkMesh->elements.size() * sizeof(unsigned int);
+		freeVertexOffsetEnd = vertexOffset + chunkMesh->data.size() * sizeof(float);
+		analyticVboSize += chunkMesh->data.size() * sizeof(float);
+	}
+	//else
+	//{
+	//	std::cout << "########################VERTICES#########################" << std::endl;
+	//	size_t i = 1;
+	//	for (const auto& mem : freeVertexOffsets)
+	//	{
+	//		std::cout << i++ << ". " << mem.size << std::endl;
+	//	}
+	//	std::cout << "########################ELEMENTS#########################" << std::endl;
+	//	i = 1;
+	//	for (const auto& mem : freeElementOffsets)
+	//	{
+	//		std::cout << i++ << ". " << mem.size << std::endl;
+	//	}
+	//	std::cout << "#########################################################" << std::endl << std::endl;
+	//}
 
 	for (size_t i = 0; i < chunkMesh->elements.size() / 6; ++i)
 	{
@@ -40,14 +111,16 @@ void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
 
 		lastElement = 3 + lastElement + 1;
 	}
-
-	analyticVboSize += chunkMesh->data.size() * sizeof(float);
 }
 
 void ChunkPool::freeChunkMesh(size_t index)
 {
 	if (auto foundIter = chunks.find(index); foundIter != chunks.end())
 	{
+		freeVertexOffsets.emplace(MemoryChunk{ foundIter->second.vertexSize, foundIter->second.vertexOffset });
+		// std::cout << "Vertex memory with size " << foundIter->second.vertexSize << " is now available at offset " << foundIter->second.vertexOffset << std::endl;
+		freeElementOffsets.emplace(MemoryChunk{ foundIter->second.elementSize, foundIter->second.elementOffset });
+		// std::cout << "Element memory with size " << foundIter->second.elementSize << " is now available at offset " << foundIter->second.elementOffset << std::endl;
 		chunks.erase(foundIter);
 	}
 }
@@ -80,7 +153,7 @@ MultiDrawData ChunkPool::buildMesh()
 		const short ATTR_COUNT = 5;
 		const short VERTICES_PER_FACE = 4;
 		const short ELEMENTS_PER_FACE = 6;
-		sizes.push_back(pair.second.elementSize);
+		sizes.push_back(pair.second.mesh->elements.size());
 		offsets.push_back(reinterpret_cast<void*>(pair.second.elementOffset));
 
 		vboSize += pair.second.mesh->data.size() * sizeof(float);

@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 class Mesh;
 class ChunkMesh;
@@ -20,10 +21,22 @@ class ChunkPool
 {
 	struct ChunkData
 	{
+		size_t vertexOffset;
 		size_t elementOffset;
+		size_t vertexSize;
 		size_t elementSize;
 		ChunkMesh* mesh;
 		bool visible = true;
+	};
+
+	struct MemoryChunk
+	{
+		size_t size;
+		size_t offset;
+
+		inline bool operator>(const MemoryChunk& other) const { return size > other.size; }
+		inline bool operator<(const MemoryChunk& other) const { return size < other.size; }
+		inline bool operator==(const MemoryChunk& other) const { return size == other.size; }
 	};
 
 public:
@@ -47,8 +60,11 @@ private:
 	std::vector<unsigned int> elements;
 	size_t cachedElementOffset = 0;
 
-	size_t freeVertexOffset;
-	size_t freeElementOffset;
+	size_t freeVertexOffsetEnd;
+	size_t freeElementOffsetEnd;
 	size_t vboSize;
 	size_t eboSize;
+
+	std::multiset<MemoryChunk> freeVertexOffsets;
+	std::multiset<MemoryChunk> freeElementOffsets;
 };

@@ -72,7 +72,7 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		plane = server->getPlane();
 
-		for (const Chunk& chunk: plane->getChunks())
+		/*for (const Chunk& chunk: plane->getChunks())
 		{
 			chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
 		}
@@ -82,7 +82,7 @@ void LocalClient::connect(const std::string& ip, int port)
 			pool.insertChunkMesh(plane, pair.second);
 		}
 
-		cachedPoolData = pool.buildMesh();
+		cachedPoolData = pool.buildMesh();*/
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -135,7 +135,7 @@ void LocalClient::update(float dt)
 				}
 				visibleChunksPositions.clear();
 
-				const int RENDER_DISTANCE = 32;
+				const int RENDER_DISTANCE = 3;
 
 				// Find surrounding chunks
 				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
@@ -236,6 +236,7 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 	if (chunkMeshesBank.find(chunkIndex) != chunkMeshesBank.end())
 	{
 		chunkMeshesBank[chunkIndex]->buildGreedy();
+
 		pool.freeChunkMesh(chunkIndex);
 		pool.insertChunkMesh(plane, chunkMeshesBank[chunkIndex]);
 	}

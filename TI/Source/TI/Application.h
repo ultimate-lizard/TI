@@ -7,6 +7,7 @@
 
 #include <TI/Window.h>
 #include <TI/SplitScreenManager.h>
+#include <TI/Common/ThreadPool.h>
 
 static const char* CONFIG_FOLDER = "../Config/";
 static const char* CONFIG_EXTENSION = ".cfg";
@@ -51,6 +52,8 @@ public:
 	SplitScreenManager& getSplitScreenManager();
 
 	Input* const getInput() const;
+
+	ThreadPool threadPool;
 
 private:
 	void init();

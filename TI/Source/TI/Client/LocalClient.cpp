@@ -72,6 +72,10 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		plane = server->getPlane();
 
+		app->threadPool.pushTask([]() {
+			std::cout << "This is my task!" << std::endl;
+		});
+
 		/*for (const Chunk& chunk: plane->getChunks())
 		{
 			chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));

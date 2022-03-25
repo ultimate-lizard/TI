@@ -180,6 +180,7 @@
     <ClCompile Include="Source\TI\Client\DebugInformation.cpp" />
     <ClCompile Include="Source\TI\Client\LocalClient.cpp" />
     <ClCompile Include="Source\TI\Client\RemoteClient.cpp" />
+    <ClCompile Include="Source\TI\Common\ThreadPool.cpp" />
     <ClCompile Include="Source\TI\Input.cpp" />
     <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
     <ClCompile Include="Source\TI\Network\NetworkPacket.cpp" />
@@ -229,6 +230,7 @@
     <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
     <ClInclude Include="Source\TI\Client\LocalClient.h" />
     <ClInclude Include="Source\TI\Client\RemoteClient.h" />
+    <ClInclude Include="Source\TI\Common\ThreadPool.h" />
     <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Network\NetworkPacket.h" />
     <ClInclude Include="Source\TI\Network\Protocol.h" />

@@ -76,17 +76,17 @@ void LocalClient::connect(const std::string& ip, int port)
 			std::cout << "This is my task!" << std::endl;
 		});
 
-		/*for (const Chunk& chunk: plane->getChunks())
-		{
-			chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
-		}
+		//for (const Chunk& chunk: plane->getChunks())
+		//{
+		//	chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
+		//}
 
-		for (const auto& pair : chunkMeshesBank)
-		{
-			pool.insertChunkMesh(plane, pair.second);
-		}
+		//for (const auto& pair : chunkMeshesBank)
+		//{
+		//	pool.insertChunkMesh(plane, pair.second);
+		//}
 
-		cachedPoolData = pool.buildMesh();*/
+		// cachedPoolData = pool.buildMesh();
 
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -133,60 +133,72 @@ void LocalClient::update(float dt)
 				playerLastChunkPosition = plane->positionToChunkPosition(playerPosition);
 
 				// TODO: Pass the chunk pool a list of visible chunks?
-				for (const auto& position : visibleChunksPositions)
+				for (const auto& position : cachedVisibleChunksPositions)
 				{
 					pool.setChunkMeshVisibility(utils::positionToIndex(position, plane->getSize()), false);
 				}
-				visibleChunksPositions.clear();
 
-				const int RENDER_DISTANCE = 3;
-
-				// Find surrounding chunks
-				glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(playerPosition);
-				for (int i = playerChunkPosition.x - RENDER_DISTANCE; i <= playerChunkPosition.x + RENDER_DISTANCE; ++i)
-				{
-					for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
-					{
-						for (int k = playerChunkPosition.z - RENDER_DISTANCE; k <= playerChunkPosition.z + RENDER_DISTANCE; ++k)
-						{
-							// TODO: Find proper way to check validity of chunk position
-							if (!(i < 0 || j < 0 || k < 0 || i >= plane->getSize().x || j >= plane->getSize().y || k >= plane->getSize().z))
-							{
-								visibleChunksPositions.push_back({ i, j, k });
-							}
-						}
-					}
-				}
+				const int VIEW_DISTANCE = 16;
+				cachedVisibleChunksPositions = getSurroundingChunksPositions(playerPosition, VIEW_DISTANCE);
 
 				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
 				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
 			}
 
-			// Apply frustum culling
 			if (cachedEntityCamera)
 			{
 				Frustum frustum(cachedEntityCamera->getProjection() * cachedEntityCamera->getView());
 
-				for (const glm::ivec3& visibleChunkPosition : visibleChunksPositions)
+				for (size_t i = 0; i < cachedVisibleChunksPositions.size(); ++i)
 				{
+					const glm::ivec3& chunkPosition = cachedVisibleChunksPositions[i];
 					const size_t chunkSize = plane->getChunkSize();
-					glm::ivec3 absoluteChunkPosition(visibleChunkPosition.x * chunkSize, visibleChunkPosition.y * chunkSize, visibleChunkPosition.z * chunkSize);
+
+					glm::ivec3 absoluteChunkPosition(chunkPosition.x * chunkSize, chunkPosition.y * chunkSize, chunkPosition.z * chunkSize);
 					if (frustum.IsBoxVisible(absoluteChunkPosition, { absoluteChunkPosition.x + chunkSize, absoluteChunkPosition.y + chunkSize, absoluteChunkPosition.z + chunkSize }))
 					{
-						if (chunkMeshesBank.find(utils::positionToIndex(visibleChunkPosition, plane->getSize())) != chunkMeshesBank.end())
+						const size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
+						// If mesh is built and not pending
+						meshesBankMutex.lock();
+						if (auto foundIter = chunkMeshesBank.find(chunkIndex); foundIter != chunkMeshesBank.end())
 						{
-							pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), true);
+							meshesBankMutex.unlock();
+							if (pool.findChunkMesh(chunkIndex))
+							{
+								pool.setChunkMeshVisibility(chunkIndex, true);
+							}
+							else
+							{
+								pool.insertChunkMesh(plane, foundIter->second);
+							}
 						}
+						// If mesh is not yet built
 						else
 						{
-							ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(visibleChunkPosition), plane);
-							chunkMeshesBank.emplace(utils::positionToIndex(visibleChunkPosition, plane->getSize()), newMesh);
-							pool.insertChunkMesh(plane, newMesh);
+							meshesBankMutex.unlock();
+							// If not pending, create task
+							if (std::find(pendingChunks.begin(), pendingChunks.end(), chunkIndex) == pendingChunks.end())
+							{
+								{
+									std::unique_lock<std::mutex> lock(meshesBankMutex);
+									pendingChunks.push_back(chunkIndex);
+								}
+
+								app->threadPool.pushTask([this, chunkPosition, chunkIndex]() {
+									{
+										ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
+										std::unique_lock<std::mutex> lock(meshesBankMutex);
+										chunkMeshesBank.emplace(chunkIndex, newMesh);
+										auto foundIter = std::find(pendingChunks.begin(), pendingChunks.end(), chunkIndex);
+										pendingChunks.erase(foundIter);
+									}
+								});
+							}
 						}
 					}
 					else
 					{
-						pool.setChunkMeshVisibility(utils::positionToIndex(visibleChunkPosition, plane->getSize()), false);
+						pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), false);
 					}
 				}
 
@@ -352,6 +364,43 @@ void LocalClient::renderEntities()
 			}
 		}
 	}
+}
+
+std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(const glm::vec3& position, unsigned short viewDistance)
+{
+	std::vector<glm::vec3> surroundingPositions;
+
+	// Find surrounding chunks
+	glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(position);
+	for (int i = playerChunkPosition.x - viewDistance; i <= playerChunkPosition.x + viewDistance; ++i)
+	{
+		for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
+		{
+			for (int k = playerChunkPosition.z - viewDistance; k <= playerChunkPosition.z + viewDistance; ++k)
+			{
+				// TODO: Find proper way to check validity of chunk position
+				if (!(i < 0 || j < 0 || k < 0 || i >= plane->getSize().x || j >= plane->getSize().y || k >= plane->getSize().z))
+				{
+					surroundingPositions.push_back({ i, j, k });
+				}
+			}
+		}
+	}
+
+	std::sort(surroundingPositions.begin(), surroundingPositions.end(), [position](const glm::vec3& pos1, const glm::vec3& pos2) {
+		return glm::distance(pos1, position) > glm::distance(pos2, position);
+	});
+
+	return surroundingPositions;
+}
+
+std::vector<glm::ivec3> LocalClient::cullChunksPositions(const std::vector<glm::ivec3>& chunksPositions)
+{
+	std::vector<glm::ivec3> culledPositions = chunksPositions;
+
+	
+
+	return culledPositions;
 }
 
 void LocalClient::renderDebugMeshes()

@@ -5,7 +5,8 @@
 ThreadPool::ThreadPool() :
 	stopping(false)
 {
-	const size_t THREAD_COUNT = 8;
+	// const size_t THREAD_COUNT = std::thread::hardware_concurrency();
+	const size_t THREAD_COUNT = 4;
 	for (size_t i = 0; i < THREAD_COUNT; ++i)
 	{
 		threads.push_back(std::thread(&ThreadPool::startThread, this));
@@ -43,7 +44,7 @@ void ThreadPool::startThread()
 		{
 			std::unique_lock<std::mutex> lock(workMutex);
 
-			std::cout << "Watining for a task" << std::endl;
+			// std::cout << "Watining for a task" << std::endl;
 
 			conditionalVariable.wait(lock, [this]() {
 				return !tasks.empty() || stopping;
@@ -56,11 +57,11 @@ void ThreadPool::startThread()
 			}
 		}
 
-		std::cout << "Working on the task" << std::endl;
+		// std::cout << "Working on the task" << std::endl;
 		if (task)
 		{
 			task();
 		}
-		std::cout << "Finished the task" << std::endl;
+		// std::cout << "Finished the task" << std::endl;
 	}
 }

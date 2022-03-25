@@ -45,6 +45,8 @@ public:
 
 	void insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh);
 	void freeChunkMesh(size_t index);
+	bool findChunkMesh(size_t index) const;
+
 	void setChunkMeshVisibility(size_t index, bool visible);
 
 	MultiDrawData buildMesh();

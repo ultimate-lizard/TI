@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <mutex>
 
 #include <glm/glm.hpp>
 
@@ -54,6 +55,9 @@ private:
 	void renderWorld();
 	void renderEntities();
 
+	std::vector<glm::vec3> getSurroundingChunksPositions(const glm::vec3& position, unsigned short viewDistance);
+	std::vector<glm::ivec3> cullChunksPositions(const std::vector<glm::ivec3>& chunksPositions);
+
 private:
 	std::unique_ptr<InputHandler> inputHandler;
 	std::unique_ptr<IController> playerController;
@@ -65,7 +69,9 @@ private:
 	Renderer* renderer;
 
 	std::unordered_map<size_t, ChunkMesh*> chunkMeshesBank;
-	std::vector<glm::ivec3> visibleChunksPositions;
+	std::mutex meshesBankMutex;
+	std::vector<size_t> pendingChunks;
+	std::vector<glm::vec3> cachedVisibleChunksPositions;
 
 	Material* chunkMaterial;
 

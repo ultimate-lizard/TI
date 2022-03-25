@@ -125,6 +125,12 @@ void ChunkPool::freeChunkMesh(size_t index)
 	}
 }
 
+bool ChunkPool::findChunkMesh(size_t index) const
+{
+	// std::cout << chunks.size() << std::endl;
+	return chunks.find(index) != chunks.end();
+}
+
 void ChunkPool::setChunkMeshVisibility(size_t index, bool visible)
 {
 	if (auto foundPair = chunks.find(index); foundPair != chunks.end())

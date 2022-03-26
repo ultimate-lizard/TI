@@ -1,5 +1,9 @@
 #include "Chunk.h"
 
+#include <iostream>
+
+#include <noise/noise.h>
+
 #include <TI/Util/Utils.h>
 
 Chunk::Chunk(size_t size, const glm::vec3& position) :
@@ -7,20 +11,37 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	position(position)
 {
 	unsigned long long longSize = size;
-	blocks.resize(longSize * longSize * longSize, position.y == 0.0f ? 1 : 0);
-	if (position.y == 0)
+	blocks.resize(longSize * longSize * longSize, position.y <= 2 * 16 ? 1 : 0);
+	// blocks.resize(longSize * longSize * longSize, 1);
+
+	/*if (position.y == 0)
 	{
 		for (int i = 0; i < 4096; ++i)
 		{
 			blocks[rand() % 4096] = 0;
 		}
+	}*/
+
+	static noise::module::Perlin perlinModule;
+
+	for (unsigned short i = 0; i < 4096; ++i)
+	{
+		glm::vec3 pos = utils::indexToPosition(i, { 16, 16, 16 });
+		glm::vec3 perlinPos(pos.x + position.x, pos.y + position.y, pos.z + position.z);
+
+		static const float scale = 100.0f;
+
+		perlinPos.x = perlinPos.x / scale;
+		perlinPos.y = perlinPos.y / scale;
+		perlinPos.z = perlinPos.z / scale;
+
+		float height = 16 * perlinModule.GetValue(perlinPos.x, 0.0f, perlinPos.z);
+		blocks[i] = pos.y + position.y - 16.0f > height ? 0 : 1;
+		if (pos.y + position.y == 0.0f)
+		{
+			blocks[i] = 1;
+		}
 	}
-	//blocks.resize(longSize * longSize * longSize, 1);
-	//blocks[utils::positionToIndex({ 4, 5, 1 }, glm::uvec3(size))] = 0;
-	//blocks[utils::positionToIndex({ 3, 5, 2 }, glm::uvec3(size))] = 0;
-	//blocks[utils::positionToIndex({ 4, 5, 2 }, glm::uvec3(size))] = 0;
-	//blocks[utils::positionToIndex({ 0, 5, 5 }, glm::uvec3(size))] = 0;
-	//blocks[utils::positionToIndex({ 2, 5, 5 }, glm::uvec3(size))] = 0;
 }
 
 unsigned int Chunk::getBlock(const glm::uvec3& pos) const

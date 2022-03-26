@@ -138,7 +138,7 @@ void LocalClient::update(float dt)
 					pool.setChunkMeshVisibility(utils::positionToIndex(position, plane->getSize()), false);
 				}
 
-				const int VIEW_DISTANCE = 16;
+				const int VIEW_DISTANCE = 32;
 				cachedVisibleChunksPositions = getSurroundingChunksPositions(playerPosition, VIEW_DISTANCE);
 
 				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;

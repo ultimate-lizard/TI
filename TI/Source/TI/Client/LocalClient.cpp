@@ -124,6 +124,14 @@ void LocalClient::update(float dt)
 	{
 		if (auto transformComponent = possessedEntity->findComponent<TransformComponent>())
 		{
+			if (chunkMaterial)
+			{
+				if (Shader* shader = chunkMaterial->getShader())
+				{
+					shader->setVector3("lightPos", transformComponent->getPosition());
+				}
+			}
+
 			// TODO: Find a way to get the chunk an entity stands on
 			glm::vec3 playerPosition = transformComponent->getPosition();
 			playerPosition.y -= 3.0f;

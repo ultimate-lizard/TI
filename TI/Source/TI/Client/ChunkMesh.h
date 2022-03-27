@@ -46,7 +46,7 @@ private:
 
 	// std::unique_ptr<Mesh> mesh;
 
-	std::map<std::pair<size_t, BlockFace>, std::array<float, 20>> faceVerticesMap;
+	std::map<std::pair<size_t, BlockFace>, std::array<float, 32>> faceVerticesMap;
 
 	const Chunk* const chunk;
 	const Plane* const plane;

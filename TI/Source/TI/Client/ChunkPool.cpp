@@ -28,7 +28,7 @@ void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
 
 	bool addingNew = true;
 
-	const size_t MIN_VERTEX_SIZE = 240;
+	const size_t MIN_VERTEX_SIZE = 384;
 	const size_t MIN_ELEMENT_SIZE = 72;
 
 	size_t requiredVertexSize = chunkMesh->data.size() * sizeof(float);
@@ -156,7 +156,7 @@ MultiDrawData ChunkPool::buildMesh()
 			continue;
 		}
 
-		const short ATTR_COUNT = 5;
+		const short ATTR_COUNT = 8;
 		const short VERTICES_PER_FACE = 4;
 		const short ELEMENTS_PER_FACE = 6;
 		sizes.push_back(pair.second.mesh->elements.size());

@@ -21,7 +21,8 @@ public:
 	void load(const std::string& vertexCodePath, const std::string& fragmentCodePath);
 	void use();
 
-	void setVector(const std::string& name, const glm::vec4& value);
+	void setVector4(const std::string& name, const glm::vec4& value);
+	void setVector3(const std::string& name, const glm::vec3& value);
 	void setMatrix(const std::string& name, const glm::mat4& value);
 
 private:

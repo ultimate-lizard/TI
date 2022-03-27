@@ -27,11 +27,12 @@ Renderer::Renderer(Window* window) :
 		throw std::exception();
 	}
 
-	setClearColor({ 0.4f, 0.8f, 1.0f, 1.0f });
+	// setClearColor({ 0.4f, 0.8f, 1.0f, 1.0f });
+	setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	glEnable(GL_DEPTH_TEST);
 
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	createDefaultViewport(window);
 }
@@ -96,7 +97,7 @@ void Renderer::render()
 				shader->setMatrix("view", view);
 				shader->setMatrix("model", command.transform);
 
-				shader->setVector("color", command.material->getColor());
+				shader->setVector4("color", command.material->getColor());
 			}
 			
 			glLineWidth(command.lineWidth);
@@ -170,7 +171,7 @@ void Renderer::renderMultidraw(Mesh* mesh, Material* material, GLsizei* counts, 
 			shader->setMatrix("view", view);
 			shader->setMatrix("model", glm::mat4(1.0f));
 
-			shader->setVector("color", material->getColor());
+			shader->setVector4("color", material->getColor());
 		}
 
 		glBindVertexArray(mesh->getVAO());

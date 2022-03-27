@@ -427,91 +427,7 @@ bool ChunkMesh::isFaceNextToAir(BlockFace face, const glm::uvec3& position)
 
 void ChunkMesh::setFace(BlockFace face, const glm::uvec3& position)
 {
-	const std::array<float, 20> FRONT_DATA {
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 0.0f, 0.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-	};
-
-	const std::array<float, 20> BACK_DATA = {
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 1.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-	};
-
-	const std::array<float, 20> LEFT_DATA = {
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-	};
-
-	const std::array<float, 20> RIGHT_DATA = {
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-	};
-
-	const std::array<float, 20> TOP_DATA = {
-		1.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		1.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		0.0f + position.x, 1.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-		0.0f + position.x, 1.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-	};
-
-	const std::array<float, 20> BOTTOM_DATA = {
-		1.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 1.0f,
-		1.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 1.0f,
-		0.0f + position.x, 0.0f + position.y, 1.0f + position.z, 1.0f, 0.0f,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z, 0.0f, 0.0f,
-	};
-
-	std::array<unsigned int, 6> faceIndices = {
-		0, 1, 2,
-		0, 2, 3,
-	};
-
-	for (unsigned int& index : faceIndices)
-	{
-		if (this->faceVerticesMap.size())
-		{
-			index += static_cast<unsigned int>(this->faceVerticesMap.size()) * 4;
-		}
-	}
-
-	const std::array<float, 20>* faceData = nullptr;
-
-	switch (face)
-	{
-	case BlockFace::Front:
-		faceData = &FRONT_DATA;
-		break;
-	case BlockFace::Back:
-		faceData = &BACK_DATA;
-		break;
-	case BlockFace::Left:
-		faceData = &LEFT_DATA;
-		break;
-	case BlockFace::Right:
-		faceData = &RIGHT_DATA;
-		break;
-	case BlockFace::Top:
-		faceData = &TOP_DATA;
-		break;
-	case BlockFace::Bottom:
-		faceData = &BOTTOM_DATA;
-		break;
-	default:
-		throw std::exception();
-		break;
-	}
-
-	size_t index = utils::positionToIndex(position, { chunkSize, chunkSize, chunkSize });
-
-	this->faceVerticesMap[{index, face}] = *faceData;
+	setFace(face, position, glm::uvec3(1));
 }
 
 void ChunkMesh::setFace(BlockFace face, const glm::uvec3& inPosition, const glm::uvec3& size)
@@ -521,46 +437,46 @@ void ChunkMesh::setFace(BlockFace face, const glm::uvec3& inPosition, const glm:
 	position.y += chunk->getPosition().y;
 	position.z += chunk->getPosition().z;
 
-	const std::array<float, 20> FRONT_DATA{
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z, 1.0f * size.x, 1.0f * size.y,
-		0.0f + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z,			0.0f * size.x, 1.0f * size.y,
-		0.0f + position.x, 0.0f + position.y, 1.0f * size.z + position.z,					0.0f * size.x, 0.0f * size.y,
-		1.0f * size.x + position.x, 0.0f + position.y, 1.0f * size.z + position.z,			1.0f * size.x, 0.0f * size.y,
+	const std::array<float, 32> FRONT_DATA{
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		1.0f * size.z + position.z,		0.0f, 0.0f, 1.0f,		1.0f * size.x, 1.0f * size.y,
+		0.0f + position.x,			1.0f * size.y + position.y,		1.0f * size.z + position.z,		0.0f, 0.0f, 1.0f,		0.0f * size.x, 1.0f * size.y,
+		0.0f + position.x,			0.0f + position.y,				1.0f * size.z + position.z,		0.0f, 0.0f, 1.0f,		0.0f * size.x, 0.0f * size.y,
+		1.0f * size.x + position.x, 0.0f + position.y,				1.0f * size.z + position.z,		0.0f, 0.0f, 1.0f,		1.0f * size.x, 0.0f * size.y,
 	};
 
-	const std::array<float, 20> BACK_DATA = {
-		0.0f + position.x, 1.0f * size.y + position.y, 0.0f + position.z,					0.0f * size.x, 1.0f * size.y,
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 0.0f + position.z,			1.0f * size.x, 1.0f * size.y,
-		1.0f * size.x + position.x, 0.0f + position.y, 0.0f + position.z,					1.0f * size.x, 0.0f * size.y,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z,							0.0f * size.x, 0.0f * size.y,
+	const std::array<float, 32> BACK_DATA = {
+		0.0f + position.x,			1.0f * size.y + position.y,		0.0f + position.z,				0.0f, 0.0f, -1.0f,		0.0f * size.x, 1.0f * size.y,
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		0.0f + position.z,				0.0f, 0.0f, -1.0f,		1.0f * size.x, 1.0f * size.y,
+		1.0f * size.x + position.x, 0.0f + position.y,				0.0f + position.z,				0.0f, 0.0f, -1.0f,		1.0f * size.x, 0.0f * size.y,
+		0.0f + position.x,			0.0f + position.y,				0.0f + position.z,				0.0f, 0.0f, -1.0f,		0.0f * size.x, 0.0f * size.y,
 	};
 
-	const std::array<float, 20> LEFT_DATA = {
-		0.0f + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z,			1.0f * size.z, 1.0f * size.y,
-		0.0f + position.x, 1.0f * size.y + position.y, 0.0f + position.z,					0.0f * size.z, 1.0f * size.y,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z,							0.0f * size.z, 0.0f * size.y,
-		0.0f + position.x, 0.0f + position.y, 1.0f * size.z + position.z,					1.0f * size.z, 0.0f * size.y,
+	const std::array<float, 32> LEFT_DATA = {
+		0.0f + position.x,			1.0f * size.y + position.y,		1.0f * size.z + position.z,		-1.0f, 0.0f, 0.0f,		1.0f * size.z, 1.0f * size.y,
+		0.0f + position.x,			1.0f * size.y + position.y,		0.0f + position.z,				-1.0f, 0.0f, 0.0f,		0.0f * size.z, 1.0f * size.y,
+		0.0f + position.x,			0.0f + position.y,				0.0f + position.z,				-1.0f, 0.0f, 0.0f,		0.0f * size.z, 0.0f * size.y,
+		0.0f + position.x,			0.0f + position.y,				1.0f * size.z + position.z,		-1.0f, 0.0f, 0.0f,		1.0f * size.z, 0.0f * size.y,
 	};
 
-	const std::array<float, 20> RIGHT_DATA = {
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 0.0f + position.z,			0.0f * size.z, 1.0f * size.y,
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z,	1.0f * size.z, 1.0f * size.y,
-		1.0f * size.x + position.x, 0.0f + position.y, 1.0f * size.z + position.z,			1.0f * size.z, 0.0f * size.y,
-		1.0f * size.x + position.x, 0.0f + position.y, 0.0f + position.z,					0.0f * size.z, 0.0f * size.y,
+	const std::array<float, 32> RIGHT_DATA = {
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		0.0f + position.z,				1.0f, 0.0f, 0.0f,		0.0f * size.z, 1.0f * size.y,
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		1.0f * size.z + position.z,		1.0f, 0.0f, 0.0f,		1.0f * size.z, 1.0f * size.y,
+		1.0f * size.x + position.x, 0.0f + position.y,				1.0f * size.z + position.z,		1.0f, 0.0f, 0.0f,		1.0f * size.z, 0.0f * size.y,
+		1.0f * size.x + position.x, 0.0f + position.y,				0.0f + position.z,				1.0f, 0.0f, 0.0f,		0.0f * size.z, 0.0f * size.y,
 	};
 	
-	const std::array<float, 20> TOP_DATA = {
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 1.0f * size.z + position.z,	1.0f * size.z, 1.0f * size.x,
-		1.0f * size.x + position.x, 1.0f * size.y + position.y, 0.0f + position.z,			0.0f * size.z, 1.0f * size.x,
-		0.0f + position.x,			1.0f * size.y + position.y, 0.0f + position.z,			0.0f * size.z, 0.0f * size.x,
-		0.0f + position.x,			1.0f * size.y + position.y, 1.0f * size.z + position.z,	1.0f * size.z, 0.0f * size.x,
+	const std::array<float, 32> TOP_DATA = {
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		1.0f * size.z + position.z,		0.0f, 1.0f, 0.0f,		1.0f * size.z, 1.0f * size.x,
+		1.0f * size.x + position.x, 1.0f * size.y + position.y,		0.0f + position.z,				0.0f, 1.0f, 0.0f,		0.0f * size.z, 1.0f * size.x,
+		0.0f + position.x,			1.0f * size.y + position.y,		0.0f + position.z,				0.0f, 1.0f, 0.0f,		0.0f * size.z, 0.0f * size.x,
+		0.0f + position.x,			1.0f * size.y + position.y,		1.0f * size.z + position.z,		0.0f, 1.0f, 0.0f,		1.0f * size.z, 0.0f * size.x,
 	};
 
-	const std::array<float, 20> BOTTOM_DATA = {
-		1.0f * size.x + position.x, 0.0f + position.y, 0.0f + position.z,					0.0f * size.z, 1.0f * size.x,
-		1.0f * size.x + position.x, 0.0f + position.y, 1.0f * size.z + position.z,			1.0f * size.z, 1.0f * size.x,
-		0.0f + position.x, 0.0f + position.y, 1.0f * size.z + position.z,					1.0f * size.z, 0.0f * size.x,
-		0.0f + position.x, 0.0f + position.y, 0.0f + position.z,							0.0f * size.z, 0.0f * size.x,
+	const std::array<float, 32> BOTTOM_DATA = {
+		1.0f * size.x + position.x, 0.0f + position.y,				0.0f + position.z,				0.0f, -1.0f, 0.0f,		0.0f * size.z, 1.0f * size.x,
+		1.0f * size.x + position.x, 0.0f + position.y,				1.0f * size.z + position.z,		0.0f, -1.0f, 0.0f,		1.0f * size.z, 1.0f * size.x,
+		0.0f + position.x,			0.0f + position.y,				1.0f * size.z + position.z,		0.0f, -1.0f, 0.0f,		1.0f * size.z, 0.0f * size.x,
+		0.0f + position.x,			0.0f + position.y,				0.0f + position.z,				0.0f, -1.0f, 0.0f,		0.0f * size.z, 0.0f * size.x,
 	};
 
 	std::array<unsigned int, 6> faceIndices = {
@@ -576,7 +492,7 @@ void ChunkMesh::setFace(BlockFace face, const glm::uvec3& inPosition, const glm:
 		}
 	}
 
-	const std::array<float, 20>* faceData = nullptr;
+	const std::array<float, 32>* faceData = nullptr;
 
 	switch (face)
 	{

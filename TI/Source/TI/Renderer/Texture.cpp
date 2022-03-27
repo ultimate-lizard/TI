@@ -37,7 +37,7 @@ void Texture::load(const std::string& path)
 
 	if (path.empty() || !std::filesystem::exists(path))
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 	}
 	else
 	{

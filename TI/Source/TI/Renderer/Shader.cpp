@@ -83,12 +83,21 @@ void Shader::use()
 	glUseProgram(id);
 }
 
-void Shader::setVector(const std::string& name, const glm::vec4& value)
+void Shader::setVector4(const std::string& name, const glm::vec4& value)
 {
 	int location = getUniformLocation(name);
 	if (location != -1)
 	{
 		glUniform4fv(location, 1, &value[0]);
+	}
+}
+
+void Shader::setVector3(const std::string& name, const glm::vec3& value)
+{
+	int location = getUniformLocation(name);
+	if (location != -1)
+	{
+		glUniform3fv(location, 1, &value[0]);
 	}
 }
 

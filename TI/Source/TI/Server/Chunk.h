@@ -1,8 +1,11 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 
 #include <glm/glm.hpp>
+
+#include <TI/Server/PlaneSide.h>
 
 class Chunk
 {
@@ -20,12 +23,20 @@ public:
 	const glm::vec3& getPosition() const;
 	size_t getSize() const;
 
-	// unsigned int planePositionToBlockIndex(const glm::vec3& position) const;
+	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+
+	bool isInCore() const;
+	bool isInCrust() const;
+	bool isInTroposphere() const;
+
+	std::optional<OrientationInfo> getOrientationInfo(const glm::vec3& localPosition) const;
 
 private:
 	const size_t size;
-	glm::vec3 position;
+	glm::vec3 chunkPosition;
 
 	// Blocks
 	std::vector<unsigned int> blocks;
+
+	std::vector<OrientationInfo> orientations;
 };

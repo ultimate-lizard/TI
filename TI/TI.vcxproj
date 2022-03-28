@@ -259,6 +259,7 @@
     <ClInclude Include="Source\TI\Server\ListenServer.h" />
     <ClInclude Include="Source\TI\Server\LocalServer.h" />
     <ClInclude Include="Source\TI\Server\Plane.h" />
+    <ClInclude Include="Source\TI\Server\PlaneSide.h" />
     <ClInclude Include="Source\TI\Server\RemoteServer.h" />
     <ClInclude Include="Source\TI\Server\SceneNode.h" />
     <ClInclude Include="Source\TI\Server\Server.h" />

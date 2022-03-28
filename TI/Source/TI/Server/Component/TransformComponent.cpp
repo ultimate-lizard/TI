@@ -20,6 +20,7 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 
 void TransformComponent::tick(float dt)
 {
+	
 }
 
 void TransformComponent::setPlane(Plane* plane)
@@ -35,4 +36,21 @@ Plane* TransformComponent::getPlane() const
 std::unique_ptr<Component> TransformComponent::clone() const
 {
 	return std::make_unique<TransformComponent>(*this);
+}
+
+std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
+{
+	if (plane)
+	{
+		if (const Chunk* chunk = plane->getChunk(plane->positionToChunkPosition(position)))
+		{
+			std::optional<OrientationInfo> orientationInfo = chunk->getOrientationInfo(plane->positionToChunkLocalPosition(position));
+			if (orientationInfo.has_value())
+			{
+				return orientationInfo;
+			}
+		}
+	}
+
+	return OrientationInfo{ 0, 1, 2, true };
 }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
+#include <TI/Server/PlaneSide.h>
 
 class Plane;
 
@@ -20,6 +22,8 @@ public:
 	Plane* getPlane() const;
 
 	std::unique_ptr<Component> clone() const override;
+
+	std::optional<OrientationInfo> getOrientationInfo() const;
 
 private:
 	Plane* plane;

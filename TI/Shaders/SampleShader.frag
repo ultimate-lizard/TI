@@ -12,19 +12,19 @@ uniform vec3 lightPos;
 
 void main()
 {
-	const float ambientStrength = 1.0;
+	const float ambientStrength = 0.01;
 	vec3 lightColor = vec3(1.0f, 1.0f, 0.9f);
 	vec3 ambient = ambientStrength * lightColor;
 
 	vec3 norm = normalize(normal);
-	vec3 lightDir = normalize(lightPos - fragPos);
-	// vec3 lightDir = normalize(vec3(0.5, 1.0, 0.0));
+	// vec3 lightDir = normalize(lightPos - fragPos);
+	vec3 lightDir = normalize(vec3(0.5, 1.0, 0.0));
 
 	float distance = length(lightPos - fragPos);
 
 	float diff = max(dot(norm, lightDir), 0.0f);
 
-	vec3 diffuse = (0.75 + diff / 2) * lightColor;
+	vec3 diffuse = (0.75 + diff / 3) * lightColor;
 	// diffuse = pow(diffuse, vec3(0.1));
 
 	float constant = 1.0f;
@@ -33,8 +33,8 @@ void main()
 
 	float attenuation = 1.0f / (constant + linear * distance + quadratic * (distance * distance));
 
-	ambient *= attenuation;
-	diffuse *= attenuation;
+	// ambient *= attenuation;
+	// diffuse *= attenuation;
 
 	vec3 texColor = texture(textureSampler, texturePos).rgb;
 	vec3 lighting = diffuse + ambient;

@@ -219,11 +219,9 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 
 bool PhysicsComponent::checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2)
 {
-	const float PRECISION = 0.00001f;
-
-	if ((box1pos.x - box1.size.x / 2.0f + PRECISION < box2pos.x + box2.size.x / 2.0f - PRECISION && box1pos.x + box1.size.x / 2.0f - PRECISION > box2pos.x - box2.size.x / 2.0f + PRECISION) &&
-		(box1pos.y - box1.size.y / 2.0f + PRECISION < box2pos.y + box2.size.y / 2.0f - PRECISION && box1pos.y + box1.size.y / 2.0f - PRECISION > box2pos.y - box2.size.y / 2.0f + PRECISION) &&
-		(box1pos.z - box1.size.z / 2.0f + PRECISION < box2pos.z + box2.size.z / 2.0f - PRECISION && box1pos.z + box1.size.z / 2.0f - PRECISION > box2pos.z - box2.size.z / 2.0f + PRECISION))
+	if ((box1pos.x - box1.size.x / 2.0f < box2pos.x + box2.size.x / 2.0f && box1pos.x + box1.size.x / 2.0f > box2pos.x - box2.size.x / 2.0f) &&
+		(box1pos.y - box1.size.y / 2.0f < box2pos.y + box2.size.y / 2.0f && box1pos.y + box1.size.y / 2.0f > box2pos.y - box2.size.y / 2.0f) &&
+		(box1pos.z - box1.size.z / 2.0f < box2pos.z + box2.size.z / 2.0f && box1pos.z + box1.size.z / 2.0f > box2pos.z - box2.size.z / 2.0f))
 	{
 		if (renderCollisions)
 		{

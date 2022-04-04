@@ -143,7 +143,7 @@ void ResourceManager::initResouces()
 
 	std::unique_ptr<Mesh> cubeMesh = meshBuilder.build();
 
-	Shader* defaultShader = createShader("Default", "../Shaders/SampleShader.vert", "../Shaders/SampleShader.frag");
+	Shader* defaultShader = createShader("Default", "../Shaders/Common.vert", "../Shaders/Common.frag");
 
 	Texture* containerTexture = createTexture("Container", "../Textures/container.jpg");
 	Material* containerMaterial = createMaterial("Container", defaultShader, containerTexture);
@@ -154,8 +154,9 @@ void ResourceManager::initResouces()
 	std::unique_ptr<Mesh> playerMesh = meshBuilder.build(); // This might cause issues
 	createModel("Player", std::move(playerMesh), playerMaterial);
 
+	Shader* chunkShader = createShader("Chunk", "../Shaders/Chunk.vert", "../Shaders/Chunk.frag");
 	Texture* chunkTexture = createTexture("Chunk", "../Textures/dirt.jpg");
-	createMaterial("Chunk", defaultShader, chunkTexture);
+	createMaterial("Chunk", chunkShader, chunkTexture);
 }
 
 Texture* ResourceManager::createTexture(const std::string& name, const std::string& path)

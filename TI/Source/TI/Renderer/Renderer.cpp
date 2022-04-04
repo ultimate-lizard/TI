@@ -27,8 +27,8 @@ Renderer::Renderer(Window* window) :
 		throw std::exception();
 	}
 
-	setClearColor({ 0.4f, 0.8f, 1.0f, 1.0f });
-	// setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+	// setClearColor({ 0.4f, 0.8f, 1.0f, 1.0f });
+	setClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 
 	glEnable(GL_DEPTH_TEST);
 

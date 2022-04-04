@@ -277,11 +277,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Config\Default.cfg" />
+    <None Include="Shaders\Common.frag" />
+    <None Include="Shaders\Common.vert" />
     <None Include="Shaders\DebugShader.frag" />
     <None Include="Shaders\Framebuffer.frag" />
     <None Include="Shaders\Framebuffer.vert" />
-    <None Include="Shaders\SampleShader.frag" />
-    <None Include="Shaders\SampleShader.vert" />
+    <None Include="Shaders\Chunk.frag" />
+    <None Include="Shaders\Chunk.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

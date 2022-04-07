@@ -19,7 +19,8 @@ MovementComponent::MovementComponent() :
 	Component(),
 	transformComponent(nullptr),
 	physicsComponent(nullptr),
-	headDirection(0.0f, 0.0f, 1.0f),
+	headRotation(0.0f, 0.0f, 0.0f),
+	headDirection(0.0f, 0.0f, 0.0f),
 	yawRate(0.0f),
 	pitchRate(0.0f),
 	walkAcceleration(35.0f),
@@ -87,12 +88,12 @@ float MovementComponent::getYawRate() const
 
 void MovementComponent::setMovementForward(float value)
 {
-	input.x = value;
+	input.z = value;
 }
 
 void MovementComponent::setMovementSideways(float value)
 {
-	input.z = value;
+	input.x = value;
 }
 
 void MovementComponent::setWalkAcceleration(float acceleration)
@@ -177,16 +178,17 @@ const glm::vec3& MovementComponent::getHeadRotation() const
 
 void MovementComponent::handleInput(float dt)
 {
-	headRotation.x += pitchRate * dt;
-	headRotation.y += yawRate * dt;
+	//headRotation.x += pitchRate * dt;
+	//headRotation.y += yawRate * dt;
 
 	if (headRotation.x > 89.0f) headRotation.x = 89.0f;
 	if (headRotation.x < -89.0f) headRotation.x = -89.0f;
 
 	glm::vec3 newForward;
-	newForward.x = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
-	newForward.y = sin(glm::radians(headRotation.x));
-	newForward.z = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
+	newForward.x = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
+	newForward.y = -sin(glm::radians(headRotation.x));
+	newForward.z = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
+	drawDebugLine(transformComponent->getLocalPosition(), transformComponent->getLocalPosition() + newForward, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f, false);
 
 	headDirection = glm::normalize(newForward);
 
@@ -196,8 +198,8 @@ void MovementComponent::handleInput(float dt)
 	glm::vec3 right = glm::normalize(glm::cross(walkDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
 	glm::vec3 up = glm::normalize(glm::cross(right, walkDirection));
 
-	walkDirection = walkDirection * input.x;
-	walkDirection += right * input.z;
+	walkDirection = walkDirection * input.z;
+	walkDirection += right * input.x;
 	if (walkDirection != glm::vec3(0.0f))
 	{
 		walkDirection = glm::normalize(walkDirection);
@@ -231,7 +233,7 @@ void MovementComponent::handleWalk(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 position = transformComponent->getLocalPosition();
 
 		// Apply collisions
 		if (physicsComponent)
@@ -276,7 +278,7 @@ void MovementComponent::handleFall(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 position = transformComponent->getLocalPosition();
 
 		if (physicsComponent)
 		{
@@ -305,8 +307,8 @@ void MovementComponent::handleFlight(float dt)
 {
 	glm::vec3 right = glm::normalize(glm::cross(headDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	glm::vec3 flightDirection = headDirection * input.x;
-	flightDirection += right * input.z;
+	glm::vec3 flightDirection = headDirection * input.z;
+	flightDirection += right * input.x;
 
 	if (flightDirection != glm::vec3(0.0f))
 	{
@@ -319,7 +321,7 @@ void MovementComponent::handleFlight(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 position = transformComponent->getLocalPosition();
 
 		if (physicsComponent)
 		{
@@ -335,10 +337,10 @@ void MovementComponent::handleFlight(float dt)
 
 void MovementComponent::addHorizontalLook(float value)
 {
-	headRotation.y = headRotation.y + value;
+	headRotation.y = headRotation.y - value;
 }
 
 void MovementComponent::addVerticalLook(float value)
 {
-	headRotation.x = headRotation.x + value;
+	headRotation.x = headRotation.x - value;
 }

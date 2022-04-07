@@ -32,8 +32,8 @@ void Server::initEntityTemplates()
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	auto camera = std::make_unique<Camera>();
-	camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	camera->setPosition({ -0.0f, 0.0f, -0.0f });
+	// camera->setRotation({ 0.0f, 90.0f, 0.0f });
+	// camera->setPosition({ -0.0f, 0.0f, -0.0f });
 	camera->setParent(cameraComponent);
 	cameraComponent->setCamera(std::move(camera));
 	cameraComponent->setParent(transformComponent);
@@ -60,7 +60,7 @@ void Server::initEntityTemplates()
 Server::Server(Application* app) :
 	app(app), shuttingDown(false), plane(nullptr)
 {
-	plane = new Plane(glm::vec3(1.0f), { 10, 10, 10 }, 16);
+	plane = new Plane(glm::vec3(1.0f), { 5, 5, 5 }, 16);
 }
 
 Server::~Server()

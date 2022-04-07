@@ -1,6 +1,7 @@
 #include "SceneNode.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 SceneNode::SceneNode() :
 	parent(nullptr),
@@ -54,8 +55,7 @@ void SceneNode::updateTransform()
 
 	transform = glm::translate(transform, position);
 	transform = glm::scale(transform, scale);
-	transform = glm::rotate(transform, -glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-	transform = glm::rotate(transform, glm::radians(rotation.x), glm::vec3(0.0f, 0.0f, 1.0f));
+	transform *= glm::yawPitchRoll(glm::radians(rotation.y), glm::radians(rotation.x), glm::radians(rotation.z));
 
 	this->transform = parent ? parent->transform * transform : transform;
 
@@ -88,17 +88,23 @@ void SceneNode::setScale(const glm::vec3& scale)
 	updateTransform();
 }
 
-const glm::vec3& SceneNode::getPosition() const
+const glm::vec3& SceneNode::getLocalPosition() const
 {
 	return position;
 }
 
-const glm::vec3& SceneNode::getRotation() const
+const glm::vec3& SceneNode::getAbsolutePosition() const
+{
+	glm::vec4 absolutePosition = getTransform() * glm::vec4(position, 1.0f);
+	return glm::vec3(absolutePosition);
+}
+
+const glm::vec3& SceneNode::getLocalRotation() const
 {
 	return rotation;
 }
 
-const glm::vec3& SceneNode::getScale() const
+const glm::vec3& SceneNode::getLocalScale() const
 {
 	return scale;
 }

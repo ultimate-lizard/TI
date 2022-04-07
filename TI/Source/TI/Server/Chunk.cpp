@@ -9,10 +9,10 @@
 #include <TI/Client/DebugInformation.h>
 
 const float chunkSize = 16.0f;
-const float planetSize = 10.0f * chunkSize;
-const float core = 2.0f * chunkSize;
-const float crust = 2.0f * chunkSize;
-const float atmosphere = 2.0f * chunkSize;
+const float planetSize = 5.0f * chunkSize;
+const float core = 1.0f * chunkSize;
+const float crust = 1.0f * chunkSize;
+const float atmosphere = 1.0f * chunkSize;
 const float total = core + crust + atmosphere;
 
 Chunk::Chunk(size_t size, const glm::vec3& position) :
@@ -50,7 +50,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 
 		if (isInCrust() || isInTroposphere())
 		{
-			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
+			const float MAX_AMPLITUDE = 1; // How far under or above 0 the terrain will differ
 			const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
 			
 			for (const OrientationInfo& orientationInfo : orientations)

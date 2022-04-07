@@ -106,7 +106,7 @@ void ListenServer::broadcastEntitiesInfo()
 
 				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					glm::vec3 position = transformComponent->getPosition();
+					glm::vec3 position = transformComponent->getLocalPosition();
 
 					glm::vec3 rotation;
 					/*rotation.x = transformComp->getPitch();
@@ -153,7 +153,7 @@ void ListenServer::broadcastPlayerEntitySpawn(Entity* entity)
 
 			if (auto transformComponent = entity->findComponent<TransformComponent>())
 			{
-				packet << entity->getId() << transformComponent->getPosition() << rotation;
+				packet << entity->getId() << transformComponent->getLocalPosition() << rotation;
 
 				// Broadcast only to NOT owners of the entity
 				if (client->getName() != entity->getId())
@@ -253,8 +253,8 @@ void ListenServer::sendEntityInitialSync(RemoteClient* client)
 
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			position = transformComponent->getPosition();
-			rotation = transformComponent->getRotation();
+			position = transformComponent->getLocalPosition();
+			rotation = transformComponent->getLocalRotation();
 
 			packet << position << rotation;
 

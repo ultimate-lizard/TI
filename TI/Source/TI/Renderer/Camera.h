@@ -18,7 +18,10 @@ public:
 	const glm::mat4& getProjection() const;
 	const glm::mat4& getView();
 
+	void setForward(const glm::vec3& forward);
+
 private:
 	glm::mat4 projection;
 	glm::mat4 view;
+	glm::vec3 forward;
 };

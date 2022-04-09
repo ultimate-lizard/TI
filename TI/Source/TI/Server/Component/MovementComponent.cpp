@@ -4,12 +4,15 @@
 #include <algorithm>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 #include <TI/Server/Entity.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/PhysicsComponent.h>
+#include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Plane.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
@@ -28,7 +31,7 @@ MovementComponent::MovementComponent() :
 	walkMaxSpeed(3.5f),
 	flightSpeed(25.0f),
 	breakingFactor(1.0f),
-	jumpVelocity({0.0f, 8.5f, 0.0f}),
+	jumpVelocity(8.5f),
 	flightMode(false),
 	movementState(MovementState::Fall)
 {
@@ -45,6 +48,48 @@ void MovementComponent::init()
 
 void MovementComponent::tick(float dt)
 {
+	static float lastDt = 0;
+	lastDt += dt;
+	if (transformComponent)
+	{
+		glm::vec3 rot = transformComponent->getLocalRotation();
+
+		if (orientationInfo != previousOrientationInfo)
+		{	
+			glm::vec3 prev;
+			prev[previousOrientationInfo.heightAxis] = previousOrientationInfo.positive ? 1 : -1;
+			glm::vec3 cur;
+			cur[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
+
+			glm::vec3 cross = glm::cross(prev, cur);
+
+			std::cout << cross.x << " " << cross.y << " " << cross.z << std::endl;
+
+			if (cross.x)
+			{
+				//rot.x = cross.x > 0 ? 90.0f : -90.f;
+			}
+			if (cross.y)
+			{
+				//rot.y = cross.y > 0 ? 90.0f : -90.f;
+			}
+			else if (cross.z)
+			{
+				//rot.z = cross.z > 0 ? 90.0f : -90.f;
+			 }
+			
+			std::cout << rot.x << " " << rot.y << " " << rot.z << std::endl;
+
+			//transformComponent->rotate(90.0f, cross);
+			// transformComponent->rotateAbsolute(glm::radians(90.0f), cross);
+
+			transformComponent->rotateAbsolute(glm::radians(90.0f), cross);
+			previousOrientationInfo = orientationInfo;
+		}
+
+		// transformComponent->setRotation(rot);
+	}
+
 	handleInput(dt);
 
 	switch (movementState)
@@ -58,6 +103,14 @@ void MovementComponent::tick(float dt)
 	case MovementState::Fly:
 		handleFlight(dt);
 		break;
+	}
+
+	if (transformComponent)
+	{
+		if (auto orientation = transformComponent->getOrientationInfo(); orientation.has_value())
+		{
+			orientationInfo = orientation.value();
+		}
 	}
 }
 
@@ -150,7 +203,7 @@ void MovementComponent::jump()
 {
 	if (movementState == MovementState::Walk)
 	{
-		velocity += jumpVelocity;
+		velocity += -getGravityVector() * jumpVelocity;
 		movementState = MovementState::Fall;
 	}
 }
@@ -188,24 +241,41 @@ void MovementComponent::handleInput(float dt)
 	newForward.x = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
 	newForward.y = -sin(glm::radians(headRotation.x));
 	newForward.z = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
-	drawDebugLine(transformComponent->getLocalPosition(), transformComponent->getLocalPosition() + newForward, { 0.0f, 1.0f, 0.0f, 1.0f }, 2.0f, false);
-
-	headDirection = glm::normalize(newForward);
 
 	newForward.y = 0.0f; // We don't need to calculate Y axis during player movement
-	walkDirection = glm::normalize(newForward);
 
-	glm::vec3 right = glm::normalize(glm::cross(walkDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
-	glm::vec3 up = glm::normalize(glm::cross(right, walkDirection));
+	if (auto cameraComponent = entity->findComponent<CameraComponent>())
+	{
+		walkDirection = glm::normalize(cameraComponent->getForwardVector());
 
-	walkDirection = walkDirection * input.z;
-	walkDirection += right * input.x;
+		glm::vec3 right = cameraComponent->getRightVector();
+
+		walkDirection = walkDirection * input.z;
+		walkDirection += right * input.x;
+		walkDirection[orientationInfo.heightAxis] = 0.0f;
+
+		headDirection = cameraComponent->getForwardVector(); // Needed for flight
+	}
+	
+	
 	if (walkDirection != glm::vec3(0.0f))
 	{
 		walkDirection = glm::normalize(walkDirection);
 	}
 
-	transformComponent->setRotation(headRotation);
+	if (entity)
+	{
+		if (auto cameraComponent = entity->findComponent<CameraComponent>())
+		{
+			cameraComponent->setRotation(headRotation);
+		}
+
+		if (auto meshComponent = entity->findComponent<MeshComponent>())
+		{
+			// meshComponent->setRotation(headRotation);
+		}
+	}
+	// transformComponent->setRotation(headRotation);
 }
 
 void MovementComponent::handleWalk(float dt)
@@ -247,9 +317,9 @@ void MovementComponent::handleWalk(float dt)
 			}
 
 			// Check if no longer on ground
-			glm::vec3 groundTestVelocity = velocity + glm::vec3(0.0f, -1.0f, 0.0f) * 30.0f * dt;
+			glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
 			CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
-			if (!groundTestResult.collidedAxis.y)
+			if (!groundTestResult.collidedAxis[orientationInfo.heightAxis])
 			{
 				movementState = MovementState::Fall;
 			}
@@ -273,7 +343,7 @@ void MovementComponent::handleFall(float dt)
 	// Apply gravity
 	if (gravityEnabled)
 	{
-		velocity += glm::vec3(0.0f, -1.0f, 0.0f) * 30.0f * dt;
+		velocity += getGravityVector() * 30.0f * dt;
 	}
 
 	if (transformComponent)
@@ -284,9 +354,9 @@ void MovementComponent::handleFall(float dt)
 		{
 			CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
 
-			if (collisionResult.collidedAxis.y)
+			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
 			{
-				if (velocity.y < 0.0f) // Should take in consideration gravity direction (this might not be just Y axis)
+				if (velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive || velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive) // Should take in consideration gravity direction (this might not be just Y axis)
 				{
 					// On land
 					movementState = MovementState::Walk;
@@ -305,34 +375,49 @@ void MovementComponent::handleFall(float dt)
 
 void MovementComponent::handleFlight(float dt)
 {
-	glm::vec3 right = glm::normalize(glm::cross(headDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
-
-	glm::vec3 flightDirection = headDirection * input.z;
-	flightDirection += right * input.x;
-
-	if (flightDirection != glm::vec3(0.0f))
+	// glm::vec3 right = glm::normalize(glm::cross(headDirection, glm::vec3(0.0f, 1.0f, 0.0f)));
+	if (entity)
 	{
-		velocity = flightDirection * flightSpeed;
-	}
-	else
-	{
-		velocity = glm::vec3(0.0f);
-	}
-
-	if (transformComponent)
-	{
-		glm::vec3 position = transformComponent->getLocalPosition();
-
-		if (physicsComponent)
+		if (auto cameraComp = entity->findComponent<CameraComponent>())
 		{
-			CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
-			velocity = collisionResult.adjustedVelocity;
-			position = collisionResult.adjustedPosition;
-		}
+			glm::vec3 right = cameraComp->getRightVector();
 
-		position += velocity * dt;
-		transformComponent->setPosition(position);
+			glm::vec3 flightDirection = headDirection * input.z;
+			flightDirection += right * input.x;
+
+			if (flightDirection != glm::vec3(0.0f))
+			{
+				velocity = flightDirection * flightSpeed;
+			}
+			else
+			{
+				velocity = glm::vec3(0.0f);
+			}
+
+			if (transformComponent)
+			{
+				glm::vec3 position = transformComponent->getLocalPosition();
+
+				if (physicsComponent)
+				{
+					CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
+					velocity = collisionResult.adjustedVelocity;
+					position = collisionResult.adjustedPosition;
+				}
+
+				position += velocity * dt;
+				transformComponent->setPosition(position);
+			}
+		}
 	}
+}
+
+glm::vec3 MovementComponent::getGravityVector() const
+{
+	glm::vec3 gravityVector;
+	gravityVector[orientationInfo.heightAxis] = orientationInfo.positive ? -1 : 1;
+	
+	return gravityVector;
 }
 
 void MovementComponent::addHorizontalLook(float value)

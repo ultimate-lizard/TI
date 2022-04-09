@@ -30,7 +30,7 @@ void Camera::updateView()
 	glm::vec3 scew;
 	glm::vec4 perspective;
 
-	glm::decompose(transform, scale, absoluteRotation, absolutePosition, scew, perspective);
+	glm::decompose(getTransform(), scale, absoluteRotation, absolutePosition, scew, perspective);
 	
 	absoluteRotation = glm::conjugate(absoluteRotation);
 

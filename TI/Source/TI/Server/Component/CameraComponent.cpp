@@ -26,6 +26,7 @@ std::unique_ptr<Component> CameraComponent::clone() const
 void CameraComponent::setCamera(std::unique_ptr<Camera> camera)
 {
 	this->camera = std::move(camera);
+	// camera->setParent(this);
 }
 
 Camera* CameraComponent::getCamera() const

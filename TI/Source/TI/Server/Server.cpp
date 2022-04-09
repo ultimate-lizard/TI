@@ -21,12 +21,12 @@ void Server::initEntityTemplates()
 	auto transformComponent = playerEntity->addComponent<TransformComponent>();
 
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
-	meshComponent->setParent(transformComponent);
 	meshComponent->loadModel("Player");
-	meshComponent->setScale({ 0.6f, 0.6f, 0.6f });
+	meshComponent->setScale({ 0.6f, 0.6f, 1.0f });
 
 	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
-	physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
+	// physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
+	physicsComponent->setCollisionBox({ { 1.9f, 1.9f, 1.9f }, { 0.0f, 0.0f, 0.0f } });
 
 	auto movementComponent = playerEntity->addComponent<MovementComponent>();
 
@@ -34,9 +34,10 @@ void Server::initEntityTemplates()
 	auto camera = std::make_unique<Camera>();
 	// camera->setRotation({ 0.0f, 90.0f, 0.0f });
 	// camera->setPosition({ -0.0f, 0.0f, -0.0f });
-	camera->setParent(cameraComponent);
+	// camera->setParent(cameraComponent);
 	cameraComponent->setCamera(std::move(camera));
 	cameraComponent->setParent(transformComponent);
+	meshComponent->setParent(cameraComponent);
 	// assert(transformComponent);
 	// assert(meshComponent);
 	// assert(physicsComponent);

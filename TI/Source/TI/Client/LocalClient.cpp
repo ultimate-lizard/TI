@@ -368,7 +368,10 @@ void LocalClient::renderEntities()
 					// continue;
 				}
 
-				renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId });
+				if (auto transformComponent = entity->findComponent<TransformComponent>())
+				{
+					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId });
+				}
 			}
 		}
 	}

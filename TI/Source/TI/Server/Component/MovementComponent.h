@@ -4,6 +4,7 @@
 
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
+#include <TI/Server/PlaneSide.h>
 
 class TransformComponent;
 class PhysicsComponent;
@@ -72,6 +73,8 @@ private:
 	void handleFall(float dt);
 	void handleFlight(float dt);
 
+	glm::vec3 getGravityVector() const;
+
 private:
 	TransformComponent* transformComponent;
 	PhysicsComponent* physicsComponent;
@@ -79,6 +82,7 @@ private:
 	glm::vec3 headRotation;
 	glm::vec3 headDirection;
 	glm::vec3 walkDirection;
+	glm::vec3 localDirection;
 	glm::vec3 input;
 
 	float yawRate;
@@ -92,9 +96,11 @@ private:
 	float flightSpeed;
 	float breakingFactor;
 
-	glm::vec3 jumpVelocity;
+	float jumpVelocity;
 
 	bool flightMode;
 
 	MovementState movementState;
+	OrientationInfo orientationInfo;
+	OrientationInfo previousOrientationInfo;
 };

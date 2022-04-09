@@ -20,7 +20,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	chunkPosition(position)
 {
 	// if not 2 dimensional
-	orientations = { {0, 1, 2, true}, {1, 0, 2, true}, {1, 2, 0, true}, {0, 1, 2, false}, {1, 0, 2, false}, {1, 2, 0, false} };
+	orientations = { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
 
 	unsigned long long longSize = size;
 	blocks.resize(longSize * longSize * longSize, 0);
@@ -50,8 +50,10 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 
 		if (isInCrust() || isInTroposphere())
 		{
-			const float MAX_AMPLITUDE = 1; // How far under or above 0 the terrain will differ
-			const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
+			// const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
+			// const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
+			const float MAX_AMPLITUDE = 2; // How far under or above 0 the terrain will differ
+			const float TERRAIN_LOCATION_HEIGHT = chunkSize; // From center
 			
 			for (const OrientationInfo& orientationInfo : orientations)
 			{

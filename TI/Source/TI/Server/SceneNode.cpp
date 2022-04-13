@@ -1,5 +1,7 @@
 #include "SceneNode.h"
 
+#include <iostream>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -8,9 +10,7 @@ SceneNode::SceneNode() :
 	parent(nullptr),
 	transform(1.0f),
 	position(0.0f),
-	rotation(0.0f),
-	scale(1.0f),
-	rotationTransform(1.0f)
+	scale(1.0f)
 {
 }
 
@@ -18,7 +18,7 @@ SceneNode::SceneNode(const SceneNode& other) :
 	parent(nullptr),
 	transform(other.transform),
 	position(other.position),
-	rotation(other.rotation),
+	orientation(other.orientation),
 	scale(other.scale)
 {
 }
@@ -51,32 +51,29 @@ bool SceneNode::isChildOf(SceneNode* node)
 	return false;
 }
 
-glm::vec3 SceneNode::getForwardVector() const
+glm::vec3 SceneNode::getForwardVector()
 {
+	updateTransform();
 	return normalize(glm::vec3(transform[2]));
 }
 
-glm::vec3 SceneNode::getUpVector() const
+glm::vec3 SceneNode::getUpVector()
 {
+	updateTransform();
 	return normalize(glm::vec3(transform[1]));
 }
 
-glm::vec3 SceneNode::getRightVector() const
+glm::vec3 SceneNode::getRightVector()
 {
+	updateTransform();
 	return -normalize(glm::vec3(transform[0]));
 }
 
 void SceneNode::updateTransform()
 {
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
-	glm::mat4 rot = glm::yawPitchRoll(glm::radians(rotation.y), glm::radians(rotation.x), glm::radians(rotation.z));
-	transform *= rot;
+	transform *= glm::toMat4(orientation);
 	transform = glm::scale(transform, scale);
-
-	for (auto& t : rotationTransform)
-	{
-		transform = transform * (glm::inverse(rot) * t * rot);
-	}
 
 	this->transform = parent ? parent->transform * transform : transform;
 
@@ -97,15 +94,25 @@ void SceneNode::setPosition(const glm::vec3& position)
 	updateTransform();
 }
 
-void SceneNode::setRotation(const glm::vec3& rotation)
+void SceneNode::setOrientation(const glm::quat& orientation)
 {
-	this->rotation = rotation;
+	this->orientation = orientation;
 	updateTransform();
 }
 
-void SceneNode::rotateAbsolute(float angle, const glm::vec3& axis)
+void SceneNode::setRotation(const glm::vec3& rotation)
 {
-	rotationTransform.push_back(glm::rotate(glm::mat4(1.0f), angle, axis));
+	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
+	orientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
+
+	updateTransform();
+}
+
+void SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
+{
+	glm::quat rotationQuat = glm::angleAxis(angle, axis);
+	orientation = orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
+
 	updateTransform();
 }
 
@@ -115,23 +122,33 @@ void SceneNode::setScale(const glm::vec3& scale)
 	updateTransform();
 }
 
-const glm::vec3& SceneNode::getLocalPosition() const
+glm::vec3 SceneNode::getPosition() const
 {
 	return position;
 }
 
-const glm::vec3& SceneNode::getAbsolutePosition() const
+glm::quat SceneNode::getOrientation() const
 {
-	glm::vec4 absolutePosition = getTransform() * glm::vec4(position, 1.0f);
-	return glm::vec3(absolutePosition);
+	return orientation;
 }
 
-const glm::vec3& SceneNode::getLocalRotation() const
+glm::vec3 SceneNode::getRotation() const
 {
-	return rotation;
+	glm::vec3 rot = glm::eulerAngles(orientation);
+	return rot;
 }
 
-const glm::vec3& SceneNode::getLocalScale() const
+glm::vec3 SceneNode::getScale() const
 {
 	return scale;
+}
+
+glm::quat SceneNode::getOrientationInWorldSpace() const
+{
+	if (parent)
+	{
+		return parent->orientation * orientation;
+	}
+
+	return orientation;
 }

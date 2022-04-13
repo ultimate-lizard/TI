@@ -128,12 +128,12 @@ void LocalClient::update(float dt)
 			{
 				if (Shader* shader = chunkMaterial->getShader())
 				{
-					shader->setVector3("lightPos", transformComponent->getLocalPosition());
+					shader->setVector3("lightPos", transformComponent->getPosition());
 				}
 			}
 
 			// TODO: Find a way to get the chunk an entity stands on
-			glm::vec3 playerPosition = transformComponent->getLocalPosition();
+			glm::vec3 playerPosition = transformComponent->getPosition();
 			playerPosition.y -= 3.0f;
 			
 			if (playerLastChunkPosition != plane->positionToChunkPosition(playerPosition))

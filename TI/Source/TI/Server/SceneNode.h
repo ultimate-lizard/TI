@@ -18,22 +18,29 @@ public:
 	glm::mat4 getTransform() const;
 
 	void setPosition(const glm::vec3& position);
-	void setRotation(const glm::vec3& rotation);
-	void rotateAbsolute(float angle, const glm::vec3& axis);
+	void setOrientation(const glm::quat& orientation);
 	void setScale(const glm::vec3& scale);
+	// Sets rotation in euler angles
+	void setRotation(const glm::vec3& rotation);
 
-	const glm::vec3& getLocalPosition() const;
-	const glm::vec3& getAbsolutePosition() const;
-	const glm::vec3& getLocalRotation() const;
-	const glm::vec3& getLocalScale() const;
+	void rotateInWorldSpace(float angle, const glm::vec3& axis);
+
+	glm::vec3 getPosition() const;
+	glm::quat getOrientation() const;
+	glm::vec3 getScale() const;
+	// Gets rotation in euler angles
+	glm::vec3 getRotation() const;
 
 	void setParent(SceneNode* parent);
 	void addChild(SceneNode* child);
 	bool isChildOf(SceneNode* node);
 
-	glm::vec3 getForwardVector() const;
-	glm::vec3 getUpVector() const;
-	glm::vec3 getRightVector() const;
+	glm::vec3 getForwardVector();
+	glm::vec3 getUpVector();
+	glm::vec3 getRightVector();
+
+protected:
+	glm::quat getOrientationInWorldSpace() const;
 
 protected:
 	SceneNode* parent;
@@ -42,8 +49,6 @@ protected:
 	glm::mat4 transform;
 
 	glm::vec3 position;
-	glm::vec3 rotation;
+	glm::quat orientation;
 	glm::vec3 scale;
-
-	std::vector<glm::mat4> rotationTransform;
 };

@@ -110,7 +110,7 @@ void PlayerController::castRayWithCollision()
 {
 	static int entityCount = 0;
 
-	auto playerPos = entity->findComponent<TransformComponent>()->getLocalPosition();
+	auto playerPos = entity->findComponent<TransformComponent>()->getPosition();
 	auto playerForward = movementComponent->getHeadDirection();
 
 	auto spawnLocation = playerPos + playerForward * 1.5f;
@@ -132,7 +132,7 @@ void PlayerController::destroyBlock()
 					if (auto movementComponent = entity->findComponent<MovementComponent>())
 					{
 						float distance = 3.0f;
-						glm::vec3 start = transformComponent->getLocalPosition();
+						glm::vec3 start = transformComponent->getPosition();
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
@@ -162,7 +162,7 @@ void PlayerController::placeBlock()
 			if (movementComponent)
 			{
 				auto transformComponent = entity->findComponent<TransformComponent>();
-				glm::vec3 entityPosition = transformComponent->getLocalPosition();
+				glm::vec3 entityPosition = transformComponent->getPosition();
 
 				for (float i = 0; i < 5.0f; i += 0.1f)
 				{
@@ -257,7 +257,7 @@ void PlayerController::toggleThirdperson()
 		{
 			if (Camera* camera = cameraComponent->getCamera())
 			{
-				glm::vec3 cameraPosition = camera->getLocalPosition();
+				glm::vec3 cameraPosition = camera->getPosition();
 				cameraPosition.z = thirdperson ? -3.0f : 0.0f;
 				camera->setPosition(cameraPosition);
 			}

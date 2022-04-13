@@ -52,7 +52,7 @@ void MovementComponent::tick(float dt)
 	lastDt += dt;
 	if (transformComponent)
 	{
-		glm::vec3 rot = transformComponent->getLocalRotation();
+		glm::vec3 rot = transformComponent->getRotation();
 
 		if (orientationInfo != previousOrientationInfo)
 		{	
@@ -83,7 +83,7 @@ void MovementComponent::tick(float dt)
 			//transformComponent->rotate(90.0f, cross);
 			// transformComponent->rotateAbsolute(glm::radians(90.0f), cross);
 
-			transformComponent->rotateAbsolute(glm::radians(90.0f), cross);
+			transformComponent->rotateInWorldSpace(glm::radians(90.0f), cross);
 			previousOrientationInfo = orientationInfo;
 		}
 
@@ -231,24 +231,19 @@ const glm::vec3& MovementComponent::getHeadRotation() const
 
 void MovementComponent::handleInput(float dt)
 {
-	//headRotation.x += pitchRate * dt;
-	//headRotation.y += yawRate * dt;
+	headRotation.x += pitchRate * dt;
+	headRotation.y += yawRate * dt;
 
 	if (headRotation.x > 89.0f) headRotation.x = 89.0f;
 	if (headRotation.x < -89.0f) headRotation.x = -89.0f;
-
-	glm::vec3 newForward;
-	newForward.x = sin(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
-	newForward.y = -sin(glm::radians(headRotation.x));
-	newForward.z = cos(glm::radians(headRotation.y)) * cos(glm::radians(headRotation.x));
-
-	newForward.y = 0.0f; // We don't need to calculate Y axis during player movement
 
 	if (auto cameraComponent = entity->findComponent<CameraComponent>())
 	{
 		walkDirection = glm::normalize(cameraComponent->getForwardVector());
 
-		glm::vec3 right = cameraComponent->getRightVector();
+		glm::vec3 up;
+		up[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
+		glm::vec3 right = glm::cross(walkDirection, up);
 
 		walkDirection = walkDirection * input.z;
 		walkDirection += right * input.x;
@@ -256,7 +251,6 @@ void MovementComponent::handleInput(float dt)
 
 		headDirection = cameraComponent->getForwardVector(); // Needed for flight
 	}
-	
 	
 	if (walkDirection != glm::vec3(0.0f))
 	{
@@ -303,7 +297,7 @@ void MovementComponent::handleWalk(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
+		glm::vec3 position = transformComponent->getPosition();
 
 		// Apply collisions
 		if (physicsComponent)
@@ -348,7 +342,7 @@ void MovementComponent::handleFall(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
+		glm::vec3 position = transformComponent->getPosition();
 
 		if (physicsComponent)
 		{
@@ -396,7 +390,7 @@ void MovementComponent::handleFlight(float dt)
 
 			if (transformComponent)
 			{
-				glm::vec3 position = transformComponent->getLocalPosition();
+				glm::vec3 position = transformComponent->getPosition();
 
 				if (physicsComponent)
 				{

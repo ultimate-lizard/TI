@@ -232,8 +232,8 @@ void RemoteServer::sendPlayerInfo(Client* client)
 	
 	if (auto transformComponent = entity->findComponent<TransformComponent>())
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
-		glm::vec3 rotation = transformComponent->getLocalRotation();
+		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 rotation = transformComponent->getRotation();
 
 		NetworkPacket packet;
 		packet.setPacketId(PacketId::CPlayerSync);

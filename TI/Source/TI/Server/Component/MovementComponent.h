@@ -30,9 +30,6 @@ public:
 
 	void jump();
 
-	float getLookSensivity() const;
-	void setLookSensivity(float sensivity);
-
 	void setPitchRate(float pitchRate);
 	float getPitchRate() const;
 
@@ -75,6 +72,8 @@ private:
 
 	glm::vec3 getGravityVector() const;
 
+	void updateSideRotation(float dt);
+
 private:
 	TransformComponent* transformComponent;
 	PhysicsComponent* physicsComponent;
@@ -101,6 +100,11 @@ private:
 	bool flightMode;
 
 	MovementState movementState;
+
 	OrientationInfo orientationInfo;
 	OrientationInfo previousOrientationInfo;
+	bool shouldRotate = false;
+	bool sideRotationInProgress = false;
+	float currentRotationAngle = 0.0f;
+	glm::vec3 sideRotationAxis;
 };

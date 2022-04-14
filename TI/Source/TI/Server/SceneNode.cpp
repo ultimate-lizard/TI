@@ -108,6 +108,16 @@ void SceneNode::setRotation(const glm::vec3& rotation)
 	updateTransform();
 }
 
+void SceneNode::setRotationInWorldSpace(const glm::vec3& rotation)
+{
+	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
+	glm::quat rotationQuat = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
+
+	orientation = orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
+
+	updateTransform();
+}
+
 void SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
 {
 	glm::quat rotationQuat = glm::angleAxis(angle, axis);

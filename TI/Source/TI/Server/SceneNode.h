@@ -22,6 +22,7 @@ public:
 	void setScale(const glm::vec3& scale);
 	// Sets rotation in euler angles
 	void setRotation(const glm::vec3& rotation);
+	void setRotationInWorldSpace(const glm::vec3& rotation);
 
 	void rotateInWorldSpace(float angle, const glm::vec3& axis);
 

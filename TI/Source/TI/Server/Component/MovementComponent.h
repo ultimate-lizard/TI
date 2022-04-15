@@ -62,6 +62,7 @@ public:
 
 	const glm::vec3& getHeadDirection() const;
 	const glm::vec3& getHeadRotation() const;
+	glm::vec3 getHeadPosition() const;
 
 private:
 	void handleInput(float dt);
@@ -78,10 +79,10 @@ private:
 	TransformComponent* transformComponent;
 	PhysicsComponent* physicsComponent;
 
+	glm::vec3 headPosition;
 	glm::vec3 headRotation;
 	glm::vec3 headDirection;
 	glm::vec3 walkDirection;
-	glm::vec3 localDirection;
 	glm::vec3 input;
 
 	float yawRate;
@@ -101,10 +102,14 @@ private:
 
 	MovementState movementState;
 
+	// Planet side rotation members
 	OrientationInfo orientationInfo;
 	OrientationInfo previousOrientationInfo;
-	bool shouldRotate = false;
-	bool sideRotationInProgress = false;
-	float currentRotationAngle = 0.0f;
+
+	bool shouldRotate;
+	bool sideRotationInProgress;
+	float currentRotationAngle;
 	glm::vec3 sideRotationAxis;
+
+	float rotationStartHeight = 0.0f;
 };

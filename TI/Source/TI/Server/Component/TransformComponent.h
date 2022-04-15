@@ -26,5 +26,8 @@ public:
 	std::optional<OrientationInfo> getOrientationInfo() const;
 
 private:
+	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+
+private:
 	Plane* plane;
 };

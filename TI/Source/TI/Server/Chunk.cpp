@@ -9,10 +9,10 @@
 #include <TI/Client/DebugInformation.h>
 
 const float chunkSize = 16.0f;
-const float planetSize = 5.0f * chunkSize;
-const float core = 1.0f * chunkSize;
-const float crust = 1.0f * chunkSize;
-const float atmosphere = 1.0f * chunkSize;
+const float planetSize = 10.0f * chunkSize;
+const float core = 2.0f * chunkSize;
+const float crust = 2.0f * chunkSize;
+const float atmosphere = 2.0f * chunkSize;
 const float total = core + crust + atmosphere;
 
 Chunk::Chunk(size_t size, const glm::vec3& position) :
@@ -48,12 +48,13 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 			blocks[i] = 1;
 		}
 
+		continue;
 		if (isInCrust() || isInTroposphere())
 		{
 			// const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
 			// const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
-			const float MAX_AMPLITUDE = 2; // How far under or above 0 the terrain will differ
-			const float TERRAIN_LOCATION_HEIGHT = chunkSize; // From center
+			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
+			const float TERRAIN_LOCATION_HEIGHT = chunkSize * 2; // From center
 			
 			for (const OrientationInfo& orientationInfo : orientations)
 			{
@@ -114,11 +115,11 @@ bool Chunk::isInCone(const glm::vec3& localPosition, const OrientationInfo& orie
 	glm::vec3 checkedPosition = { this->chunkPosition.x + localPosition.x, this->chunkPosition.y + localPosition.y, this->chunkPosition.z + localPosition.z};
 
 	return orientationInfo.positive ?
-		checkedPosition[orientationInfo.sideAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] >= planetSize - checkedPosition[orientationInfo.heightAxis] &&
-		checkedPosition[orientationInfo.frontAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] >= planetSize - checkedPosition[orientationInfo.heightAxis]
+		checkedPosition[orientationInfo.sideAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
+		checkedPosition[orientationInfo.frontAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis]
 		:
-		checkedPosition[orientationInfo.sideAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] <= planetSize - checkedPosition[orientationInfo.heightAxis] &&
-		checkedPosition[orientationInfo.frontAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] <= planetSize - checkedPosition[orientationInfo.heightAxis];
+		checkedPosition[orientationInfo.sideAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
+		checkedPosition[orientationInfo.frontAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis];
 }
 
 bool Chunk::isInCore() const

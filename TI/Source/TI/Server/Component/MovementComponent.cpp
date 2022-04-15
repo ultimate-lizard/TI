@@ -22,6 +22,7 @@ MovementComponent::MovementComponent() :
 	Component(),
 	transformComponent(nullptr),
 	physicsComponent(nullptr),
+	headPosition(0.0f, 1.75f, 0.0f),
 	headRotation(0.0f, 0.0f, 0.0f),
 	headDirection(0.0f, 0.0f, 0.0f),
 	yawRate(0.0f),
@@ -95,6 +96,34 @@ void MovementComponent::updateSideRotation(float dt)
 			sideRotationAxis = cross;
 			shouldRotate = true;
 			previousOrientationInfo = orientationInfo;
+
+			if (physicsComponent)
+			{
+				if (orientationInfo == Orientations::TOP)
+				{
+					physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
+				}
+				else if (orientationInfo == Orientations::FRONT)
+				{
+					physicsComponent->setCollisionBox({ { 0.6f, 0.6f, 1.9f }, { 0.0f, 0.0f, 0.85f } });
+				}
+				else if (orientationInfo == Orientations::RIGHT)
+				{
+					physicsComponent->setCollisionBox({ { 1.9f, 0.6f, 0.6f }, { 0.85f, 0.0f, 0.0f } });
+				}
+				else if (orientationInfo == Orientations::BOTTOM)
+				{
+					physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
+				}
+				else if (orientationInfo == Orientations::BACK)
+				{
+					physicsComponent->setCollisionBox({ { 0.6f, 0.6f, 1.9f }, { 0.0f, 0.0f, -0.85f} });
+				}
+				else if (orientationInfo == Orientations::LEFT)
+				{
+					physicsComponent->setCollisionBox({ { 1.9f, 0.6f, 0.6f }, { -0.85f, 0.0f, 0.0f } });
+				}
+			}
 		}
 	}
 
@@ -237,6 +266,18 @@ const glm::vec3& MovementComponent::getHeadRotation() const
 	return headRotation;
 }
 
+glm::vec3 MovementComponent::getHeadPosition() const
+{
+	if (transformComponent)
+	{
+		glm::vec3 headPositionOriented;
+		headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
+		return transformComponent->getPosition() + headPositionOriented;
+	}
+
+	return glm::vec3(0.0f);
+}
+
 void MovementComponent::handleInput(float dt)
 {
 	if (!entity)
@@ -361,7 +402,7 @@ void MovementComponent::handleFall(float dt)
 
 			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
 			{
-				if (velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive || velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive)
+				if ((velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive) || (velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive))
 				{
 					// On land
 					movementState = MovementState::Walk;

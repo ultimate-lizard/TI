@@ -25,24 +25,16 @@ void Server::initEntityTemplates()
 	meshComponent->setScale({ 0.6f, 0.6f, 1.0f });
 
 	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
-	// physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
-	physicsComponent->setCollisionBox({ { 1.9f, 1.9f, 1.9f }, { 0.0f, 0.0f, 0.0f } });
+	physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
 
 	auto movementComponent = playerEntity->addComponent<MovementComponent>();
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	auto camera = std::make_unique<Camera>();
-	// camera->setRotation({ 0.0f, 90.0f, 0.0f });
-	// camera->setPosition({ -0.0f, 0.0f, -0.0f });
-	// camera->setParent(cameraComponent);
 	cameraComponent->setCamera(std::move(camera));
 	cameraComponent->setParent(transformComponent);
+	cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
 	meshComponent->setParent(cameraComponent);
-	// assert(transformComponent);
-	// assert(meshComponent);
-	// assert(physicsComponent);
-	// assert(cameraComponent);
-	// assert(movementComponent);
 
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
@@ -61,7 +53,7 @@ void Server::initEntityTemplates()
 Server::Server(Application* app) :
 	app(app), shuttingDown(false), plane(nullptr)
 {
-	plane = new Plane(glm::vec3(1.0f), { 5, 5, 5 }, 16);
+	plane = new Plane(glm::vec3(1.0f), { 10, 10, 10 }, 16);
 }
 
 Server::~Server()

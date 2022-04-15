@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include <TI/Server/Component/Component.h>
+#include <TI/Server/SceneNode.h>
 
 class TransformComponent;
 

@@ -46,14 +46,5 @@ void LocalServer::spawnPlayer(Client* const client)
 		glm::vec3 spawnLocation { planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
 		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
 		possesEntity(client->getName(), client);
-		auto cameraComp = playerEntity->findComponent<CameraComponent>();
-		Camera* cam = cameraComp->getCamera();
-		cameraComp->setParent(playerEntity->findComponent<TransformComponent>());
-		cam->setParent(cameraComp);
-		// cam->setParent(playerEntity->findComponent<TransformComponent>());
-		//spawnLocation.x += 5.0f;
-
-		// spawnEntity("Cube", "Cube1", spawnLocation);
-
 	}
 }

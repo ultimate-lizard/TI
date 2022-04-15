@@ -132,7 +132,7 @@ void PlayerController::destroyBlock()
 					if (auto movementComponent = entity->findComponent<MovementComponent>())
 					{
 						float distance = 3.0f;
-						glm::vec3 start = transformComponent->getPosition();
+						glm::vec3 start = movementComponent->getHeadPosition();
 
 						for (float i = 0.0f; i < distance; i += 0.01f)
 						{
@@ -162,21 +162,21 @@ void PlayerController::placeBlock()
 			if (movementComponent)
 			{
 				auto transformComponent = entity->findComponent<TransformComponent>();
-				glm::vec3 entityPosition = transformComponent->getPosition();
+				glm::vec3 headPosition = movementComponent->getHeadPosition();
 
 				for (float i = 0; i < 5.0f; i += 0.1f)
 				{
 					if (Plane* plane = transformComponent->getPlane())
 					{
-						if (plane->getBlock(entityPosition + movementComponent->getHeadDirection() * i) == 1)
+						if (plane->getBlock(headPosition + movementComponent->getHeadDirection() * i) == 1)
 						{
-							std::optional<RayCollisionResult> raycastResult = physicsComponent->checkRayVsAabb(entityPosition, movementComponent->getHeadDirection(), glm::uvec3(entityPosition + movementComponent->getHeadDirection() * i), { { 1.0f, 1.0f, 1.0f }, {0.0f, 0.0f, 0.0f} });
+							std::optional<RayCollisionResult> raycastResult = physicsComponent->checkRayVsAabb(headPosition, movementComponent->getHeadDirection(), glm::uvec3(headPosition + movementComponent->getHeadDirection() * i), { { 1.0f, 1.0f, 1.0f }, {0.0f, 0.0f, 0.0f} });
 							if (raycastResult.has_value())
 							{
 								/*drawDebugLine(entityPosition, entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f);
 								drawDebugLine(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, entityPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f, { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f);
 								drawDebugPoint(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 1.0f, 0.0f, 0.0f, 1.0f }, 10.0f);*/
-								glm::uvec3 blockPosition = entityPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
+								glm::uvec3 blockPosition = headPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
 								if (plane->getBlock(blockPosition) == 0)
 								{
 									plane->spawnBlock(blockPosition, 1);

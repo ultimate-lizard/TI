@@ -23,8 +23,6 @@ public:
 	const glm::vec3& getPosition() const;
 	size_t getSize() const;
 
-	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
-
 	bool isInCore() const;
 	bool isInCrust() const;
 	bool isInTroposphere() const;
@@ -32,6 +30,8 @@ public:
 	std::optional<OrientationInfo> getOrientationInfo(const glm::vec3& localPosition) const;
 
 private:
+	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+
 	const size_t size;
 	glm::vec3 chunkPosition;
 

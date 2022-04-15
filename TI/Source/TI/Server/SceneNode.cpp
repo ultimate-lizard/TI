@@ -74,7 +74,6 @@ void SceneNode::updateTransform()
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
 	transform *= glm::toMat4(orientation);
 	transform = glm::scale(transform, scale);
-
 	this->transform = parent ? parent->transform * transform : transform;
 
 	for (SceneNode* child : children)

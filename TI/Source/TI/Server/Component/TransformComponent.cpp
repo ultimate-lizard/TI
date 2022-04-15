@@ -20,7 +20,6 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 
 void TransformComponent::tick(float dt)
 {
-	
 }
 
 void TransformComponent::setPlane(Plane* plane)
@@ -40,17 +39,36 @@ std::unique_ptr<Component> TransformComponent::clone() const
 
 std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 {
+	std::optional<OrientationInfo> result;
+
 	if (plane)
 	{
-		if (const Chunk* chunk = plane->getChunk(plane->positionToChunkPosition(position)))
+		const std::vector<OrientationInfo> orientations { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
+		for (const OrientationInfo& orientationInfo : orientations)
 		{
-			std::optional<OrientationInfo> orientationInfo = chunk->getOrientationInfo(plane->positionToChunkLocalPosition(position));
-			if (orientationInfo.has_value())
+			if (isInCone(position, orientationInfo))
 			{
-				return orientationInfo;
+				result = orientationInfo;
 			}
 		}
 	}
 
-	return OrientationInfo{ 0, 1, 2, true };
+	return result;
+}
+
+bool TransformComponent::isInCone(const glm::vec3& position, const OrientationInfo& orientationInfo) const
+{
+	if (Plane* plane = getPlane())
+	{
+		float planetSize = plane->getSize().x * plane->getChunkSize();
+
+		return orientationInfo.positive ?
+			position[orientationInfo.sideAxis] <= position[orientationInfo.heightAxis] && position[orientationInfo.sideAxis] >= planetSize - position[orientationInfo.heightAxis] &&
+			position[orientationInfo.frontAxis] <= position[orientationInfo.heightAxis] && position[orientationInfo.frontAxis] >= planetSize - position[orientationInfo.heightAxis]
+			:
+			position[orientationInfo.sideAxis] >= position[orientationInfo.heightAxis] && position[orientationInfo.sideAxis] <= planetSize - position[orientationInfo.heightAxis] &&
+			position[orientationInfo.frontAxis] >= position[orientationInfo.heightAxis] && position[orientationInfo.frontAxis] <= planetSize - position[orientationInfo.heightAxis];
+	}
+
+	return false;
 }

@@ -173,18 +173,23 @@ void PlayerController::placeBlock()
 							std::optional<RayCollisionResult> raycastResult = physicsComponent->checkRayVsAabb(headPosition, movementComponent->getHeadDirection(), glm::uvec3(headPosition + movementComponent->getHeadDirection() * i), { { 1.0f, 1.0f, 1.0f }, {0.0f, 0.0f, 0.0f} });
 							if (raycastResult.has_value())
 							{
-								/*drawDebugLine(entityPosition, entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f);
-								drawDebugLine(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, entityPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f, { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f);
-								drawDebugPoint(entityPosition + movementComponent->getHeadDirection() * raycastResult->near, { 1.0f, 0.0f, 0.0f, 1.0f }, 10.0f);*/
-								glm::uvec3 blockPosition = headPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
+								glm::ivec3 blockPosition = headPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
 								if (plane->getBlock(blockPosition) == 0)
 								{
-									plane->spawnBlock(blockPosition, 1);
-									if (client)
+									if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
 									{
-										if (auto localClient = dynamic_cast<LocalClient*>(client))
+										glm::vec3 blockCenterPosition {blockPosition.x + 0.5f, blockPosition.y + 0.5f, blockPosition.z + 0.5f};
+
+										if (!physicsComponent->checkCollision(blockCenterPosition, transformComponent->getPosition() + physicsComponent->getCollisionBox().offset, {glm::vec3(1.0f), glm::vec3(0.0f)}, physicsComponent->getCollisionBox()))
 										{
-											localClient->updateBlock(blockPosition);
+											plane->spawnBlock(blockPosition, 1);
+											if (client)
+											{
+												if (auto localClient = dynamic_cast<LocalClient*>(client))
+												{
+													localClient->updateBlock(blockPosition);
+												}
+											}
 										}
 									}
 								}
@@ -193,7 +198,6 @@ void PlayerController::placeBlock()
 							break;
 						}
 					}
-					
 				}
 			}
 		}

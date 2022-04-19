@@ -7,6 +7,7 @@
 
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
+#include <TI/Server/PlaneSide.h>
 
 class TransformComponent;
 
@@ -14,6 +15,41 @@ struct CollisionBox
 {
 	glm::vec3 size;
 	glm::vec3 offset;
+
+	// TODO: Unhardcore this!
+	inline void orient(const OrientationInfo& orientationInfo)
+	{
+		if (orientationInfo == Orientations::TOP)
+		{
+			size = { 0.6f, 1.9f, 0.6f };
+			offset = { 0.0f, 0.85f, 0.0f };
+		}
+		else if (orientationInfo == Orientations::FRONT)
+		{
+			size = { 0.6f, 0.6f, 1.9f };
+			offset = { 0.0f, 0.0f, 0.85f };
+		}
+		else if (orientationInfo == Orientations::RIGHT)
+		{
+			size = { 1.9f, 0.6f, 0.6f };
+			offset = { 0.85f, 0.0f, 0.0f };
+		}
+		else if (orientationInfo == Orientations::BOTTOM)
+		{
+			size = { 0.6f, 1.9f, 0.6f };
+			offset = { 0.0f, -0.85f, 0.0f };
+		}
+		else if (orientationInfo == Orientations::BACK)
+		{
+			size = { 0.6f, 0.6f, 1.9f };
+			offset = { 0.0f, 0.0f, -0.85f };
+		}
+		else if (orientationInfo == Orientations::LEFT)
+		{
+			size = { 1.9f, 0.6f, 0.6f };
+			offset = { -0.85f, 0.0f, 0.0f };
+		}
+	}
 };
 
 struct CollisionResult

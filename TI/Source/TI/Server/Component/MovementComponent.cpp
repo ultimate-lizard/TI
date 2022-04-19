@@ -93,37 +93,37 @@ void MovementComponent::updateSideRotation(float dt)
 
 		if (!sideRotationInProgress)
 		{
-			sideRotationAxis = cross;
-			shouldRotate = true;
-			previousOrientationInfo = orientationInfo;
+			// Test new collision here
+			const glm::quat originalOrientation = transformComponent->getOrientation();
+
+			transformComponent->rotateInWorldSpace(glm::radians(90.0f), cross);
 
 			if (physicsComponent)
 			{
-				if (orientationInfo == Orientations::TOP)
+				CollisionBox box = physicsComponent->getCollisionBox();
+				box.orient(orientationInfo);
+
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), velocity, dt);
+				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] && !collisionResult.collidedAxis[orientationInfo.frontAxis])
 				{
-					physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
-				}
-				else if (orientationInfo == Orientations::FRONT)
-				{
-					physicsComponent->setCollisionBox({ { 0.6f, 0.6f, 1.9f }, { 0.0f, 0.0f, 0.85f } });
-				}
-				else if (orientationInfo == Orientations::RIGHT)
-				{
-					physicsComponent->setCollisionBox({ { 1.9f, 0.6f, 0.6f }, { 0.85f, 0.0f, 0.0f } });
-				}
-				else if (orientationInfo == Orientations::BOTTOM)
-				{
-					physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, -0.85f, 0.0f } });
-				}
-				else if (orientationInfo == Orientations::BACK)
-				{
-					physicsComponent->setCollisionBox({ { 0.6f, 0.6f, 1.9f }, { 0.0f, 0.0f, -0.85f} });
-				}
-				else if (orientationInfo == Orientations::LEFT)
-				{
-					physicsComponent->setCollisionBox({ { 1.9f, 0.6f, 0.6f }, { -0.85f, 0.0f, 0.0f } });
+					sideRotationAxis = cross;
+					shouldRotate = true;
+					previousOrientationInfo = orientationInfo;
+
+					physicsComponent->setCollisionBox(std::move(box));
+
+					transformComponent->setOrientation(originalOrientation);
 				}
 			}
+			
+			
+
+		/*	if (physicsComponent)
+			{
+				CollisionBox box = physicsComponent->getCollisionBox();
+				box.orient(orientationInfo);
+				
+			}*/
 		}
 	}
 

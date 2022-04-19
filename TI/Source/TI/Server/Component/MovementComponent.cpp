@@ -100,20 +100,30 @@ void MovementComponent::updateSideRotation(float dt)
 
 			if (physicsComponent)
 			{
-				CollisionBox box = physicsComponent->getCollisionBox();
-				box.orient(orientationInfo);
+				const CollisionBox originalBox = physicsComponent->getCollisionBox();
 
-				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), velocity, dt);
+				// Set new box for test
+				CollisionBox box = originalBox;
+				box.orient(orientationInfo);
+				physicsComponent->setCollisionBox(std::move(box));
+
+				// Test resolve
+				glm::vec3 testVelocity = velocity + getGravityVector() * 30.0f * dt;
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + walkDirection, testVelocity, dt);
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] && !collisionResult.collidedAxis[orientationInfo.frontAxis])
 				{
 					sideRotationAxis = cross;
 					shouldRotate = true;
 					previousOrientationInfo = orientationInfo;
-
-					physicsComponent->setCollisionBox(std::move(box));
-
-					transformComponent->setOrientation(originalOrientation);
+					std::cout << "Test successful" << std::endl;
 				}
+				else
+				{
+					std::cout << "Test failed" << std::endl;
+					physicsComponent->setCollisionBox(originalBox);
+				}
+
+				transformComponent->setOrientation(originalOrientation);
 			}
 			
 			

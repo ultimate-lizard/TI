@@ -282,6 +282,12 @@ glm::vec3 MovementComponent::getHeadPosition() const
 	{
 		glm::vec3 headPositionOriented;
 		headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
+
+		if (!orientationInfo.positive)
+		{
+			headPositionOriented *= -1.0f;
+		}
+
 		return transformComponent->getPosition() + headPositionOriented;
 	}
 

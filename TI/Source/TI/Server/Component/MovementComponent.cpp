@@ -52,7 +52,7 @@ void MovementComponent::init()
 
 void MovementComponent::tick(float dt)
 {
-	updateSideRotation(dt);
+	updatePlaneSideRotation(dt);
 
 	handleInput(dt);
 
@@ -70,7 +70,7 @@ void MovementComponent::tick(float dt)
 	}
 }
 
-void MovementComponent::updateSideRotation(float dt)
+void MovementComponent::updatePlaneSideRotation(float dt)
 {
 	if (!transformComponent)
 	{
@@ -93,7 +93,6 @@ void MovementComponent::updateSideRotation(float dt)
 
 		if (!sideRotationInProgress)
 		{
-			// Test new collision here
 			const glm::quat originalOrientation = transformComponent->getOrientation();
 
 			transformComponent->rotateInWorldSpace(glm::radians(90.0f), cross);
@@ -102,43 +101,40 @@ void MovementComponent::updateSideRotation(float dt)
 			{
 				const CollisionBox originalBox = physicsComponent->getCollisionBox();
 
-				// Set new box for test
+				// Set a new box for test
 				CollisionBox box = originalBox;
 				box.orient(orientationInfo);
 				physicsComponent->setCollisionBox(std::move(box));
 
 				// Test resolve
 				glm::vec3 testVelocity = velocity + getGravityVector() * 30.0f * dt;
-				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + walkDirection, testVelocity, dt);
-				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] && !collisionResult.collidedAxis[orientationInfo.frontAxis])
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), velocity, dt);
+
+				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
+					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
+					!collisionResult.collidedAxis[orientationInfo.heightAxis])
 				{
+					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
 					shouldRotate = true;
 					previousOrientationInfo = orientationInfo;
-					std::cout << "Test successful" << std::endl;
+					constrained = false;
 				}
 				else
 				{
-					std::cout << "Test failed" << std::endl;
+					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
+					constrained = true;
 				}
 
 				transformComponent->setOrientation(originalOrientation);
 			}
-			
-			
-
-		/*	if (physicsComponent)
-			{
-				CollisionBox box = physicsComponent->getCollisionBox();
-				box.orient(orientationInfo);
-				
-			}*/
 		}
 	}
 
 	if (shouldRotate)
 	{
+		constrained = false;
 		sideRotationInProgress = true;
 
 		const float rotationAngle = 90.0f;
@@ -280,15 +276,22 @@ glm::vec3 MovementComponent::getHeadPosition() const
 {
 	if (transformComponent)
 	{
-		glm::vec3 headPositionOriented;
-		headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
-
-		if (!orientationInfo.positive)
+		if (!constrained)
 		{
-			headPositionOriented *= -1.0f;
-		}
+			glm::vec3 headPositionOriented;
+			headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
 
-		return transformComponent->getPosition() + headPositionOriented;
+			if (!orientationInfo.positive)
+			{
+				headPositionOriented *= -1.0f;
+			}
+
+			return transformComponent->getPosition() + headPositionOriented;
+		}
+		else
+		{
+			return transformComponent->getPosition() + headPosition;
+		}
 	}
 
 	return glm::vec3(0.0f);

@@ -73,7 +73,7 @@ private:
 
 	glm::vec3 getGravityVector() const;
 
-	void updateSideRotation(float dt);
+	void updatePlaneSideRotation(float dt);
 
 private:
 	TransformComponent* transformComponent;
@@ -112,4 +112,7 @@ private:
 	glm::vec3 sideRotationAxis;
 
 	float rotationStartHeight = 0.0f;
+
+	// The player is laying on their side. Happens when the player crosses the side while being in a tight spot
+	bool constrained = false;
 };

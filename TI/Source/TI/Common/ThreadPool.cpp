@@ -16,10 +16,11 @@ ThreadPool::ThreadPool() :
 ThreadPool::~ThreadPool()
 {
 	stopping = true;
+	conditionalVariable.notify_all();
 
 	for (std::thread& thread : threads)
 	{
-		if (thread.joinable())
+		while (thread.joinable())
 		{
 			thread.join();
 		}
@@ -28,12 +29,15 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::pushTask(std::function<void()> task)
 {
+	if (!threads.empty())
 	{
-		std::unique_lock<std::mutex> lock(workMutex);
-		tasks.push(task);
-	}
+		{
+			std::unique_lock<std::mutex> lock(workMutex);
+			tasks.push(task);
+		}
 
-	conditionalVariable.notify_one();
+		conditionalVariable.notify_one();
+	}
 }
 
 void ThreadPool::startThread()
@@ -43,8 +47,6 @@ void ThreadPool::startThread()
 		std::function<void()> task;
 		{
 			std::unique_lock<std::mutex> lock(workMutex);
-
-			// std::cout << "Watining for a task" << std::endl;
 
 			conditionalVariable.wait(lock, [this]() {
 				return !tasks.empty() || stopping;
@@ -57,11 +59,9 @@ void ThreadPool::startThread()
 			}
 		}
 
-		// std::cout << "Working on the task" << std::endl;
 		if (task)
 		{
 			task();
 		}
-		// std::cout << "Finished the task" << std::endl;
 	}
 }

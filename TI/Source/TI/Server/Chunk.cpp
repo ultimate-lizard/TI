@@ -87,7 +87,12 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 
 unsigned int Chunk::getBlock(const glm::uvec3& pos) const
 {
-	return blocks[utils::positionToIndex(pos, {size, size, size})];
+	if (!blocks.empty())
+	{
+		return blocks[utils::positionToIndex(pos, { size, size, size })];
+	}
+	
+	return 0;
 }
 
 unsigned int Chunk::getBlock(size_t index) const

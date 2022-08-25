@@ -68,7 +68,7 @@ private:
 
 	Renderer* renderer;
 
-	std::unordered_map<size_t, ChunkMesh*> chunkMeshesBank;
+	std::unordered_map<size_t, std::unique_ptr<ChunkMesh>> chunkMeshesBank;
 	std::mutex meshesBankMutex;
 	std::vector<size_t> pendingChunks;
 	std::vector<glm::vec3> cachedVisibleChunksPositions;

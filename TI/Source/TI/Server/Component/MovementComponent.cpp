@@ -118,13 +118,11 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 					sideRotationAxis = cross;
 					shouldRotate = true;
 					previousOrientationInfo = orientationInfo;
-					constrained = false;
 				}
 				else
 				{
 					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
-					constrained = true;
 				}
 
 				transformComponent->setOrientation(originalOrientation);
@@ -276,22 +274,15 @@ glm::vec3 MovementComponent::getHeadPosition() const
 {
 	if (transformComponent)
 	{
-		if (!constrained)
-		{
-			glm::vec3 headPositionOriented;
-			headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
+		glm::vec3 headPositionOriented;
+		headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
 
-			if (!orientationInfo.positive)
-			{
-				headPositionOriented *= -1.0f;
-			}
-
-			return transformComponent->getPosition() + headPositionOriented;
-		}
-		else
+		if (!orientationInfo.positive)
 		{
-			return transformComponent->getPosition() + headPosition;
+			headPositionOriented *= -1.0f;
 		}
+
+		return transformComponent->getPosition() + headPositionOriented;
 	}
 
 	return glm::vec3(0.0f);

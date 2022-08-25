@@ -47,21 +47,9 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 LocalClient::~LocalClient()
 {
-	for (auto& mesh : chunkMeshesBank)
-	{
-		if (mesh.second)
-		{
-			delete mesh.second;
-		}
-	}
-
-	// TODO: Replace storing chunk meshes from raw pointers to smart pointers
-	for (auto pair : chunkMeshesBank)
-	{
-		delete pair.second;
-	}
-
+	meshesBankMutex.lock();
 	chunkMeshesBank.clear();
+	meshesBankMutex.unlock();
 }
 
 void LocalClient::connect(const std::string& ip, int port)
@@ -177,7 +165,7 @@ void LocalClient::update(float dt)
 							}
 							else
 							{
-								pool.insertChunkMesh(plane, foundIter->second);
+								pool.insertChunkMesh(plane, foundIter->second.get());
 							}
 						}
 						// If mesh is not yet built
@@ -262,7 +250,7 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 		chunkMeshesBank[chunkIndex]->buildGreedy();
 
 		pool.freeChunkMesh(chunkIndex);
-		pool.insertChunkMesh(plane, chunkMeshesBank[chunkIndex]);
+		pool.insertChunkMesh(plane, chunkMeshesBank[chunkIndex].get());
 	}
 
 	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
@@ -289,7 +277,7 @@ void LocalClient::updateBlock(const glm::uvec3& position)
 			{
 				chunkMeshesBank[neighborChunkIndex]->buildGreedy();
 				pool.freeChunkMesh(neighborChunkIndex);
-				pool.insertChunkMesh(plane, chunkMeshesBank[neighborChunkIndex]);
+				pool.insertChunkMesh(plane, chunkMeshesBank[neighborChunkIndex].get());
 			}
 		}
 	}

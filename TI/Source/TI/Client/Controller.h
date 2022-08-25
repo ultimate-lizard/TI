@@ -40,7 +40,6 @@ private:
 	void handleLookHorizontalRate(float value);
 
 	void quitGame();
-	void releaseMouse();
 
 	void castRayWithCollision();
 
@@ -54,7 +53,7 @@ private:
 	void toggleFrustumCulling();
 
 	void jump();
-
+	void toggleCrouch();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;

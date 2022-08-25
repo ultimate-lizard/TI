@@ -29,6 +29,7 @@ public:
 	std::unique_ptr<Component> clone() const override;
 
 	void jump();
+	void toggleCrouch();
 
 	void setPitchRate(float pitchRate);
 	float getPitchRate() const;
@@ -93,6 +94,7 @@ private:
 	float walkAcceleration;
 	float walkAccelerationInAir;
 	float walkMaxSpeed;
+	float crawlMaxSpeed;
 	float flightSpeed;
 	float breakingFactor;
 
@@ -107,7 +109,7 @@ private:
 	OrientationInfo previousOrientationInfo;
 
 	bool shouldRotate;
-	bool sideRotationInProgress;
+	bool planetSideRotationInProgress;
 	float currentRotationAngle;
 	glm::vec3 sideRotationAxis;
 
@@ -115,4 +117,7 @@ private:
 
 	// The player is laying on their side. Happens when the player crosses the side while being in a tight spot
 	bool constrained = false;
+
+	bool crouching = false;
+	bool crouchingInProgress = false;
 };

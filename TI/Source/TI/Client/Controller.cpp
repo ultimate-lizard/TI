@@ -100,12 +100,6 @@ void PlayerController::quitGame()
 	}
 }
 
-void PlayerController::releaseMouse()
-{
-	auto app = client->getApplication();
-	app->getInput()->releaseMouse();
-}
-
 void PlayerController::castRayWithCollision()
 {
 	static int entityCount = 0;
@@ -285,6 +279,11 @@ void PlayerController::jump()
 	}
 }
 
+void PlayerController::toggleCrouch()
+{
+	movementComponent->toggleCrouch();
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -299,7 +298,7 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindAxis("VerticalLookRate", std::bind(&PlayerController::handleLookVerticalRate, this, std::placeholders::_1));
 
 		inputHandler->bindKey("QuitGame", ActionInputType::Press, std::bind(&PlayerController::quitGame, this));
-		inputHandler->bindKey("ReleaseMouse", ActionInputType::Press, std::bind(&PlayerController::releaseMouse, this));
+		inputHandler->bindKey("ReleaseMouse", ActionInputType::Press, std::bind(&PlayerController::toggleCrouch, this));
 
 		inputHandler->bindKey("SpawnBlock", ActionInputType::Press, std::bind(&PlayerController::placeBlock, this));
 		inputHandler->bindKey("DestroyBlock", ActionInputType::Press, std::bind(&PlayerController::destroyBlock, this));

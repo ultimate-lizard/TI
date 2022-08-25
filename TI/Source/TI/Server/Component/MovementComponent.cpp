@@ -30,13 +30,14 @@ MovementComponent::MovementComponent() :
 	walkAcceleration(35.0f),
 	walkAccelerationInAir(5.0f),
 	walkMaxSpeed(3.5f),
+	crawlMaxSpeed(1.0f),
 	flightSpeed(25.0f),
 	breakingFactor(1.0f),
 	jumpVelocity(8.5f),
 	flightMode(false),
 	movementState(MovementState::Fall),
 	shouldRotate(false),
-	sideRotationInProgress(false),
+	planetSideRotationInProgress(false),
 	currentRotationAngle(0.0f)
 {
 }
@@ -55,6 +56,62 @@ void MovementComponent::tick(float dt)
 	updatePlaneSideRotation(dt);
 
 	handleInput(dt);
+
+	auto cameraComponent = entity->findComponent<CameraComponent>();
+
+	// update crouch:
+	if (crouchingInProgress)
+	{
+		const float step = 4.0f;
+		const float headPositionCrouching = 0.575f;
+		const float headPositionStanding = 1.75f;
+
+		if (crouching)
+		{
+			headPosition.y -= step * dt;
+
+			if (headPosition.y < headPositionCrouching)
+			{
+				headPosition.y = headPositionCrouching;
+			}
+
+			if (cameraComponent)
+			{
+				glm::vec3 cameraPosition = cameraComponent->getPosition();
+				cameraPosition.y -= step * dt;
+
+				if (cameraPosition.y < headPositionCrouching)
+				{
+					cameraPosition.y = headPositionCrouching;
+					crouchingInProgress = false;
+				}
+
+				cameraComponent->setPosition(cameraPosition);
+			}
+		}
+		else
+		{
+			headPosition.y += step * dt;
+			if (headPosition.y > headPositionStanding)
+			{
+				headPosition.y = headPositionStanding;
+			}
+
+			if (cameraComponent)
+			{
+				glm::vec3 cameraPosition = cameraComponent->getPosition();
+				cameraPosition.y += step * dt;
+
+				if (cameraPosition.y > headPositionStanding)
+				{
+					cameraPosition.y = headPositionStanding;
+					crouchingInProgress = false;
+				}
+
+				cameraComponent->setPosition(cameraPosition);
+			}
+		}
+	}
 
 	switch (movementState)
 	{
@@ -91,10 +148,11 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 		glm::vec3 cross = glm::cross(previousHeightVector, currentHeightVector);
 
-		if (!sideRotationInProgress)
+		if (!planetSideRotationInProgress)
 		{
 			const glm::quat originalOrientation = transformComponent->getOrientation();
 
+			// Rotate for test
 			transformComponent->rotateInWorldSpace(glm::radians(90.0f), cross);
 
 			if (physicsComponent)
@@ -107,13 +165,19 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				physicsComponent->setCollisionBox(std::move(box));
 
 				// Test resolve
-				glm::vec3 testVelocity = velocity + getGravityVector() * 30.0f * dt;
 				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), velocity, dt);
 
+				// TODO: Add another collision box to prevent colliding camera with world during side transition
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
 					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
 					!collisionResult.collidedAxis[orientationInfo.heightAxis])
 				{
+					if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					{
+						cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
+					}
+					headPosition = { 0.0f, 1.75f, 0.0f };
+
 					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
 					shouldRotate = true;
@@ -123,6 +187,15 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				{
 					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
+					if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					{
+						cameraComponent->setPosition({ 0.0f, 0.0f, 0.0f });
+					}
+					headPosition = { 0.0f, 0.0f, 0.0f };
+
+					sideRotationAxis = cross;
+					shouldRotate = true;
+					previousOrientationInfo = orientationInfo;
 				}
 
 				transformComponent->setOrientation(originalOrientation);
@@ -133,7 +206,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 	if (shouldRotate)
 	{
 		constrained = false;
-		sideRotationInProgress = true;
+		planetSideRotationInProgress = true;
 
 		const float rotationAngle = 90.0f;
 		const float rotationStep = 300.0f * dt;
@@ -150,7 +223,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 			currentRotationAngle = 0.0f;
 			shouldRotate = false;
-			sideRotationInProgress = false;
+			planetSideRotationInProgress = false;
 		}
 	}
 }
@@ -246,6 +319,51 @@ void MovementComponent::jump()
 	{
 		velocity += -getGravityVector() * jumpVelocity;
 		movementState = MovementState::Fall;
+	}
+}
+
+void MovementComponent::toggleCrouch()
+{
+	if (!crouchingInProgress)
+	{
+		crouching = !crouching;
+		crouchingInProgress = true;
+
+		if (crouching)
+		{
+			CollisionBox box = physicsComponent->getCollisionBox();
+			box.size.y = 0.95f;
+			box.offset.y = 0.425f;
+			physicsComponent->setCollisionBox(box);
+		}
+		else
+		{
+			CollisionBox box = physicsComponent->getCollisionBox();
+
+			// Test collision
+			// TODO: Make a function to not take dt as a parameter!!
+			CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + glm::vec3(0.0f, box.size.y, 0.0f), velocity, 0.01f);
+
+			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
+			{
+				crouching = true;
+				crouchingInProgress = false;
+
+				CollisionBox box = physicsComponent->getCollisionBox();
+				box.size.y = 0.95f;
+				box.offset.y = 0.425f;
+				physicsComponent->setCollisionBox(box);
+			}
+			else
+			{
+				box.size.y = 1.9f;
+				box.offset.y = 0.85f;
+				physicsComponent->setCollisionBox(box);
+				glm::vec3 pos = transformComponent->getPosition();
+				pos.y += 0.1f;
+				transformComponent->setPosition(pos);
+			}
+		}
 	}
 }
 
@@ -350,7 +468,7 @@ void MovementComponent::handleWalk(float dt)
 		}
 	}
 
-	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
+	velocity = clampVectorMagnitude(velocity, crouching ? crawlMaxSpeed : walkMaxSpeed);
 
 	if (transformComponent)
 	{
@@ -416,7 +534,7 @@ void MovementComponent::handleFall(float dt)
 				{
 					// On land
 					movementState = MovementState::Walk;
-					velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
+					velocity = clampVectorMagnitude(velocity, crouching ? crawlMaxSpeed : walkMaxSpeed);
 				}
 			}
 

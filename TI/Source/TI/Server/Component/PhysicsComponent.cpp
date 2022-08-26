@@ -64,7 +64,7 @@ void PhysicsComponent::tick(float dt)
 		if (transformComponent)
 		{
 			glm::vec3 position = transformComponent->getPosition();
-			drawDebugBox({ position.x + collisionBox.offset.x - collisionBox.size.x / 2.0f, position.y + collisionBox.offset.y - collisionBox.size.y / 2.0f , position.z + collisionBox.offset.z - collisionBox.size.z / 2.0f }, collisionBox.size, { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f, false);
+			drawDebugBox({ position.x + collisionBox.getOffset().x - collisionBox.getSize().x / 2.0f, position.y + collisionBox.getOffset().y - collisionBox.getSize().y / 2.0f , position.z + collisionBox.getOffset().z - collisionBox.getSize().z / 2.0f}, collisionBox.getSize(), {0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, false);
 		}
 	}
 }
@@ -87,7 +87,7 @@ CollisionBox PhysicsComponent::getCollisionBox() const
 CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, const glm::vec3& velocity, float dt)
 {
 	CollisionResult result;
-	result.adjustedPosition = position + collisionBox.offset;
+	result.adjustedPosition = position + collisionBox.getOffset();
 	result.adjustedVelocity = velocity;
 
 	std::vector<std::pair<float, glm::vec3>> collisions;
@@ -100,11 +100,11 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 	float zRangeMin = velocity.z < 0.0f ? velocity.z * dt : 0.0f;
 	float zRangeMax = velocity.z > 0.0f ? velocity.z * dt : 0.0f;
 
-	for (int x = -1 - static_cast<int>(collisionBox.size.x / 2.0f + xRangeMin); x <= 1 + static_cast<int>(collisionBox.size.x / 2.0f + xRangeMax); ++x)
+	for (int x = -1 - static_cast<int>(collisionBox.getSize().x / 2.0f + xRangeMin); x <= 1 + static_cast<int>(collisionBox.getSize().x / 2.0f + xRangeMax); ++x)
 	{
-		for (int y = -1 - static_cast<int>(collisionBox.size.y / 2.0f + yRangeMin); y <= 1 + static_cast<int>(collisionBox.size.y / 2.0f + yRangeMax); ++y)
+		for (int y = -1 - static_cast<int>(collisionBox.getSize().y / 2.0f + yRangeMin); y <= 1 + static_cast<int>(collisionBox.getSize().y / 2.0f + yRangeMax); ++y)
 		{
-			for (int z = -1 - static_cast<int>(collisionBox.size.z / 2.0f + zRangeMin); z <= 1 + static_cast<int>(collisionBox.size.z / 2.0f + zRangeMax); ++z)
+			for (int z = -1 - static_cast<int>(collisionBox.getSize().z / 2.0f + zRangeMin); z <= 1 + static_cast<int>(collisionBox.getSize().z / 2.0f + zRangeMax); ++z)
 			{
 				glm::vec3 blockPosition = glm::ivec3(result.adjustedPosition);
 				blockPosition.x += x;
@@ -162,9 +162,9 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.x < 0.0f)
-									result.adjustedPosition.x = blockPosition.x + 1.0f + collisionBox.size.x / 2.0f;
+									result.adjustedPosition.x = blockPosition.x + 1.0f + collisionBox.getSize().x / 2.0f;
 								else if (velocity.x > 0.0f)
-									result.adjustedPosition.x = blockPosition.x - collisionBox.size.x / 2.0f;
+									result.adjustedPosition.x = blockPosition.x - collisionBox.getSize().x / 2.0f;
 
 								result.adjustedVelocity.x = 0.0f;
 								result.collidedAxis.x = true;
@@ -179,9 +179,9 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.y < 0.0f)
-									result.adjustedPosition.y = blockPosition.y + 1.0f + collisionBox.size.y / 2.0f;
+									result.adjustedPosition.y = blockPosition.y + 1.0f + collisionBox.getSize().y / 2.0f;
 								else if (velocity.y > 0.0f)
-									result.adjustedPosition.y = blockPosition.y - collisionBox.size.y / 2.0f;
+									result.adjustedPosition.y = blockPosition.y - collisionBox.getSize().y / 2.0f;
 
 								result.adjustedVelocity.y = 0.0f;
 								result.collidedAxis.y = true;
@@ -196,9 +196,9 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 							if (checkCollision(newPosition, blockCenterPosition, collisionBox, { glm::vec3(1.0f), glm::vec3(0.0f) }))
 							{
 								if (velocity.z < 0.0f)
-									result.adjustedPosition.z = blockPosition.z + 1.0f + collisionBox.size.z / 2.0f;
+									result.adjustedPosition.z = blockPosition.z + 1.0f + collisionBox.getSize().z / 2.0f;
 								else if (velocity.z > 0.0f)
-									result.adjustedPosition.z = blockPosition.z - collisionBox.size.z / 2.0f;
+									result.adjustedPosition.z = blockPosition.z - collisionBox.getSize().z / 2.0f;
 
 								result.adjustedVelocity.z = 0.0f;
 								result.collidedAxis.z = true;
@@ -213,15 +213,15 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 		}
 	}
 
-	result.adjustedPosition -= collisionBox.offset;
+	result.adjustedPosition -= collisionBox.getOffset();
 	return result;
 }
 
 bool PhysicsComponent::checkCollision(const glm::vec3& box1pos, const glm::vec3& box2pos, const CollisionBox& box1, const CollisionBox& box2)
 {
-	if ((box1pos.x - box1.size.x / 2.0f < box2pos.x + box2.size.x / 2.0f && box1pos.x + box1.size.x / 2.0f > box2pos.x - box2.size.x / 2.0f) &&
-		(box1pos.y - box1.size.y / 2.0f < box2pos.y + box2.size.y / 2.0f && box1pos.y + box1.size.y / 2.0f > box2pos.y - box2.size.y / 2.0f) &&
-		(box1pos.z - box1.size.z / 2.0f < box2pos.z + box2.size.z / 2.0f && box1pos.z + box1.size.z / 2.0f > box2pos.z - box2.size.z / 2.0f))
+	if ((box1pos.x - box1.getSize().x / 2.0f < box2pos.x + box2.getSize().x / 2.0f && box1pos.x + box1.getSize().x / 2.0f > box2pos.x - box2.getSize().x / 2.0f) &&
+		(box1pos.y - box1.getSize().y / 2.0f < box2pos.y + box2.getSize().y / 2.0f && box1pos.y + box1.getSize().y / 2.0f > box2pos.y - box2.getSize().y / 2.0f) &&
+		(box1pos.z - box1.getSize().z / 2.0f < box2pos.z + box2.getSize().z / 2.0f && box1pos.z + box1.getSize().z / 2.0f > box2pos.z - box2.getSize().z / 2.0f))
 	{
 		if (renderCollisions)
 		{
@@ -240,29 +240,29 @@ glm::vec3 PhysicsComponent::calculateAabbDistanceTo(const glm::vec3& box1pos, co
 
 	if (box1pos.x < box2pos.x)
 	{
-		distance.x = (box2pos.x - box2.size.x / 2.0f) - (box1pos.x + box1.size.x / 2.0f);
+		distance.x = (box2pos.x - box2.getSize().x / 2.0f) - (box1pos.x + box1.getSize().x / 2.0f);
 	}
 	else if (box1pos.x > box2pos.x)
 	{
-		distance.x = (box1pos.x - box1.size.x / 2.0f) - (box2pos.x + box2.size.x / 2.0f);
+		distance.x = (box1pos.x - box1.getSize().x / 2.0f) - (box2pos.x + box2.getSize().x / 2.0f);
 	}
 
 	if (box1pos.y < box2pos.y)
 	{
-		distance.y = (box2pos.y - box2.size.y / 2.0f) - (box1pos.y + box1.size.y / 2.0f);
+		distance.y = (box2pos.y - box2.getSize().y / 2.0f) - (box1pos.y + box1.getSize().y / 2.0f);
 	}
 	else if (box1pos.y > box2pos.y)
 	{
-		distance.y = (box1pos.y - box1.size.y / 2.0f) - (box2pos.y + box2.size.y / 2.0f);
+		distance.y = (box1pos.y - box1.getSize().y / 2.0f) - (box2pos.y + box2.getSize().y / 2.0f);
 	}
 
 	if (box1pos.z < box2pos.z)
 	{
-		distance.z = (box2pos.z - box2.size.z / 2.0f) - (box1pos.z + box1.size.z / 2.0f);
+		distance.z = (box2pos.z - box2.getSize().z / 2.0f) - (box1pos.z + box1.getSize().z / 2.0f);
 	}
 	else if (box1pos.z > box2pos.z)
 	{
-		distance.z = (box1pos.z - box1.size.z / 2.0f) - (box2pos.z + box2.size.z / 2.0f);
+		distance.z = (box1pos.z - box1.getSize().z / 2.0f) - (box2pos.z + box2.getSize().z / 2.0f);
 	}
 
 	return distance;
@@ -276,9 +276,9 @@ std::optional<RayCollisionResult> PhysicsComponent::checkRayVsAabb(const glm::ve
 	near.z = (box2pos.z - origin.z) / direction.z;
 
 	glm::vec3 far;
-	far.x = (box2pos.x + box2.size.x - origin.x) / direction.x;
-	far.y = (box2pos.y + box2.size.y - origin.y) / direction.y;
-	far.z = (box2pos.z + box2.size.z - origin.z) / direction.z;
+	far.x = (box2pos.x + box2.getSize().x - origin.x) / direction.x;
+	far.y = (box2pos.y + box2.getSize().y - origin.y) / direction.y;
+	far.z = (box2pos.z + box2.getSize().z - origin.z) / direction.z;
 
 	if (std::isnan(near.x) || std::isnan(near.y) || std::isnan(near.z)) return {};
 	if (std::isnan(far.x) || std::isnan(far.y) || std::isnan(far.z)) return {};

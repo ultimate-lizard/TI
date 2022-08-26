@@ -174,7 +174,7 @@ void PlayerController::placeBlock()
 									{
 										glm::vec3 blockCenterPosition {blockPosition.x + 0.5f, blockPosition.y + 0.5f, blockPosition.z + 0.5f};
 
-										if (!physicsComponent->checkCollision(blockCenterPosition, transformComponent->getPosition() + physicsComponent->getCollisionBox().offset, {glm::vec3(1.0f), glm::vec3(0.0f)}, physicsComponent->getCollisionBox()))
+										if (!physicsComponent->checkCollision(blockCenterPosition, transformComponent->getPosition() + physicsComponent->getCollisionBox().getOffset(), {glm::vec3(1.0f), glm::vec3(0.0f)}, physicsComponent->getCollisionBox()))
 										{
 											plane->spawnBlock(blockPosition, 1);
 											if (client)

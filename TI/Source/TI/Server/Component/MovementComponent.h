@@ -109,7 +109,7 @@ private:
 	OrientationInfo previousOrientationInfo;
 
 	bool shouldRotate;
-	bool planetSideRotationInProgress;
+	bool planeSideTransitionInProgress;
 	float currentRotationAngle;
 	glm::vec3 sideRotationAxis;
 

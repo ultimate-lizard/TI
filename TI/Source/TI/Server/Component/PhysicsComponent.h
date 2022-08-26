@@ -14,45 +14,86 @@ class TransformComponent;
 struct CollisionBox
 {
 private:
-	//glm::vec3 originalSize;
-	//glm::vec3 originalOffset;
+	glm::vec3 unorientedSize;
+	glm::vec3 unorientedOffset;
 
-	//OrientationInfo cachedOrientation;
-
-public:
 	glm::vec3 size;
 	glm::vec3 offset;
 
-	//inline CollisionBox(const glm::vec3& size, const glm::vec3& offset) :
-	//	originalSize(size),
-	//	originalOffset(offset)
-	//{
+	OrientationInfo cachedOrientation;
 
-	//}
+public:
+	inline CollisionBox() :
+		unorientedSize(0.0f),
+		unorientedOffset(0.0f),
+		size(0.0f),
+		offset(0.0f),
+		cachedOrientation()
+	{
+
+	}
+
+	inline CollisionBox(const glm::vec3& size, const glm::vec3& offset) :
+		unorientedSize(size),
+		unorientedOffset(offset),
+		size(size),
+		offset(offset),
+		cachedOrientation()
+	{
+
+	}
+
+	inline void setSize(const glm::vec3& newSize)
+	{
+		unorientedSize = newSize;
+		orient(cachedOrientation);
+	}
+
+	inline void setOffset(const glm::vec3& newOffset)
+	{
+		unorientedOffset = newOffset;
+		orient(cachedOrientation);
+	}
+
+	// Returns oriented in space size
+	inline glm::vec3 getSize() const
+	{
+		return size;
+	}
+
+	// Returns oriented in space offset
+	inline glm::vec3 getOffset() const
+	{
+		return offset;
+	}
+
+	// Returns oriented in space size
+	inline glm::vec3 getUnorientedSize() const
+	{
+		return unorientedSize;
+	}
+
+	// Returns oriented in space offset
+	inline glm::vec3 getUnorientedOffset() const
+	{
+		return unorientedOffset;
+	}
 
 	// TODO: Unhardcore this!
 	inline void orient(const OrientationInfo& orientationInfo)
 	{
-		//cachedOrientation = orientationInfo;
-
-		static bool setOriginals = false;
-
-		static glm::vec3 originalSize;
-		static glm::vec3 originalOffset;
-
-		if (!setOriginals)
+		if (cachedOrientation != orientationInfo)
 		{
-			originalSize = size;
-			originalOffset = offset;
+			cachedOrientation = orientationInfo;
 		}
 
-		size[orientationInfo.sideAxis] = originalSize.x;
-		size[orientationInfo.heightAxis] = originalSize.y;
-		size[orientationInfo.frontAxis] = originalSize.z;
+		size[orientationInfo.sideAxis] = unorientedSize.x;
+		size[orientationInfo.heightAxis] = unorientedSize.y;
+		size[orientationInfo.frontAxis] = unorientedSize.z;
 
-		offset[orientationInfo.sideAxis] = originalOffset.x;
-		offset[orientationInfo.heightAxis] = originalOffset.y;
-		offset[orientationInfo.frontAxis] = originalOffset.z;
+		offset[orientationInfo.sideAxis] = unorientedOffset.x;
+		offset[orientationInfo.heightAxis] = unorientedOffset.y;
+		offset[orientationInfo.frontAxis] = unorientedOffset.z;
 
 		if (!orientationInfo.positive)
 		{
@@ -62,42 +103,6 @@ public:
 				offset[i] *= -1.0f;
 			}
 		}
-
-		setOriginals = true;
-		
-		/*if (orientationInfo == Orientations::TOP)
-		{
-			size = { 0.6f, 1.9f, 0.6f };
-			offset = { 0.0f, 0.85f, 0.0f };
-
-		}
-		else if (orientationInfo == Orientations::FRONT)
-		{
-			1 2 0
-			y z x
-			size = { 0.6f, 0.6f, 1.9f };
-			offset = { 0.0f, 0.0f, 0.85f };
-		}
-		else if (orientationInfo == Orientations::RIGHT)
-		{
-			size = { 1.9f, 0.6f, 0.6f };
-			offset = { 0.85f, 0.0f, 0.0f };
-		}
-		else if (orientationInfo == Orientations::BOTTOM)
-		{
-			size = { 0.6f, 1.9f, 0.6f };
-			offset = { 0.0f, -0.85f, 0.0f };
-		}
-		else if (orientationInfo == Orientations::BACK)
-		{
-			size = { 0.6f, 0.6f, 1.9f };
-			offset = { 0.0f, 0.0f, -0.85f };
-		}
-		else if (orientationInfo == Orientations::LEFT)
-		{
-			size = { 1.9f, 0.6f, 0.6f };
-			offset = { -0.85f, 0.0f, 0.0f };
-		}*/
 	}
 };
 

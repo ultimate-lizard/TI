@@ -61,7 +61,7 @@ void Application::start()
 	uint64_t currentFrame = SDL_GetPerformanceCounter();
 	uint64_t lastFrame = 0;
 
-	const float DT = 0.001f;
+	const float DT = 0.0069f;
 	float accumulator = 0.0f;
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);

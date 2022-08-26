@@ -62,7 +62,7 @@ void MovementComponent::tick(float dt)
 	// update crouch:
 	if (crouchingInProgress)
 	{
-		const float step = 4.0f;
+		const float step = 3.0f;
 		const float headPositionCrouching = 0.575f;
 		const float headPositionStanding = 1.75f;
 
@@ -172,11 +172,11 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
 					!collisionResult.collidedAxis[orientationInfo.heightAxis])
 				{
-					if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					/*if (auto cameraComponent = entity->findComponent<CameraComponent>())
 					{
 						cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
 					}
-					headPosition = { 0.0f, 1.75f, 0.0f };
+					headPosition = { 0.0f, 1.75f, 0.0f };*/
 
 					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
@@ -187,15 +187,15 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				{
 					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
-					if (auto cameraComponent = entity->findComponent<CameraComponent>())
-					{
-						cameraComponent->setPosition({ 0.0f, 0.0f, 0.0f });
-					}
-					headPosition = { 0.0f, 0.0f, 0.0f };
+					//if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					//{
+					//	cameraComponent->setPosition({ 0.0f, 0.0f, 0.0f });
+					//}
+					//headPosition = { 0.0f, 0.0f, 0.0f };
 
-					sideRotationAxis = cross;
-					shouldRotate = true;
-					previousOrientationInfo = orientationInfo;
+					//sideRotationAxis = cross;
+					//shouldRotate = true;
+					//previousOrientationInfo = orientationInfo;
 				}
 
 				transformComponent->setOrientation(originalOrientation);
@@ -211,14 +211,14 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		const float rotationAngle = 90.0f;
 		const float rotationStep = 300.0f * dt;
 
-		if (currentRotationAngle + rotationStep <= rotationAngle)
+		if (currentRotationAngle < rotationAngle)
 		{
 			transformComponent->rotateInWorldSpace(glm::radians(rotationStep), sideRotationAxis);
 			currentRotationAngle += rotationStep;
 		}
 		else
 		{
-			const float remainingRotationStep = currentRotationAngle + rotationStep - currentRotationAngle;
+			const float remainingRotationStep = rotationAngle - currentRotationAngle;
 			transformComponent->rotateInWorldSpace(glm::radians(remainingRotationStep), sideRotationAxis);
 
 			currentRotationAngle = 0.0f;
@@ -342,7 +342,7 @@ void MovementComponent::toggleCrouch()
 
 			// Test collision
 			// TODO: Make a function to not take dt as a parameter!!
-			CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + glm::vec3(0.0f, box.size.y, 0.0f), velocity, 0.01f);
+			CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + glm::vec3(0.0f, box.size.y, 0.0f) + walkDirection, velocity, 1.0f);
 
 			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
 			{

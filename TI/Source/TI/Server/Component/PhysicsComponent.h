@@ -13,19 +13,68 @@ class TransformComponent;
 
 struct CollisionBox
 {
+private:
+	//glm::vec3 originalSize;
+	//glm::vec3 originalOffset;
+
+	//OrientationInfo cachedOrientation;
+
+public:
 	glm::vec3 size;
 	glm::vec3 offset;
+
+	//inline CollisionBox(const glm::vec3& size, const glm::vec3& offset) :
+	//	originalSize(size),
+	//	originalOffset(offset)
+	//{
+
+	//}
 
 	// TODO: Unhardcore this!
 	inline void orient(const OrientationInfo& orientationInfo)
 	{
-		if (orientationInfo == Orientations::TOP)
+		//cachedOrientation = orientationInfo;
+
+		static bool setOriginals = false;
+
+		static glm::vec3 originalSize;
+		static glm::vec3 originalOffset;
+
+		if (!setOriginals)
+		{
+			originalSize = size;
+			originalOffset = offset;
+		}
+
+		size[orientationInfo.sideAxis] = originalSize.x;
+		size[orientationInfo.heightAxis] = originalSize.y;
+		size[orientationInfo.frontAxis] = originalSize.z;
+
+		offset[orientationInfo.sideAxis] = originalOffset.x;
+		offset[orientationInfo.heightAxis] = originalOffset.y;
+		offset[orientationInfo.frontAxis] = originalOffset.z;
+
+		if (!orientationInfo.positive)
+		{
+			for (size_t i = 0; i < 3; ++i)
+			{
+				// newSize[i] *= -1.0f;
+				offset[i] *= -1.0f;
+			}
+		}
+
+		setOriginals = true;
+		
+		/*if (orientationInfo == Orientations::TOP)
 		{
 			size = { 0.6f, 1.9f, 0.6f };
 			offset = { 0.0f, 0.85f, 0.0f };
+
 		}
 		else if (orientationInfo == Orientations::FRONT)
 		{
+			1 2 0
+			y z x
 			size = { 0.6f, 0.6f, 1.9f };
 			offset = { 0.0f, 0.0f, 0.85f };
 		}
@@ -48,7 +97,7 @@ struct CollisionBox
 		{
 			size = { 1.9f, 0.6f, 0.6f };
 			offset = { -0.85f, 0.0f, 0.0f };
-		}
+		}*/
 	}
 };
 

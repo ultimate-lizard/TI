@@ -14,8 +14,6 @@
 #include <TI/Client/DebugInformation.h>
 #include <TI/ResourceManager.h>
 
-static const char* GAME_TITLE = "TI";
-
 Application::Application() :
 	simulating(false),
 	splitScreenManager(this)
@@ -38,7 +36,7 @@ Application::Application() :
 	// TODO: Load config
 
 	// TODO: Create window using config
-	window.init(GAME_TITLE);
+	window.init(std::string(GAME_TITLE) + " - !!!!!!!!!!!!! THE GAME IS LOADING, PLEASE WAIT !!!!!!!!!!!!!");
 }
 
 Application::Application(const std::vector<std::string>& args) :

@@ -54,6 +54,11 @@ Server::Server(Application* app) :
 	app(app), shuttingDown(false), plane(nullptr)
 {
 	plane = new Plane(glm::vec3(1.0f), { 10, 10, 10 }, 16);
+
+	if (app)
+	{
+		app->getWindow()->setTitle(GAME_TITLE);
+	}
 }
 
 Server::~Server()

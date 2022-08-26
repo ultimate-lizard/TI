@@ -74,3 +74,9 @@ bool Window::hasFocus() const
 
 	return flags & SDL_WINDOW_INPUT_FOCUS;
 }
+
+void Window::setTitle(const std::string& newTitle)
+{
+	title = newTitle;
+	SDL_SetWindowTitle(sdlWindow, newTitle.c_str());
+}

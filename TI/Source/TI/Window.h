@@ -30,6 +30,8 @@ public:
 	const int DEFAULT_WINDOW_WIDTH;
 	const int DEFAULT_WINDOW_HEIGHT;
 
+	void setTitle(const std::string& newTitle);
+
 private:
 	SDL_Window* sdlWindow;
 

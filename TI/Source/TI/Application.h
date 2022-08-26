@@ -11,6 +11,7 @@
 
 static const char* CONFIG_FOLDER = "../Config/";
 static const char* CONFIG_EXTENSION = ".cfg";
+static const char* GAME_TITLE = "Technomagic Intergalactical";
 
 class Renderer;
 class Input;

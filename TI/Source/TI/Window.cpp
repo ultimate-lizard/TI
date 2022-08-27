@@ -80,3 +80,8 @@ void Window::setTitle(const std::string& newTitle)
 	title = newTitle;
 	SDL_SetWindowTitle(sdlWindow, newTitle.c_str());
 }
+
+void Window::maximize()
+{
+	SDL_MaximizeWindow(sdlWindow);
+}

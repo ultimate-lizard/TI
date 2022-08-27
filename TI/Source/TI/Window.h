@@ -31,6 +31,7 @@ public:
 	const int DEFAULT_WINDOW_HEIGHT;
 
 	void setTitle(const std::string& newTitle);
+	void maximize();
 
 private:
 	SDL_Window* sdlWindow;

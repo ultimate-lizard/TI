@@ -75,6 +75,7 @@ private:
 	glm::vec3 getGravityVector() const;
 
 	void updatePlaneSideRotation(float dt);
+	void updateCrouchTransition(float dt);
 
 private:
 	TransformComponent* transformComponent;

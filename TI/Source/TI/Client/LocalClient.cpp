@@ -171,12 +171,11 @@ void LocalClient::update(float dt)
 						// If mesh is not yet built
 						else
 						{
-							meshesBankMutex.unlock();
 							// If not pending, create task
 							if (std::find(pendingChunks.begin(), pendingChunks.end(), chunkIndex) == pendingChunks.end())
 							{
 								{
-									std::unique_lock<std::mutex> lock(meshesBankMutex);
+									// std::unique_lock<std::mutex> lock(meshesBankMutex);
 									pendingChunks.push_back(chunkIndex);
 								}
 
@@ -190,6 +189,7 @@ void LocalClient::update(float dt)
 									}
 								});
 							}
+							meshesBankMutex.unlock();
 						}
 					}
 					else

@@ -55,9 +55,11 @@ Server::Server(Application* app) :
 {
 	plane = new Plane(glm::vec3(1.0f), { 10, 10, 10 }, 16);
 
+	// TODO: Remove this
 	if (app)
 	{
 		app->getWindow()->setTitle(GAME_TITLE);
+		app->getWindow()->maximize();
 	}
 }
 

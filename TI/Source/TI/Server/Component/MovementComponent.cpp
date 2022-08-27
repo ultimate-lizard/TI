@@ -53,64 +53,13 @@ void MovementComponent::init()
 
 void MovementComponent::tick(float dt)
 {
-	updatePlaneSideRotation(dt);
-
 	handleInput(dt);
 
-	auto cameraComponent = entity->findComponent<CameraComponent>();
+	updatePlaneSideRotation(dt);
 
-	// update crouch:
 	if (crouchingInProgress)
 	{
-		const float step = 3.0f;
-		const float headPositionCrouching = 0.575f;
-		const float headPositionStanding = 1.75f;
-
-		if (crouching)
-		{
-			headPosition.y -= step * dt;
-
-			if (headPosition.y < headPositionCrouching)
-			{
-				headPosition.y = headPositionCrouching;
-			}
-
-			if (cameraComponent)
-			{
-				glm::vec3 cameraPosition = cameraComponent->getPosition();
-				cameraPosition.y -= step * dt;
-
-				if (cameraPosition.y < headPositionCrouching)
-				{
-					cameraPosition.y = headPositionCrouching;
-					crouchingInProgress = false;
-				}
-
-				cameraComponent->setPosition(cameraPosition);
-			}
-		}
-		else
-		{
-			headPosition.y += step * dt;
-			if (headPosition.y > headPositionStanding)
-			{
-				headPosition.y = headPositionStanding;
-			}
-
-			if (cameraComponent)
-			{
-				glm::vec3 cameraPosition = cameraComponent->getPosition();
-				cameraPosition.y += step * dt;
-
-				if (cameraPosition.y > headPositionStanding)
-				{
-					cameraPosition.y = headPositionStanding;
-					crouchingInProgress = false;
-				}
-
-				cameraComponent->setPosition(cameraPosition);
-			}
-		}
+		updateCrouchTransition(dt);
 	}
 
 	switch (movementState)
@@ -172,21 +121,21 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
 					!collisionResult.collidedAxis[orientationInfo.heightAxis])
 				{
-					/*if (auto cameraComponent = entity->findComponent<CameraComponent>())
-					{
-						cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
-					}
-					headPosition = { 0.0f, 1.75f, 0.0f };*/
-
 					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
 					shouldRotate = true;
-					previousOrientationInfo = orientationInfo;
 				}
 				else
 				{
 					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
+					if (!crouching)
+					{
+						// toggleCrouch();
+					}
+					//CollisionBox boxToOrient = physicsComponent->getCollisionBox();
+					//boxToOrient.orient(orientationInfo);
+					//physicsComponent->setCollisionBox(boxToOrient);
 					//if (auto cameraComponent = entity->findComponent<CameraComponent>())
 					//{
 					//	cameraComponent->setPosition({ 0.0f, 0.0f, 0.0f });
@@ -195,9 +144,9 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 					//sideRotationAxis = cross;
 					//shouldRotate = true;
-					//previousOrientationInfo = orientationInfo;
-				}
 
+				}
+				previousOrientationInfo = orientationInfo;
 				transformComponent->setOrientation(originalOrientation);
 			}
 		}
@@ -205,7 +154,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 	if (shouldRotate)
 	{
-		constrained = false;
 		planeSideTransitionInProgress = true;
 
 		const float rotationAngle = 90.0f;
@@ -225,6 +173,26 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			shouldRotate = false;
 			planeSideTransitionInProgress = false;
 		}
+	}
+}
+
+void MovementComponent::updateCrouchTransition(float dt)
+{
+	const float step = 3.0f;
+	const float headPositionCrouching = 0.575f;
+	const float headPositionStanding = 1.75f;
+
+	headPosition.y += (crouching ? -step : step) * dt;
+
+	if (crouching ? (headPosition.y < headPositionCrouching) : (headPosition.y > headPositionStanding))
+	{
+		headPosition.y = crouching ? headPositionCrouching : headPositionStanding;
+		crouchingInProgress = false;
+	}
+
+	if (auto cameraComponent = entity->findComponent<CameraComponent>())
+	{
+		cameraComponent->setPosition(headPosition);
 	}
 }
 
@@ -324,27 +292,29 @@ void MovementComponent::jump()
 
 void MovementComponent::toggleCrouch()
 {
-	if (!crouchingInProgress && !planeSideTransitionInProgress)
+	if (!crouchingInProgress && !planeSideTransitionInProgress && movementState == MovementState::Walk)
 	{
 		crouching = !crouching;
 		crouchingInProgress = true;
 
-		if (crouching)
+		if (CollisionBox box = physicsComponent->getCollisionBox();
+			crouching)
 		{
-			CollisionBox box = physicsComponent->getCollisionBox();
 			box.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z});
-			// box.size.y = 0.95f;
 			box.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().z });
-			// box.offset.y = 0.425f;
 			physicsComponent->setCollisionBox(box);
 		}
 		else
 		{
-			CollisionBox box = physicsComponent->getCollisionBox();
-
 			// Test collision
 			// TODO: Make a function to not take dt as a parameter!!
-			CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition() + glm::vec3(0.0f, box.getSize().y, 0.0f) + walkDirection, velocity, 1.0f);
+			box.setSize({ box.getUnorientedSize().x, 1.9f, box.getUnorientedSize().z });
+			box.setOffset({ box.getUnorientedOffset().x, 0.85f, box.getUnorientedOffset().z });
+			physicsComponent->setCollisionBox(box);
+
+			glm::vec3 pos = transformComponent->getPosition();
+			pos[orientationInfo.heightAxis] += orientationInfo.positive ? 0.1f : -0.1f;
+			CollisionResult collisionResult = physicsComponent->resolveCollision(pos, {}, 0.006f);
 
 			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
 			{
@@ -352,21 +322,12 @@ void MovementComponent::toggleCrouch()
 				crouchingInProgress = false;
 
 				CollisionBox box = physicsComponent->getCollisionBox();
-				box.setSize({ box.getSize().x, 0.95f, box.getSize().z });
-				box.setOffset({ box.getOffset().x, 0.425f, box.getOffset().z });
-				//box.size.y = 0.95f;
-				//box.offset.y = 0.425f;
+				box.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z });
+				box.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().z });
 				physicsComponent->setCollisionBox(box);
 			}
 			else
 			{
-				/*box.size.y = 1.9f;
-				box.offset.y = 0.85f;*/
-				box.setSize({ box.getSize().x, 1.9f, box.getSize().z });
-				box.setOffset({ box.getOffset().x, 0.85f, box.getOffset().z });
-				physicsComponent->setCollisionBox(box);
-				glm::vec3 pos = transformComponent->getPosition();
-				pos.y += 0.1f;
 				transformComponent->setPosition(pos);
 			}
 		}

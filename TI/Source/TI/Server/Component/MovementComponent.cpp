@@ -114,7 +114,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				physicsComponent->setCollisionBox(std::move(box));
 
 				// Test resolve
-				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), velocity, dt);
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), {}, dt);
 
 				// TODO: Add another collision box to prevent colliding camera with world during side transition
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
@@ -124,29 +124,46 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
 					shouldRotate = true;
+					previousOrientationInfo = orientationInfo;
 				}
 				else
 				{
-					// Don't rotate the player's box, it won't fit
 					physicsComponent->setCollisionBox(originalBox);
-					if (!crouching)
-					{
-						// toggleCrouch();
-					}
-					//CollisionBox boxToOrient = physicsComponent->getCollisionBox();
-					//boxToOrient.orient(orientationInfo);
-					//physicsComponent->setCollisionBox(boxToOrient);
-					//if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					// toggleCrouch();
+					// Don't rotate the player's box, it won't fit
+					//CollisionBox miniBox = box;
+					//miniBox.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z });
+					//miniBox.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().y});
+					// miniBox.orient(previousOrientationInfo);
+					//physicsComponent->setCollisionBox(miniBox);
+
+					//glm::vec3 miniBoxPositionOffset;
+					//miniBoxPositionOffset[orientationInfo.heightAxis] = miniBox.getUnorientedSize().yy;
+
+					//drawDebugBox(transformComponent->getPosition(), miniBox.getUnorientedSize(), { 0.0f, 0.0f, 1.0f, 1.0f }, 2.0f, true);
+
+					//physicsComponent->resolveCollision(transformComponent->getPosition(), {}, dt);
+
+					//if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
+					//	!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
+					//	!collisionResult.collidedAxis[orientationInfo.heightAxis])
 					//{
-					//	cameraComponent->setPosition({ 0.0f, 0.0f, 0.0f });
+					//	physicsComponent->setCollisionBox(originalBox);
 					//}
-					//headPosition = { 0.0f, 0.0f, 0.0f };
+					//else
+					//{
+					//	physicsComponent->setCollisionBox(miniBox);
+					//}
+					//if (!crouching)
+					//{
+					//	toggleCrouch();
+					//}
 
 					//sideRotationAxis = cross;
 					//shouldRotate = true;
-
+					//previousOrientationInfo = orientationInfo;
 				}
-				previousOrientationInfo = orientationInfo;
+				
 				transformComponent->setOrientation(originalOrientation);
 			}
 		}

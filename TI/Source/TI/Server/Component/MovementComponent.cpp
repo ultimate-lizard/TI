@@ -42,6 +42,9 @@ MovementComponent::MovementComponent() :
 {
 }
 
+static const float headPositionCrouching = 0.575f;
+static const float headPositionStanding = 1.75f;
+
 void MovementComponent::init()
 {
 	if (entity)
@@ -129,9 +132,33 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				else
 				{
 					physicsComponent->setCollisionBox(originalBox);
-					// toggleCrouch();
-					// Don't rotate the player's box, it won't fit
-					//CollisionBox miniBox = box;
+
+					crouching = true;
+
+					CollisionBox constrainedBox = physicsComponent->getCollisionBox();
+
+					glm::vec3 s = constrainedBox.getUnorientedSize();
+					glm::vec3 o = constrainedBox.getUnorientedOffset();
+					s.y = 0.6f;
+					o.y = 0.3f;
+					constrainedBox.setSize(s);
+					constrainedBox.setOffset(o);
+
+					constrainedBox.orient(orientationInfo);
+
+					physicsComponent->setCollisionBox(constrainedBox);
+					
+					if (auto cameraComponent = entity->findComponent<CameraComponent>())
+					{
+						// headPosition[previousOrientationInfo.heightAxis] = 0;
+						crouching = true;
+						cameraComponent->setPosition({});
+
+						sideRotationAxis = cross;
+						shouldRotate = true;
+						previousOrientationInfo = orientationInfo;
+					}
+
 					//miniBox.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z });
 					//miniBox.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().y});
 					// miniBox.orient(previousOrientationInfo);
@@ -196,8 +223,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 void MovementComponent::updateCrouchTransition(float dt)
 {
 	const float step = 3.0f;
-	const float headPositionCrouching = 0.575f;
-	const float headPositionStanding = 1.75f;
 
 	headPosition.y += (crouching ? -step : step) * dt;
 
@@ -314,11 +339,14 @@ void MovementComponent::toggleCrouch()
 		crouching = !crouching;
 		crouchingInProgress = true;
 
+		const float crouchSizeHeight = 0.6f;
+		const float crouchOffsetHeight = 0.3f;
+
 		if (CollisionBox box = physicsComponent->getCollisionBox();
 			crouching)
 		{
-			box.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z});
-			box.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().z });
+			box.setSize({ box.getUnorientedSize().x, crouchSizeHeight, box.getUnorientedSize().z});
+			box.setOffset({ box.getUnorientedOffset().x, crouchOffsetHeight, box.getUnorientedOffset().z });
 			physicsComponent->setCollisionBox(box);
 		}
 		else
@@ -339,8 +367,8 @@ void MovementComponent::toggleCrouch()
 				crouchingInProgress = false;
 
 				CollisionBox box = physicsComponent->getCollisionBox();
-				box.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z });
-				box.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().z });
+				box.setSize({ box.getUnorientedSize().x, crouchSizeHeight, box.getUnorientedSize().z });
+				box.setOffset({ box.getUnorientedOffset().x, crouchOffsetHeight, box.getUnorientedOffset().z });
 				physicsComponent->setCollisionBox(box);
 			}
 			else

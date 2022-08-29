@@ -20,6 +20,7 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 
 void TransformComponent::tick(float dt)
 {
+
 }
 
 void TransformComponent::setPlane(Plane* plane)

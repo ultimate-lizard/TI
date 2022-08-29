@@ -218,8 +218,10 @@ void PlayerController::toggleFlyMode()
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			Plane* const plane = transformComponent->getPlane();
-			plane->setGravityEnabled(!plane->isGravityEnabled());
+			if (Plane* const plane = transformComponent->getPlane())
+			{
+				plane->setGravityEnabled(!plane->isGravityEnabled());
+			}
 		}
 
 		if (movementComponent)

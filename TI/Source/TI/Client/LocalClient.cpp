@@ -58,7 +58,7 @@ void LocalClient::connect(const std::string& ip, int port)
 	{
 		server->connectClient(this, ip, port);
 
-		plane = server->getPlane();
+		plane = server->getPlanes()[0].get();
 
 		app->threadPool.pushTask([]() {
 			std::cout << "This is my task!" << std::endl;

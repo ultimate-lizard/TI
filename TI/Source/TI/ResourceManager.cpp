@@ -149,6 +149,11 @@ void ResourceManager::initResouces()
 	Material* containerMaterial = createMaterial("Container", defaultShader, containerTexture);
 	createModel("Cube", std::move(cubeMesh), containerMaterial);
 
+	Texture* planetTexture = createTexture("Planet", "../Textures/planet.jpg");
+	Material* planetMaterial = createMaterial("Planet", defaultShader, planetTexture);
+	cubeMesh = meshBuilder.build();
+	createModel("Planet", std::move(cubeMesh), planetMaterial);
+
 	Texture* playerTexture = createTexture("Player", "../Textures/player.jpg");
 	Material* playerMaterial = createMaterial("Player", defaultShader, playerTexture);
 	std::unique_ptr<Mesh> playerMesh = meshBuilder.build(); // This might cause issues

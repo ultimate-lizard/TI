@@ -1,6 +1,5 @@
 #include "Server.h"
 
-#include <memory>
 #include <stdexcept>
 
 #include <TI/Server/Component/MeshComponent.h>
@@ -48,12 +47,28 @@ void Server::initEntityTemplates()
 	cubePhysicsComponent->setCollisionBox({ glm::vec3(1.0f), glm::vec3(0.0f) });
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
+
+
+	auto planetEntity = std::make_unique<Entity>();
+	auto planetTransformComponent = planetEntity->addComponent<TransformComponent>();
+	auto planetMeshComponent = planetEntity->addComponent<MeshComponent>(app->getResourceManager());
+
+	planetEntity->setName("PlanetEntity");
+
+	planetTransformComponent->setPosition({ 0.0f, 10.0f, 0.0f });
+	planetTransformComponent->setScale(glm::vec3(100.0f));
+	planetMeshComponent->setParent(planetTransformComponent);
+	planetMeshComponent->loadModel("Planet");
+
+	entityTemplates.emplace(planetEntity->getName(), std::move(planetEntity));
+
 }
 
 Server::Server(Application* app) :
-	app(app), shuttingDown(false), plane(nullptr)
+	app(app),
+	shuttingDown(false)
 {
-	plane = new Plane(glm::vec3(1.0f), { 10, 10, 10 }, 16);
+	planes.push_back(std::make_unique<Plane>(glm::vec3(10.0f), glm::uvec3(5), 16));
 
 	// TODO: Remove this
 	if (app)
@@ -65,10 +80,6 @@ Server::Server(Application* app) :
 
 Server::~Server()
 {
-	if (plane)
-	{
-		delete plane;
-	}
 }
 
 void Server::update(float dt)
@@ -125,9 +136,9 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 	return nullptr;
 }
 
-const Plane* const Server::getPlane() const
+const std::vector<std::unique_ptr<Plane>>& Server::getPlanes() const
 {
-	return plane;
+	return planes;
 }
 
 Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, const glm::vec3& position)
@@ -139,11 +150,11 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 		std::unique_ptr<Entity> spawnedEntity = createEntityFromTemplate(templateName, id);
 		result = spawnedEntity.get();
 
-		if (plane)
+		if (!planes.empty() && result)
 		{
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
-				transformComponent->setPlane(plane);
+				transformComponent->setPlane(getPlanes()[0].get());
 				transformComponent->setPosition(position);
 			}
 		}

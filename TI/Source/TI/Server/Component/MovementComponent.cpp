@@ -391,6 +391,11 @@ void MovementComponent::handleFall(float dt)
 		return;
 	}
 
+	if (!transformComponent->getPlane())
+	{
+		return;
+	}
+
 	bool gravityEnabled = transformComponent->getPlane()->isGravityEnabled();
 
 	// In air control

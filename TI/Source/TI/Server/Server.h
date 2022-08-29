@@ -33,8 +33,8 @@ public:
 
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
-	const Plane* const getPlane() const;
-	Entity* const spawnEntity(const std::string& id, const std::string& templateName, const glm::vec3& position);
+	const std::vector<std::unique_ptr<Plane>>& getPlanes() const;
+	Entity* const spawnEntity(const std::string& templateName, const std::string& id, const glm::vec3& position);
 
 protected:
 	void initEntityTemplates();
@@ -48,5 +48,5 @@ protected:
 
 	std::atomic<bool> shuttingDown;
 
-	Plane* plane;
+	std::vector<std::unique_ptr<Plane>> planes;
 };

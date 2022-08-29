@@ -39,12 +39,14 @@ void LocalServer::ejectClient(Client* client)
 
 void LocalServer::spawnPlayer(Client* const client)
 {
-	if (plane)
+	if (!planes.empty())
 	{
-		glm::ivec3 planeSize = plane->getSize();
+		glm::ivec3 planeSize = planes[0].get()->getSize();
 
-		glm::vec3 spawnLocation { planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
+		glm::vec3 spawnLocation { planeSize.x * planes[0].get()->getChunkSize() / 2.0f, planeSize.y * planes[0].get()->getChunkSize() + 3.0f, planeSize.z * planes[0].get()->getChunkSize() / 2.0f};
 		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
 		possesEntity(client->getName(), client);
+
+		spawnEntity("PlanetEntity", "planet_entity", {0.0f, 150.0f, 0.0f});
 	}
 }

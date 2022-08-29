@@ -110,6 +110,15 @@ void Shader::setMatrix(const std::string& name, const glm::mat4& value)
 	}
 }
 
+void Shader::setFloat(const std::string& name, float value)
+{
+	int location = getUniformLocation(name);
+	if (location != -1)
+	{
+		glUniform1f(location, value);
+	}
+}
+
 unsigned int Shader::getUniformLocation(const std::string& name)
 {
 	for (const auto& uniform : uniforms)

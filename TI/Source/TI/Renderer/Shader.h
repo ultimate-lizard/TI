@@ -24,6 +24,7 @@ public:
 	void setVector4(const std::string& name, const glm::vec4& value);
 	void setVector3(const std::string& name, const glm::vec3& value);
 	void setMatrix(const std::string& name, const glm::mat4& value);
+	void setFloat(const std::string& name, float value);
 
 private:
 	unsigned int getUniformLocation(const std::string& name);

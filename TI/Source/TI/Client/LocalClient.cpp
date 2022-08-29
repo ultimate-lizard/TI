@@ -336,7 +336,43 @@ void LocalClient::loadMappings()
 
 void LocalClient::renderWorld()
 {
+	float dist = 0.0f;
+	if (const Server* server = app->getCurrentServer())
+	{
+		if (auto result = server->getEntities().find("planet_entity"); result != server->getEntities().end())
+		{
+			if (auto mesh = result->second.get()->findComponent<MeshComponent>())
+			{
+				if (Model* model = mesh->getModel())
+				{
+					if (Material* mat = model->getMaterial())
+					{
+						if (Shader* shader = mat->getShader())
+						{
+							if (possessedEntity)
+							{
+								if (auto trans = possessedEntity->findComponent<TransformComponent>())
+								{
+									if (plane)
+									{
+										glm::vec3 center = { plane->getSize().x * plane->getChunkSize() / 2.0f, plane->getSize().y * plane->getChunkSize() / 2.0f, plane->getSize().z * plane->getChunkSize() / 2.0f };
+										glm::vec3 playerPosition = trans->getPosition();
+										dist = glm::distance(center, playerPosition);
+										std::cout << dist << std::endl;
+										shader->setFloat("playerDistance", dist);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	renderer->renderMultidraw(cachedPoolData.poolMesh, chunkMaterial, cachedPoolData.sizes.data(), cachedPoolData.offsets.data(), cachedPoolData.drawCount);
+
+	chunkMaterial->getShader()->setFloat("playerDistance", dist);
 }
 
 void LocalClient::renderEntities()

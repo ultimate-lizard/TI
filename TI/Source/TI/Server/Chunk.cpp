@@ -53,8 +53,8 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		{
 			// const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
 			// const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
-			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
-			const float TERRAIN_LOCATION_HEIGHT = chunkSize * 2; // From center
+			const float MAX_AMPLITUDE = 4; // How far under or above 0 the terrain will differ
+			const float TERRAIN_LOCATION_HEIGHT = chunkSize * 1; // From center
 			
 			for (const OrientationInfo& orientationInfo : orientations)
 			{

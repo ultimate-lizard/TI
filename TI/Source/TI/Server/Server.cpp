@@ -55,8 +55,7 @@ void Server::initEntityTemplates()
 
 	planetEntity->setName("PlanetEntity");
 
-	planetTransformComponent->setPosition({ 0.0f, 10.0f, 0.0f });
-	planetTransformComponent->setScale(glm::vec3(100.0f));
+	planetTransformComponent->setScale(glm::vec3(55.0f));
 	planetMeshComponent->setParent(planetTransformComponent);
 	planetMeshComponent->loadModel("Planet");
 
@@ -68,7 +67,7 @@ Server::Server(Application* app) :
 	app(app),
 	shuttingDown(false)
 {
-	planes.push_back(std::make_unique<Plane>(glm::vec3(10.0f), glm::uvec3(5), 16));
+	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(5), 16));
 
 	// TODO: Remove this
 	if (app)

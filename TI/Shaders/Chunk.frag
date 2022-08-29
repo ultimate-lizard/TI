@@ -9,6 +9,7 @@ out vec4 FragColor;
 uniform vec4 color;
 uniform sampler2D textureSampler;
 uniform vec3 lightPos;
+uniform float playerDistance;
 
 void main()
 {
@@ -41,5 +42,27 @@ void main()
 
 	texColor *= lighting;
 
-	FragColor = vec4(texColor, 1.0);
+	vec4 result = vec4(mix(texColor, color.xyz, color.w), 1.0);
+
+	float fadeEndDistance = 5.0f;
+	float fadeStartDistance = 100.0f;
+
+	float currentValue = playerDistance - fadeStartDistance;
+
+	if (currentValue >= 0.0f)
+	{
+		if (currentValue > fadeEndDistance)
+		{
+			currentValue = fadeEndDistance;
+		}
+
+		result.w = 1.0f - (1.0f / fadeEndDistance * currentValue);
+	}
+	else
+	{
+		result.w = 1.0f;
+	}
+
+
+	FragColor = result;
 }

@@ -47,6 +47,6 @@ void LocalServer::spawnPlayer(Client* const client)
 		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
 		possesEntity(client->getName(), client);
 
-		spawnEntity("PlanetEntity", "planet_entity", {0.0f, 150.0f, 0.0f});
+		spawnEntity("PlanetEntity", "planet_entity", {40.0f, 40.0f, 40.0f});
 	}
 }

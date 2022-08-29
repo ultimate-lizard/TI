@@ -144,13 +144,15 @@ void ResourceManager::initResouces()
 	std::unique_ptr<Mesh> cubeMesh = meshBuilder.build();
 
 	Shader* defaultShader = createShader("Default", "../Shaders/Common.vert", "../Shaders/Common.frag");
+	Shader* planetShader = createShader("DistantPlanet", "../Shaders/DistantPlanet.vert", "../Shaders/DistantPlanet.frag");
 
 	Texture* containerTexture = createTexture("Container", "../Textures/container.jpg");
 	Material* containerMaterial = createMaterial("Container", defaultShader, containerTexture);
 	createModel("Cube", std::move(cubeMesh), containerMaterial);
 
 	Texture* planetTexture = createTexture("Planet", "../Textures/planet.jpg");
-	Material* planetMaterial = createMaterial("Planet", defaultShader, planetTexture);
+	Material* planetMaterial = createMaterial("DistantPlanet", planetShader, planetTexture);
+	planetMaterial->setColor({ 0.14f, 0.13f, 0.10f, 0.8f });
 	cubeMesh = meshBuilder.build();
 	createModel("Planet", std::move(cubeMesh), planetMaterial);
 

@@ -60,11 +60,6 @@ void MovementComponent::tick(float dt)
 
 	updatePlaneSideRotation(dt);
 
-	if (crouchingInProgress)
-	{
-		updateCrouchTransition(dt);
-	}
-
 	switch (movementState)
 	{
 	case MovementState::Walk:
@@ -132,63 +127,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				else
 				{
 					physicsComponent->setCollisionBox(originalBox);
-
-					crouching = true;
-
-					CollisionBox constrainedBox = physicsComponent->getCollisionBox();
-
-					glm::vec3 s = constrainedBox.getUnorientedSize();
-					glm::vec3 o = constrainedBox.getUnorientedOffset();
-					s.y = 0.6f;
-					o.y = 0.3f;
-					constrainedBox.setSize(s);
-					constrainedBox.setOffset(o);
-
-					constrainedBox.orient(orientationInfo);
-
-					physicsComponent->setCollisionBox(constrainedBox);
-					
-					if (auto cameraComponent = entity->findComponent<CameraComponent>())
-					{
-						// headPosition[previousOrientationInfo.heightAxis] = 0;
-						crouching = true;
-						cameraComponent->setPosition({});
-
-						sideRotationAxis = cross;
-						shouldRotate = true;
-						previousOrientationInfo = orientationInfo;
-					}
-
-					//miniBox.setSize({ box.getUnorientedSize().x, 0.95f, box.getUnorientedSize().z });
-					//miniBox.setOffset({ box.getUnorientedOffset().x, 0.425f, box.getUnorientedOffset().y});
-					// miniBox.orient(previousOrientationInfo);
-					//physicsComponent->setCollisionBox(miniBox);
-
-					//glm::vec3 miniBoxPositionOffset;
-					//miniBoxPositionOffset[orientationInfo.heightAxis] = miniBox.getUnorientedSize().yy;
-
-					//drawDebugBox(transformComponent->getPosition(), miniBox.getUnorientedSize(), { 0.0f, 0.0f, 1.0f, 1.0f }, 2.0f, true);
-
-					//physicsComponent->resolveCollision(transformComponent->getPosition(), {}, dt);
-
-					//if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
-					//	!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
-					//	!collisionResult.collidedAxis[orientationInfo.heightAxis])
-					//{
-					//	physicsComponent->setCollisionBox(originalBox);
-					//}
-					//else
-					//{
-					//	physicsComponent->setCollisionBox(miniBox);
-					//}
-					//if (!crouching)
-					//{
-					//	toggleCrouch();
-					//}
-
-					//sideRotationAxis = cross;
-					//shouldRotate = true;
-					//previousOrientationInfo = orientationInfo;
 				}
 				
 				transformComponent->setOrientation(originalOrientation);
@@ -217,24 +155,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			shouldRotate = false;
 			planeSideTransitionInProgress = false;
 		}
-	}
-}
-
-void MovementComponent::updateCrouchTransition(float dt)
-{
-	const float step = 3.0f;
-
-	headPosition.y += (crouching ? -step : step) * dt;
-
-	if (crouching ? (headPosition.y < headPositionCrouching) : (headPosition.y > headPositionStanding))
-	{
-		headPosition.y = crouching ? headPositionCrouching : headPositionStanding;
-		crouchingInProgress = false;
-	}
-
-	if (auto cameraComponent = entity->findComponent<CameraComponent>())
-	{
-		cameraComponent->setPosition(headPosition);
 	}
 }
 
@@ -329,53 +249,6 @@ void MovementComponent::jump()
 	{
 		velocity += -getGravityVector() * jumpVelocity;
 		movementState = MovementState::Fall;
-	}
-}
-
-void MovementComponent::toggleCrouch()
-{
-	if (!crouchingInProgress && !planeSideTransitionInProgress && movementState == MovementState::Walk)
-	{
-		crouching = !crouching;
-		crouchingInProgress = true;
-
-		const float crouchSizeHeight = 0.6f;
-		const float crouchOffsetHeight = 0.3f;
-
-		if (CollisionBox box = physicsComponent->getCollisionBox();
-			crouching)
-		{
-			box.setSize({ box.getUnorientedSize().x, crouchSizeHeight, box.getUnorientedSize().z});
-			box.setOffset({ box.getUnorientedOffset().x, crouchOffsetHeight, box.getUnorientedOffset().z });
-			physicsComponent->setCollisionBox(box);
-		}
-		else
-		{
-			// Test collision
-			// TODO: Make a function to not take dt as a parameter!!
-			box.setSize({ box.getUnorientedSize().x, 1.9f, box.getUnorientedSize().z });
-			box.setOffset({ box.getUnorientedOffset().x, 0.85f, box.getUnorientedOffset().z });
-			physicsComponent->setCollisionBox(box);
-
-			glm::vec3 pos = transformComponent->getPosition();
-			pos[orientationInfo.heightAxis] += orientationInfo.positive ? 0.1f : -0.1f;
-			CollisionResult collisionResult = physicsComponent->resolveCollision(pos, {}, 0.006f);
-
-			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
-			{
-				crouching = true;
-				crouchingInProgress = false;
-
-				CollisionBox box = physicsComponent->getCollisionBox();
-				box.setSize({ box.getUnorientedSize().x, crouchSizeHeight, box.getUnorientedSize().z });
-				box.setOffset({ box.getUnorientedOffset().x, crouchOffsetHeight, box.getUnorientedOffset().z });
-				physicsComponent->setCollisionBox(box);
-			}
-			else
-			{
-				transformComponent->setPosition(pos);
-			}
-		}
 	}
 }
 
@@ -480,7 +353,7 @@ void MovementComponent::handleWalk(float dt)
 		}
 	}
 
-	velocity = clampVectorMagnitude(velocity, crouching ? crawlMaxSpeed : walkMaxSpeed);
+	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
 
 	if (transformComponent)
 	{
@@ -546,7 +419,7 @@ void MovementComponent::handleFall(float dt)
 				{
 					// On land
 					movementState = MovementState::Walk;
-					velocity = clampVectorMagnitude(velocity, crouching ? crawlMaxSpeed : walkMaxSpeed);
+					velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
 				}
 			}
 

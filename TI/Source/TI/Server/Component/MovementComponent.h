@@ -29,7 +29,6 @@ public:
 	std::unique_ptr<Component> clone() const override;
 
 	void jump();
-	void toggleCrouch();
 
 	void setPitchRate(float pitchRate);
 	float getPitchRate() const;
@@ -75,7 +74,6 @@ private:
 	glm::vec3 getGravityVector() const;
 
 	void updatePlaneSideRotation(float dt);
-	void updateCrouchTransition(float dt);
 
 private:
 	TransformComponent* transformComponent;
@@ -115,10 +113,4 @@ private:
 	glm::vec3 sideRotationAxis;
 
 	float rotationStartHeight = 0.0f;
-
-	// The player is laying on their side. Happens when the player crosses the side while being in a tight spot
-	bool constrained = false;
-
-	bool crouching = false;
-	bool crouchingInProgress = false;
 };

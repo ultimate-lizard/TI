@@ -53,7 +53,6 @@ private:
 	void toggleFrustumCulling();
 
 	void jump();
-	void toggleCrouch();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;

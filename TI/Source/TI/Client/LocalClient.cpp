@@ -56,25 +56,14 @@ void LocalClient::connect(const std::string& ip, int port)
 {
 	if (Server* server = app->getCurrentServer())
 	{
-		server->connectClient(this, ip, port);
+		if (server->connectClient(this, ip, port))
+		{
+			plane = server->getPlanes()[0].get();
 
-		plane = server->getPlanes()[0].get();
-
-		//for (const Chunk& chunk: plane->getChunks())
-		//{
-		//	chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
-		//}
-
-		//for (const auto& pair : chunkMeshesBank)
-		//{
-		//	pool.insertChunkMesh(plane, pair.second);
-		//}
-
-		// cachedPoolData = pool.buildMesh();
-
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
-		drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
+			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
+			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+		}
 	}
 }
 
@@ -354,7 +343,6 @@ void LocalClient::renderWorld()
 										glm::vec3 center = { plane->getSize().x * plane->getChunkSize() / 2.0f, plane->getSize().y * plane->getChunkSize() / 2.0f, plane->getSize().z * plane->getChunkSize() / 2.0f };
 										glm::vec3 playerPosition = trans->getPosition();
 										dist = glm::distance(center, playerPosition);
-										std::cout << dist << std::endl;
 										shader->setFloat("playerDistance", dist);
 									}
 								}
@@ -365,6 +353,7 @@ void LocalClient::renderWorld()
 			}
 		}
 	}
+
 	chunkMaterial->getShader()->use();
 	chunkMaterial->getShader()->setFloat("playerDistanceChunk", dist);
 

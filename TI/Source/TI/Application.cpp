@@ -209,22 +209,37 @@ void Application::init()
 
 	input = std::make_unique<Input>(this);
 
-	server = std::make_unique<LocalServer>(this);
+	// server = std::make_unique<LocalServer>(this);
+	server = std::make_unique<RemoteServer>(this);
 
 	clients.push_back(std::make_unique<LocalClient>(this));
-	auto client2 = std::make_unique<LocalClient>(this, "Player2");
-	client2->setViewportId(1);
+	//auto client2 = std::make_unique<LocalClient>(this, "Player2");
+	//client2->setViewportId(1);
 
-	splitScreenManager.setHost(dynamic_cast<LocalClient*>(clients[0].get()));
-	splitScreenManager.addGuest(client2.get());
-	splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
+	//splitScreenManager.setHost(dynamic_cast<LocalClient*>(clients[0].get()));
+	//splitScreenManager.addGuest(client2.get());
+	//splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
 
-	clients.push_back(std::move(client2));
+	//clients.push_back(std::move(client2));
 
-	splitScreenManager.displayAll();
+	//splitScreenManager.displayAll();
 
-	getLocalClients().at(0)->connect("", 0);
-	getLocalClients().at(1)->connect("", 0);
+	networkThread = std::thread([this]() {
+		networkManager.waitForRemoteClients();
+		});
+
+	if (const std::vector<LocalClient*>& localClients = getLocalClients(); !localClients.empty())
+	{
+		for (LocalClient* localClient : localClients)
+		{
+			if (localClient)
+			{
+				localClient->connect("127.0.0.1", 25565);
+			}
+		}
+	}
+	
+	// getLocalClients().at(1)->connect("", 0);
 }
 
 void Application::uninit()

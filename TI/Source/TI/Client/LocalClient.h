@@ -30,6 +30,7 @@ public:
 	void update(float dt) override;
 
 	void connect(const std::string& ip, int port) override;
+
 	void setPossesedEntity(Entity* entity) override;
 
 	InputHandler* const getInputHandler() const;

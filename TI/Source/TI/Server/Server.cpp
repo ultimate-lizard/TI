@@ -67,14 +67,6 @@ Server::Server(Application* app) :
 	app(app),
 	shuttingDown(false)
 {
-	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(5), 16));
-
-	// TODO: Remove this
-	if (app)
-	{
-		app->getWindow()->setTitle(GAME_TITLE);
-		app->getWindow()->maximize();
-	}
 }
 
 Server::~Server()

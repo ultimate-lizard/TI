@@ -14,9 +14,18 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
+	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(5), 16));
+
+	// TODO: Remove this
+	if (app)
+	{
+		app->getWindow()->setTitle(GAME_TITLE);
+		app->getWindow()->maximize();
+	}
+
 	initEntityTemplates();
 
-	spawnEntity("PlanetEntity", "planet_entity", { 40.0f, 40.0f, 40.0f });
+	// spawnEntity("PlanetEntity", "planet_entity", { 40.0f, 40.0f, 40.0f });
 }
 
 void LocalServer::update(float dt)
@@ -29,9 +38,11 @@ void LocalServer::update(float dt)
 	}
 }
 
-void LocalServer::connectClient(Client* client, const std::string& ip, int port)
+bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
 	spawnPlayer(client);
+
+	return true;
 }
 
 void LocalServer::ejectClient(Client* client)
@@ -48,7 +59,5 @@ void LocalServer::spawnPlayer(Client* const client)
 		glm::vec3 spawnLocation { planeSize.x * planes[0].get()->getChunkSize() / 2.0f, planeSize.y * planes[0].get()->getChunkSize() + 3.0f, planeSize.z * planes[0].get()->getChunkSize() / 2.0f};
 		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
 		possesEntity(client->getName(), client);
-
-		
 	}
 }

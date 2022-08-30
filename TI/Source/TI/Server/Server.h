@@ -19,7 +19,7 @@ public:
 
 	virtual void update(float dt);
 
-	virtual void connectClient(Client* client, const std::string& ip, int port) = 0;
+	virtual bool connectClient(Client* client, const std::string& ip, int port) = 0;
 	virtual void ejectClient(Client* client) = 0;
 
 	void requestShutdown();

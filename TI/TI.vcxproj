@@ -184,6 +184,7 @@
     <ClCompile Include="Source\TI\Common\ThreadPool.cpp" />
     <ClCompile Include="Source\TI\Input.cpp" />
     <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
+    <ClCompile Include="Source\TI\NetworkManager.cpp" />
     <ClCompile Include="Source\TI\Renderer\Camera.cpp" />
     <ClCompile Include="Source\TI\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="Source\TI\Renderer\glad.c" />
@@ -206,6 +207,7 @@
     <ClCompile Include="Source\TI\Server\Entity.cpp" />
     <ClCompile Include="Source\TI\Server\LocalServer.cpp" />
     <ClCompile Include="Source\TI\Server\Plane.cpp" />
+    <ClCompile Include="Source\TI\Server\RemoteServer.cpp" />
     <ClCompile Include="Source\TI\Server\SceneNode.cpp" />
     <ClCompile Include="Source\TI\Server\Server.cpp" />
     <ClCompile Include="Source\TI\SplitScreenManager.cpp" />
@@ -228,6 +230,7 @@
     <ClInclude Include="Source\TI\Client\LocalClient.h" />
     <ClInclude Include="Source\TI\Common\ThreadPool.h" />
     <ClInclude Include="Source\TI\Input.h" />
+    <ClInclude Include="Source\TI\NetworkManager.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />
     <ClInclude Include="Source\TI\Renderer\FrameBuffer.h" />
     <ClInclude Include="Source\TI\Renderer\Material.h" />
@@ -250,6 +253,7 @@
     <ClInclude Include="Source\TI\Server\LocalServer.h" />
     <ClInclude Include="Source\TI\Server\Plane.h" />
     <ClInclude Include="Source\TI\Server\PlaneSide.h" />
+    <ClInclude Include="Source\TI\Server\RemoteServer.h" />
     <ClInclude Include="Source\TI\Server\SceneNode.h" />
     <ClInclude Include="Source\TI\Server\Server.h" />
     <ClInclude Include="Source\TI\Server\ServerConnectionResponse.h" />

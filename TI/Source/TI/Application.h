@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <optional>
 
 #include <TI/Window.h>
 #include <TI/SplitScreenManager.h>
@@ -26,14 +27,14 @@ class ResourceManager;
 
 struct SDL_Window;
 
+struct CmdArg
+{
+	std::string command;
+	std::vector<std::string> args;
+};
+
 class Application
 {
-	struct CmdArg
-	{
-		std::string command;
-		std::vector<std::string> args;
-	};
-
 public:
 	Application();
 	Application(const std::vector<std::string>& args);
@@ -42,10 +43,6 @@ public:
 	Application(const Application&) = delete;
 	Application(Application&&) = delete;
 	Application& operator=(const Application&) = delete;
-
-	void parseCmdArgs(const std::vector<std::string>& args);
-	void execCmdArgs();
-	void execSplitscreenCmdArg(const CmdArg& cmdArg);
 
 	void start();
 	void requestQuit();
@@ -72,6 +69,10 @@ public:
 private:
 	void init();
 	void uninit();
+
+	void parseCmdArgs(const std::vector<std::string>& args);
+	std::optional<CmdArg> findCmdArg(const std::string& commandName);
+	void execSplitscreenCmdArg();
 
 private:
 	bool simulating;

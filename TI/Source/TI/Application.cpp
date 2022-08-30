@@ -92,18 +92,25 @@ void Application::parseCmdArgs(const std::vector<std::string>& args)
 	}
 }
 
-void Application::execCmdArgs()
+std::optional<CmdArg> Application::findCmdArg(const std::string& commandName)
 {
-	if (auto foundIter = std::find_if(args.begin(), args.end(), [](const CmdArg& cmdArg) {
-		return cmdArg.command == "splitscreen";
-		}); foundIter != args.end())
+	if (auto foundIter = std::find_if(args.begin(), args.end(), [commandName](const CmdArg& arg) { return arg.command == commandName; }); foundIter != args.end())
 	{
-		execSplitscreenCmdArg(*foundIter);
+		return *foundIter;
 	}
 }
 
-void Application::execSplitscreenCmdArg(const CmdArg& cmdArg)
+void Application::execSplitscreenCmdArg()
 {
+	std::optional<CmdArg> cmdArgOptional = findCmdArg("splitscreen");
+
+	if (!cmdArgOptional.has_value())
+	{
+		return;
+	}
+
+	CmdArg cmdArg = cmdArgOptional.value();
+
 	for (size_t i = 0; i < cmdArg.args.size(); ++i)
 	{
 		std::string clName = cmdArg.args[i];
@@ -289,9 +296,13 @@ void Application::init()
 
 	input = std::make_unique<Input>(this);
 
-	server = std::make_unique<LocalServer>(this);
+	execSplitscreenCmdArg();
+	if (findCmdArg())
 
-	execCmdArgs();
+	if (!server)
+	{
+		server = std::make_unique<LocalServer>(this);
+	}
 
 	if (!getLocalClients().size())
 	{

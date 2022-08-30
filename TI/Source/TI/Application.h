@@ -69,7 +69,7 @@ private:
 	Window window;
 
 	std::unique_ptr<Renderer> renderer;
-	std::unique_ptr<ResourceManager> modelManager;
+	std::unique_ptr<ResourceManager> resourceManager;
 
 	std::unique_ptr<Input> input;
 

@@ -8,7 +8,6 @@
 #include <TI/Renderer/Renderer.h>
 #include <TI/Input.h>
 #include <TI/Server/LocalServer.h>
-#include <TI/Server/ListenServer.h>
 #include <TI/Server/RemoteServer.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Client/DebugInformation.h>
@@ -160,7 +159,7 @@ Renderer* Application::getRenderer() const
 
 ResourceManager* Application::getResourceManager() const
 {
-	return modelManager.get();
+	return resourceManager.get();
 }
 
 void Application::addClient(std::unique_ptr<Client> client)
@@ -206,15 +205,26 @@ void Application::init()
 
 	renderer = std::make_unique<Renderer>(&window);
 
-	modelManager = std::make_unique<ResourceManager>();
+	resourceManager = std::make_unique<ResourceManager>();
 
 	input = std::make_unique<Input>(this);
 
 	server = std::make_unique<LocalServer>(this);
 
 	clients.push_back(std::make_unique<LocalClient>(this));
+	auto client2 = std::make_unique<LocalClient>(this, "Player2");
+	client2->setViewportId(1);
+
+	splitScreenManager.setHost(dynamic_cast<LocalClient*>(clients[0].get()));
+	splitScreenManager.addGuest(client2.get());
+	splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
+
+	clients.push_back(std::move(client2));
+
+	splitScreenManager.displayAll();
 
 	getLocalClients().at(0)->connect("", 0);
+	getLocalClients().at(1)->connect("", 0);
 }
 
 void Application::uninit()

@@ -24,7 +24,7 @@ public:
 	void pushRender(RenderCommand command);
 
 	void render();
-	void renderMultidraw(Mesh* mesh, Material* material, GLsizei* counts, void** indices, GLsizei drawCount);
+	// void renderMultidraw(Mesh* mesh, Material* material, GLsizei* counts, void** indices, GLsizei drawCount);
 
 	void setClearColor(const glm::vec4& color);
 	const glm::vec4& getClearColor() const;
@@ -43,8 +43,6 @@ private:
 	SDL_GLContext glContext;
 
 	glm::vec4 clearColor;
-
-	std::list<RenderCommand> renderCommands;
 
 	Camera* camera;
 

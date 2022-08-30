@@ -23,4 +23,8 @@ struct RenderCommand
 	float lineWidth = 1.0f;
 	bool wireframe = false;
 	bool cullFaces = true;
+	// Multi-draw related fields:
+	GLsizei* counts = nullptr;
+	void** indices = nullptr;
+	GLsizei multiDrawCount = 0;
 };

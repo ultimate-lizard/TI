@@ -9,7 +9,7 @@ out vec4 FragColor;
 uniform vec4 color;
 uniform sampler2D textureSampler;
 uniform vec3 lightPos;
-uniform float playerDistance;
+uniform float playerDistanceChunk;
 
 void main()
 {
@@ -47,7 +47,7 @@ void main()
 	float fadeEndDistance = 5.0f;
 	float fadeStartDistance = 100.0f;
 
-	float currentValue = playerDistance - fadeStartDistance;
+	float currentValue = playerDistanceChunk - fadeStartDistance;
 
 	if (currentValue >= 0.0f)
 	{

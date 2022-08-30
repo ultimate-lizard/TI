@@ -24,6 +24,8 @@ public:
 	void setEnabled(bool enabled);
 	bool isEnabled() const;
 
+	std::list<RenderCommand> renderCommands;
+
 private:
 	void updateCameraPerspective();
 

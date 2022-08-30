@@ -15,6 +15,8 @@ LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
 	initEntityTemplates();
+
+	spawnEntity("PlanetEntity", "planet_entity", { 40.0f, 40.0f, 40.0f });
 }
 
 void LocalServer::update(float dt)
@@ -47,6 +49,6 @@ void LocalServer::spawnPlayer(Client* const client)
 		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
 		possesEntity(client->getName(), client);
 
-		spawnEntity("PlanetEntity", "planet_entity", {40.0f, 40.0f, 40.0f});
+		
 	}
 }

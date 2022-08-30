@@ -60,10 +60,6 @@ void LocalClient::connect(const std::string& ip, int port)
 
 		plane = server->getPlanes()[0].get();
 
-		app->threadPool.pushTask([]() {
-			std::cout << "This is my task!" << std::endl;
-		});
-
 		//for (const Chunk& chunk: plane->getChunks())
 		//{
 		//	chunkMeshesBank.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunk.getPosition()), plane->getSize()), new ChunkMesh(&chunk,  plane));
@@ -369,10 +365,19 @@ void LocalClient::renderWorld()
 			}
 		}
 	}
+	chunkMaterial->getShader()->use();
+	chunkMaterial->getShader()->setFloat("playerDistanceChunk", dist);
 
-	renderer->renderMultidraw(cachedPoolData.poolMesh, chunkMaterial, cachedPoolData.sizes.data(), cachedPoolData.offsets.data(), cachedPoolData.drawCount);
+	RenderCommand cmd;
+	cmd.mesh = cachedPoolData.poolMesh;
+	cmd.material = chunkMaterial;
+	cmd.transform = glm::mat4(1.0f);
+	cmd.viewportId = getViewportId();
+	cmd.counts = cachedPoolData.sizes.data();
+	cmd.indices = cachedPoolData.offsets.data();
+	cmd.multiDrawCount = cachedPoolData.drawCount;
 
-	chunkMaterial->getShader()->setFloat("playerDistance", dist);
+	renderer->pushRender(cmd);
 }
 
 void LocalClient::renderEntities()

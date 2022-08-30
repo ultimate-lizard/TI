@@ -14,6 +14,8 @@ static const char* CONFIG_FOLDER = "../Config/";
 static const char* CONFIG_EXTENSION = ".cfg";
 static const char* GAME_TITLE = "Technomagic Intergalactical";
 
+using namespace std::placeholders;
+
 class Renderer;
 class Input;
 class Server;
@@ -26,6 +28,12 @@ struct SDL_Window;
 
 class Application
 {
+	struct CmdArg
+	{
+		std::string command;
+		std::vector<std::string> args;
+	};
+
 public:
 	Application();
 	Application(const std::vector<std::string>& args);
@@ -34,6 +42,10 @@ public:
 	Application(const Application&) = delete;
 	Application(Application&&) = delete;
 	Application& operator=(const Application&) = delete;
+
+	void parseCmdArgs(const std::vector<std::string>& args);
+	void execCmdArgs();
+	void execSplitscreenCmdArg(const CmdArg& cmdArg);
 
 	void start();
 	void requestQuit();
@@ -59,10 +71,7 @@ public:
 
 private:
 	void init();
-
 	void uninit();
-
-	const std::vector<std::string>& getArgs() const;
 
 private:
 	bool simulating;
@@ -79,7 +88,7 @@ private:
 
 	SplitScreenManager splitScreenManager;
 
-	std::vector<std::string> args;
+	std::vector<CmdArg> args;
 
 	NetworkManager networkManager;
 	std::thread networkThread;

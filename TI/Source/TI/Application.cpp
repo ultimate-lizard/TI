@@ -13,6 +13,11 @@
 #include <TI/Client/DebugInformation.h>
 #include <TI/ResourceManager.h>
 
+namespace CmdArgHandles
+{
+	
+}
+
 Application::Application() :
 	simulating(false),
 	splitScreenManager(this)
@@ -41,12 +46,89 @@ Application::Application() :
 Application::Application(const std::vector<std::string>& args) :
 	Application()
 {
-	this->args = args;
+	parseCmdArgs(args);
 }
 
 Application::~Application()
 {
 	SDL_Quit();
+}
+
+void Application::parseCmdArgs(const std::vector<std::string>& args)
+{
+	const char argPrefix {'-'};
+
+	for (size_t i = 0; i < args.size(); ++i)
+	{
+		std::string word = args[i];
+
+		CmdArg arg;
+
+		if (*word.cbegin() != argPrefix)
+		{
+			continue;
+		}
+		
+		word.erase(word.begin());
+		arg.command = word;
+
+		for (size_t j = i + 1; j < args.size(); ++j)
+		{
+			const std::string potentialArg = args[j];
+			if (*args[i + 1].cbegin() != '-')
+			{
+				arg.args.push_back(potentialArg);
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (!arg.command.empty())
+		{
+			this->args.push_back(arg);
+		}
+	}
+}
+
+void Application::execCmdArgs()
+{
+	if (auto foundIter = std::find_if(args.begin(), args.end(), [](const CmdArg& cmdArg) {
+		return cmdArg.command == "splitscreen";
+		}); foundIter != args.end())
+	{
+		execSplitscreenCmdArg(*foundIter);
+	}
+}
+
+void Application::execSplitscreenCmdArg(const CmdArg& cmdArg)
+{
+	for (size_t i = 0; i < cmdArg.args.size(); ++i)
+	{
+		std::string clName = cmdArg.args[i];
+
+		auto localCl = std::make_unique<LocalClient>(this, clName);
+
+		if (i == 0)
+		{
+			splitScreenManager.setHost(localCl.get());
+		}
+		else
+		{
+			splitScreenManager.addGuest(localCl.get());
+			localCl->setViewportId(i);
+		}
+
+		clients.push_back(std::move(localCl));
+	}
+
+	if (cmdArg.args.size() > 1)
+	{
+		splitScreenManager.displayAll();
+	}
+
+	splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
 }
 
 void Application::start()
@@ -201,45 +283,28 @@ Input* const Application::getInput() const
 
 void Application::init()
 {
-	// parse args
-
 	renderer = std::make_unique<Renderer>(&window);
 
 	resourceManager = std::make_unique<ResourceManager>();
 
 	input = std::make_unique<Input>(this);
 
-	// server = std::make_unique<LocalServer>(this);
-	server = std::make_unique<RemoteServer>(this);
+	server = std::make_unique<LocalServer>(this);
 
-	clients.push_back(std::make_unique<LocalClient>(this));
-	//auto client2 = std::make_unique<LocalClient>(this, "Player2");
-	//client2->setViewportId(1);
+	execCmdArgs();
 
-	//splitScreenManager.setHost(dynamic_cast<LocalClient*>(clients[0].get()));
-	//splitScreenManager.addGuest(client2.get());
-	//splitScreenManager.setOrientation(SplitScreenOrientation::Horizontal);
-
-	//clients.push_back(std::move(client2));
-
-	//splitScreenManager.displayAll();
-
-	networkThread = std::thread([this]() {
-		networkManager.waitForRemoteClients();
-		});
-
-	if (const std::vector<LocalClient*>& localClients = getLocalClients(); !localClients.empty())
+	if (!getLocalClients().size())
 	{
-		for (LocalClient* localClient : localClients)
+		clients.push_back(std::make_unique<LocalClient>(this));
+	}
+
+	for (LocalClient* locCl : getLocalClients())
+	{
+		if (locCl)
 		{
-			if (localClient)
-			{
-				localClient->connect("127.0.0.1", 25565);
-			}
+			locCl->connect("", 0);
 		}
 	}
-	
-	// getLocalClients().at(1)->connect("", 0);
 }
 
 void Application::uninit()
@@ -253,9 +318,4 @@ void Application::uninit()
 	{
 		server->shutdown();
 	}
-}
-
-const std::vector<std::string>& Application::getArgs() const
-{
-	return args;
 }

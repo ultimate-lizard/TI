@@ -73,49 +73,50 @@ void SplitScreenManager::displayAll()
 		auto renderer = app->getRenderer();
 		if (renderer)
 		{
-			auto viewport = renderer->getViewport(host->getViewportId());
-
-			viewport->setEnabled(true);
-
-			glm::ivec2 size = app->getWindow()->getSize();
-
-			if (orientation == SplitScreenOrientation::Vertical)
+			if (auto viewport = renderer->getViewport(host->getViewportId()))
 			{
-				size.y /= screenCount;
-			}
-			if (orientation == SplitScreenOrientation::Horizontal)
-			{
-				size.x /= screenCount;
-			}
+				viewport->setEnabled(true);
 
-			glm::ivec2 pos = { 0, 0 };
-
-			viewport->setSize(size);
-			viewport->setPosition(pos);
-
-			for (auto guest : guests)
-			{
-				auto viewport = renderer->getViewport(guest->getViewportId());
-				if (!viewport)
-				{
-					renderer->createViewport(guest->getViewportId());
-					viewport = renderer->getViewport(guest->getViewportId());
-				}
-
-				viewport->setSize(size);
+				glm::ivec2 size = app->getWindow()->getSize();
 
 				if (orientation == SplitScreenOrientation::Vertical)
 				{
-					pos.y += size.y;
+					size.y /= screenCount;
 				}
 				if (orientation == SplitScreenOrientation::Horizontal)
 				{
-					pos.x += size.x;
+					size.x /= screenCount;
 				}
-				
+
+				glm::ivec2 pos = { 0, 0 };
+
+				viewport->setSize(size);
 				viewport->setPosition(pos);
 
-				viewport->setEnabled(true);
+				for (auto guest : guests)
+				{
+					auto viewport = renderer->getViewport(guest->getViewportId());
+					if (!viewport)
+					{
+						renderer->createViewport(guest->getViewportId());
+						viewport = renderer->getViewport(guest->getViewportId());
+					}
+
+					viewport->setSize(size);
+
+					if (orientation == SplitScreenOrientation::Vertical)
+					{
+						pos.y += size.y;
+					}
+					if (orientation == SplitScreenOrientation::Horizontal)
+					{
+						pos.x += size.x;
+					}
+
+					viewport->setPosition(pos);
+
+					viewport->setEnabled(true);
+				}
 			}
 		}
 	}

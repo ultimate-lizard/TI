@@ -9,6 +9,7 @@
 #include <TI/Input.h>
 #include <TI/Server/LocalServer.h>
 #include <TI/Server/RemoteServer.h>
+#include <TI/Server/ListenServer.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/ResourceManager.h>
@@ -98,6 +99,8 @@ std::optional<CmdArg> Application::findCmdArg(const std::string& commandName)
 	{
 		return *foundIter;
 	}
+
+	return {};
 }
 
 void Application::execSplitscreenCmdArg()
@@ -297,9 +300,26 @@ void Application::init()
 	input = std::make_unique<Input>(this);
 
 	execSplitscreenCmdArg();
-	if (findCmdArg())
 
-	if (!server)
+	std::string ip;
+	int port = 0;
+
+	if (std::optional<CmdArg> cmdArgOptional = findCmdArg("server"); cmdArgOptional.has_value())
+	{
+		server = std::make_unique<ListenServer>(this);
+	}
+	else if (std::optional<CmdArg> cmdArg = findCmdArg("connect"); cmdArg.has_value())
+	{
+		CmdArg connectCmdArg = cmdArg.value();
+		if (connectCmdArg.args.size() >= 2)
+		{
+			ip = connectCmdArg.args[0];
+			port = atoi(connectCmdArg.args[1].c_str());
+
+			server = std::make_unique<RemoteServer>(this);
+		}
+	}
+	else
 	{
 		server = std::make_unique<LocalServer>(this);
 	}
@@ -313,7 +333,7 @@ void Application::init()
 	{
 		if (locCl)
 		{
-			locCl->connect("", 0);
+			locCl->connect(ip, port);
 		}
 	}
 }

@@ -20,7 +20,7 @@ LocalServer::LocalServer(Application* app) :
 	if (app)
 	{
 		app->getWindow()->setTitle(GAME_TITLE);
-		app->getWindow()->maximize();
+		//app->getWindow()->maximize();
 	}
 
 	initEntityTemplates();

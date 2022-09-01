@@ -1,6 +1,6 @@
 #include "RemoteServer.h"
 
-UDPsocket RemoteServer::socket;
+#include <TI/Network/NetworkProtocol.h>
 
 RemoteServer::RemoteServer(Application* app) :
 	LocalServer(app)
@@ -10,8 +10,7 @@ RemoteServer::RemoteServer(Application* app) :
 		std::cout << "There was an error initializing SDL_Net: " << SDLNet_GetError() << std::endl;
 	}
 
-	socket = SDLNet_UDP_Open(25565);
-	SDL_Delay(1);
+	socket = SDLNet_UDP_Open(0);
 }
 
 RemoteServer::~RemoteServer()
@@ -21,9 +20,14 @@ RemoteServer::~RemoteServer()
 
 bool RemoteServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	UDPpacket* pack = SDLNet_AllocPacket(512);
-	SDL_Delay(4000);
-	int res = SDLNet_UDP_Send(socket, -1, pack);
+	IPaddress ipAddr;
+	SDLNet_ResolveHost(&ipAddr, ip.c_str(), port);
+	SDLNet_UDP_Bind(socket, -1, &ipAddr);
+
+	UDPpacket* packet = SDLNet_AllocPacket(512);
+	packet->address = ipAddr;
+
+	
 
 	return false;
 }

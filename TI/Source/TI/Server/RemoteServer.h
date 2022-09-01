@@ -12,5 +12,5 @@ public:
 
 	virtual bool connectClient(Client* client, const std::string& ip, int port) override;
 
-	static UDPsocket socket;
+	UDPsocket socket;
 };

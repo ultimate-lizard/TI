@@ -9,7 +9,6 @@
 #include <TI/Window.h>
 #include <TI/SplitScreenManager.h>
 #include <TI/Common/ThreadPool.h>
-#include <TI/NetworkManager.h>
 
 static const char* CONFIG_FOLDER = "../Config/";
 static const char* CONFIG_EXTENSION = ".cfg";
@@ -91,6 +90,5 @@ private:
 
 	std::vector<CmdArg> args;
 
-	NetworkManager networkManager;
 	std::thread networkThread;
 };

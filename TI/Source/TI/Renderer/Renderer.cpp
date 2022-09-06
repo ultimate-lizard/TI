@@ -13,6 +13,7 @@
 #include <TI/Renderer/Texture.h>
 #include <TI/Renderer/Material.h>
 #include <TI/Window.h>
+#include <TI/Server/SceneNode.h>
 
 Renderer::Renderer(Window* window) :
 	glContext(nullptr),
@@ -44,7 +45,7 @@ Renderer::~Renderer()
 	SDL_GL_DeleteContext(glContext);
 }
 
-void Renderer::pushRender(RenderCommand command)
+void Renderer::pushRender(RenderCommand command, int pass)
 {
 	if (auto iter = viewportsMap.find(command.viewportId); iter != viewportsMap.end())
 	{
@@ -52,14 +53,14 @@ void Renderer::pushRender(RenderCommand command)
 
 		if (auto foundIter = viewportsMap.find(command.viewportId); foundIter != viewportsMap.end())
 		{
-			foundIter->second.renderCommands.push_front(std::move(command));
+			foundIter->second.passes[pass].push_front(std::move(command));
 		}
 	}
 }
 
 void Renderer::render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
 	for (auto& viewportIter : viewportsMap)
@@ -74,73 +75,81 @@ void Renderer::render()
 			continue;
 		}
 
-		while (!viewport.renderCommands.empty())
+		for (size_t i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
 		{
-			auto command = viewport.renderCommands.back();
-			viewport.renderCommands.pop_back();
+			std::list<RenderCommand>& renderCommands = viewport.passes[i];
 
-			if (!command.mesh)
+			while (!renderCommands.empty())
 			{
-				continue;
-			}
+				auto command = renderCommands.back();
+				renderCommands.pop_back();
 
-			if (command.material)
-			{
-				if (Texture* texture = command.material->getTexture())
+				if (!command.mesh)
 				{
-					texture->bind();
+					continue;
 				}
 
-				Shader* shader = command.material->getShader();
-				// assert
-				shader->use();
-
-				const glm::mat4& projection = camera->getProjection();
-				const glm::mat4& view = camera->getView();
-
-				shader->setMatrix("projection", projection);
-				shader->setMatrix("view", view);
-				shader->setMatrix("model", command.transform);
-
-				shader->setVector4("color", command.material->getColor());
-			}
-			
-			glLineWidth(command.lineWidth);
-			glPointSize(command.lineWidth);
-
-			glPolygonMode(GL_FRONT_AND_BACK, command.wireframe || wireframe ? GL_LINE : GL_FILL);
-
-			if (command.cullFaces)
-			{
-				glEnable(GL_CULL_FACE);
-			}
-			else
-			{
-				glDisable(GL_CULL_FACE);
-			}
-
-			glBindVertexArray(command.mesh->getVAO());
-
-			Mesh* mesh = command.mesh;
-			int renderMode = static_cast<int>(command.renderMode);
-
-			if (!command.multiDrawCount)
-			{
-				if (mesh->getIndicesCount())
+				if (command.material)
 				{
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
-					glDrawElements(renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
+					if (Texture* texture = command.material->getTexture())
+					{
+						texture->bind();
+					}
+
+					Shader* shader = command.material->getShader();
+					// assert
+					shader->use();
+
+					const glm::mat4& projection = camera->getProjection();
+					// const glm::mat4& view = camera->getView();
+					const glm::mat4& view = camera->getView(static_cast<CoordinateSystemScale>(static_cast<int>(CoordinateSystemScale::COUNT) - i - 1));
+
+					shader->setMatrix("projection", projection);
+					shader->setMatrix("view", view);
+					shader->setMatrix("model", command.transform);
+
+					shader->setVector4("color", command.material->getColor());
+				}
+
+				glLineWidth(command.lineWidth);
+				glPointSize(command.lineWidth);
+
+				glPolygonMode(GL_FRONT_AND_BACK, command.wireframe || wireframe ? GL_LINE : GL_FILL);
+
+				if (command.cullFaces)
+				{
+					glEnable(GL_CULL_FACE);
 				}
 				else
 				{
-					glDrawArrays(renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
+					glDisable(GL_CULL_FACE);
+				}
+
+				glBindVertexArray(command.mesh->getVAO());
+
+				Mesh* mesh = command.mesh;
+				int renderMode = static_cast<int>(command.renderMode);
+
+				if (!command.multiDrawCount)
+				{
+					if (mesh->getIndicesCount())
+					{
+						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
+						glDrawElements(renderMode, static_cast<unsigned int>(mesh->getIndicesCount()), GL_UNSIGNED_INT, 0);
+					}
+					else
+					{
+						glDrawArrays(renderMode, 0, static_cast<unsigned int>(mesh->getPositionsCount()));
+					}
+				}
+				else
+				{
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
+					glMultiDrawElements(renderMode, command.counts, GL_UNSIGNED_INT, command.indices, command.multiDrawCount);
 				}
 			}
-			else
-			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->getEBO());
-				glMultiDrawElements(renderMode, command.counts, GL_UNSIGNED_INT, command.indices, command.multiDrawCount);
-			}
+
+			glClear(GL_DEPTH_BUFFER_BIT);
 		}
 	}
 }

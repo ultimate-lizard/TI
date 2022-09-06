@@ -3,6 +3,7 @@
 in vec2 texturePos;
 in vec3 fragPos;
 in vec3 normal;
+in float flogz;
 
 out vec4 FragColor;
 
@@ -63,6 +64,10 @@ void main()
 		result.w = 1.0f;
 	}
 
+	float Fcoef = 2.0 / log2(10000000.0f + 1.0);
+	float Fcoef_half = 0.5 * Fcoef;
+
+    gl_FragDepth = log2(flogz) * Fcoef_half;
 
 	FragColor = result;
 }

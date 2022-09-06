@@ -190,6 +190,8 @@ Key Config::stringToKey(const std::string& string)
 	if (string == "Up") return Key::Up;
 	if (string == "MouseLeft") return Key::MouseLeft;
 	if (string == "MouseRight") return Key::MouseRight;
+	if (string == "ScrollUp") return Key::ScrollUp;
+	if (string == "ScrollDown") return Key::ScrollDown;
 
 	return Key::UnknownKey;
 }
@@ -248,6 +250,8 @@ std::string Config::keyToString(Key key)
 	if (key == Key::Up) return "Up";
 	if (key == Key::MouseLeft) return "MouseLeft";
 	if (key == Key::MouseRight) return "MouseRight";
+	if (key == Key::ScrollUp) return "ScrollUp";
+	if (key == Key::ScrollDown) return "ScrollDown";
 
 	return "UnknownKey";
 }

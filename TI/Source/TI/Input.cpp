@@ -79,6 +79,16 @@ void Input::handleInput()
 					break;
 				}
 				break;
+			case SDL_MOUSEWHEEL:
+				if (event.wheel.y > 0)
+				{
+					inputHandler->onKeyInput(Key::ScrollUp, ActionInputType::Press);
+				}
+				else if (event.wheel.y < 0)
+				{
+					inputHandler->onKeyInput(Key::ScrollDown, ActionInputType::Press);
+				}
+				break;
 			case SDL_MOUSEBUTTONUP:
 				switch (event.button.button)
 				{

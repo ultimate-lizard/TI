@@ -7,7 +7,7 @@
 
 Camera::Camera(const glm::vec3& position)
 {
-	this->position = position;
+	setPosition(position);
 }
 
 Camera::Camera(const Camera& other) :
@@ -22,7 +22,7 @@ void Camera::setPerspective(float fov, float aspect, float near, float far)
 	projection = glm::perspective(fov, aspect, near, far);
 }
 
-void Camera::updateView()
+void Camera::updateView(CoordinateSystemScale coordinateScale)
 {
 	glm::vec3 absolutePosition;
 	glm::quat absoluteRotation;
@@ -30,7 +30,7 @@ void Camera::updateView()
 	glm::vec3 scew;
 	glm::vec4 perspective;
 
-	glm::decompose(getTransform(), scale, absoluteRotation, absolutePosition, scew, perspective);
+	glm::decompose(getTransform(coordinateScale), scale, absoluteRotation, absolutePosition, scew, perspective);
 	
 	absoluteRotation = glm::conjugate(absoluteRotation);
 
@@ -45,9 +45,9 @@ const glm::mat4& Camera::getProjection() const
 	return projection;
 }
 
-const glm::mat4& Camera::getView()
+const glm::mat4& Camera::getView(CoordinateSystemScale coordinateScale)
 {
-	updateView();
+	updateView(coordinateScale);
 
 	return view;
 }

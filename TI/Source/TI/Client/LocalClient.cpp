@@ -4,21 +4,22 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <TI/Server/Server.h>
 #include <TI/Application.h>
-#include <TI/Client/Input/InputHandler.h>
-#include <TI/Client/Controller.h>
+#include <TI/Server/Server.h>
+#include <TI/Server/Plane.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
-#include <TI/Renderer/Renderer.h>
-#include <TI/ResourceManager.h>
+#include <TI/Client/Input/InputHandler.h>
+#include <TI/Client/Controller.h>
+#include <TI/Client/PlanetMesh.h>
 #include <TI/Client/ChunkMesh.h>
-#include <TI/Server/Plane.h>
 #include <TI/Client/DebugInformation.h>
+#include <TI/Renderer/Renderer.h>
+#include <TI/Renderer/Camera.h>
+#include <TI/ResourceManager.h>
 #include <TI/Util/Utils.h>
 #include <TI/Util/Math.h>
-#include <TI/Renderer/Camera.h>
 
 std::unique_ptr<DebugInformation> LocalClient::debugInformation = nullptr;
 
@@ -63,6 +64,35 @@ void LocalClient::connect(const std::string& ip, int port)
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
+
+			if (app)
+			{
+				ResourceManager* rm = app->getResourceManager();
+				if (Model* model = rm->getModel("Star"))
+				{
+					auto planetMesh = std::make_unique<PlanetMesh>(model);
+					planetMesh->setPosition({ 0.0f, 150.0f, 0.0f }, CoordinateSystemScale::Interstellar);
+					planetMesh->setScale(glm::vec3(1.39f), CoordinateSystemScale::Interstellar);
+					// planetMesh->rotateInWorldSpace(45.0f, {0.0f, 1.0f, 1.0f});
+
+					stars.push_back(std::move(planetMesh));
+				}
+
+				/*if (Model* model = rm->getModel("GasGiant"))
+				{
+					auto planetMesh = std::make_unique<PlanetMesh>(model);
+					planetMesh->setPosition({ 0.0f, 300'000.0f, 0.0f }, CoordinateSystemScale::Interplanetary);
+					planetMesh->setScale(glm::vec3(139'000.0f), CoordinateSystemScale::Interplanetary);
+					planetMesh->rotateInWorldSpace(45.0f, { 0.0f, 1.0f, 0.0f });
+					planetMesh->rotateInWorldSpace(45.0f, { 0.0f, 0.0f, 1.0f });
+
+					planets.push_back(std::move(planetMesh));
+				}*/
+			}
+
+			//Model* planetModel = app->getResourceManager()->getModel("Planet");
+			//planetMesh = std::make_unique<PlanetMesh>(planetModel);
+			//planetMesh->setPosition({ 0.0f, 0.0f, -2.0f });
 		}
 	}
 }
@@ -365,8 +395,35 @@ void LocalClient::renderWorld()
 	cmd.counts = cachedPoolData.sizes.data();
 	cmd.indices = cachedPoolData.offsets.data();
 	cmd.multiDrawCount = cachedPoolData.drawCount;
-
-	renderer->pushRender(cmd);
+	renderer->pushRender(cmd, 2);
+	
+	for (auto& planetMesh : stars)
+	{
+		if (planetMesh)
+		{
+			RenderCommand cmd2;
+			cmd2.mesh = planetMesh->getModel()->getMesh();
+			cmd2.material = planetMesh->getModel()->getMaterial();
+			cmd2.transform = planetMesh->getTransform(CoordinateSystemScale::Interstellar);
+			cmd2.viewportId = getViewportId();
+			cmd2.cullFaces = false;
+			renderer->pushRender(cmd2, 0);
+		}
+	}
+	
+	for (auto& planetMesh : planets)
+	{
+		if (planetMesh)
+		{
+			RenderCommand cmd2;
+			cmd2.mesh = planetMesh->getModel()->getMesh();
+			cmd2.material = planetMesh->getModel()->getMaterial();
+			cmd2.transform = planetMesh->getTransform(CoordinateSystemScale::Interplanetary);
+			cmd2.viewportId = getViewportId();
+			cmd2.cullFaces = false;
+			renderer->pushRender(cmd2, 1);
+		}
+	}
 }
 
 void LocalClient::renderEntities()
@@ -388,7 +445,7 @@ void LocalClient::renderEntities()
 
 				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId });
+					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId }, 2);
 				}
 			}
 		}
@@ -436,6 +493,6 @@ void LocalClient::renderDebugMeshes()
 {
 	for (const DebugMeshInfo& debugMeshInfo : debugInformation->getMeshes())
 	{
-		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false });
+		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false }, 2);
 	}
 }

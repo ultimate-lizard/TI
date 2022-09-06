@@ -47,7 +47,7 @@ std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 		const std::vector<OrientationInfo> orientations { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
 		for (const OrientationInfo& orientationInfo : orientations)
 		{
-			if (isInCone(position, orientationInfo))
+			if (isInCone(getPosition(), orientationInfo))
 			{
 				result = orientationInfo;
 			}

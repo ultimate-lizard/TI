@@ -13,10 +13,10 @@ public:
 	Camera(const Camera& other);
 
 	void setPerspective(float fov, float aspect, float near, float far);
-	void updateView();
+	void updateView(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
 
 	const glm::mat4& getProjection() const;
-	const glm::mat4& getView();
+	const glm::mat4& getView(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
 
 	void setForward(const glm::vec3& forward);
 

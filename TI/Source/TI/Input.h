@@ -58,7 +58,9 @@ enum Key
 	Down,
 	Up,
 	MouseLeft = SDL_NUM_SCANCODES,
-	MouseRight
+	MouseRight,
+	ScrollUp,
+	ScrollDown
 };
 
 enum Axis

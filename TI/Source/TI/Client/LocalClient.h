@@ -20,6 +20,7 @@ class Renderer;
 class DebugInformation;
 class Plane;
 class Camera;
+class PlanetMesh;
 
 class LocalClient : public Client
 {
@@ -88,4 +89,10 @@ private:
 	bool frustumCullingEnabled;
 
 	Camera* cachedEntityCamera;
+
+	std::vector<std::unique_ptr<PlanetMesh>> stars;
+
+	std::vector<std::unique_ptr<PlanetMesh>> planets;
+
+	// std::unique_ptr<PlanetMesh> planetLod;
 };

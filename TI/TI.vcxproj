@@ -181,6 +181,7 @@
     <ClCompile Include="Source\TI\Client\Controller.cpp" />
     <ClCompile Include="Source\TI\Client\DebugInformation.cpp" />
     <ClCompile Include="Source\TI\Client\LocalClient.cpp" />
+    <ClCompile Include="Source\TI\Client\PlanetMesh.cpp" />
     <ClCompile Include="Source\TI\Common\ThreadPool.cpp" />
     <ClCompile Include="Source\TI\Input.cpp" />
     <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="Source\TI\Client\DebugInformation.h" />
     <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
     <ClInclude Include="Source\TI\Client\LocalClient.h" />
+    <ClInclude Include="Source\TI\Client\PlanetMesh.h" />
     <ClInclude Include="Source\TI\Common\ThreadPool.h" />
     <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />

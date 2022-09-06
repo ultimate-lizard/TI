@@ -281,6 +281,22 @@ void PlayerController::jump()
 	}
 }
 
+void PlayerController::increaseFlightSpeed()
+{
+	if (movementComponent)
+	{
+		movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 2.0f);
+	}
+}
+
+void PlayerController::decreaseFlightSpeed()
+{
+	if (movementComponent)
+	{
+		movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 0.5f);
+	}
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -306,5 +322,8 @@ void PlayerController::setupInputHandler()
 		inputHandler->bindKey("ToggleFrustumCulling", ActionInputType::Press, std::bind(&PlayerController::toggleFrustumCulling, this));
 
 		inputHandler->bindKey("Jump", ActionInputType::Press, std::bind(&PlayerController::jump, this));
+
+		inputHandler->bindKey("IncreaseFlightSpeed", ActionInputType::Press, std::bind(&PlayerController::increaseFlightSpeed, this));
+		inputHandler->bindKey("DecreaseFlightSpeed", ActionInputType::Press, std::bind(&PlayerController::decreaseFlightSpeed, this));
 	}
 }

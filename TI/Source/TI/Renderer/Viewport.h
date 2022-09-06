@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <array>
 
 #include <TI/Renderer/RenderCommand.h>
 
@@ -24,7 +25,8 @@ public:
 	void setEnabled(bool enabled);
 	bool isEnabled() const;
 
-	std::list<RenderCommand> renderCommands;
+	std::array<std::list<RenderCommand>, 3> passes;
+	// std::list<RenderCommand> renderCommands;
 
 private:
 	void updateCameraPerspective();

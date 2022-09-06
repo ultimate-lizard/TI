@@ -14,7 +14,7 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(5), 16));
+	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(10), 16));
 
 	// TODO: Remove this
 	if (app)

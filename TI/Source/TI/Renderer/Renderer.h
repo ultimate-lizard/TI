@@ -21,7 +21,7 @@ public:
 	Renderer(Window* window);
 	~Renderer();
 
-	void pushRender(RenderCommand command);
+	void pushRender(RenderCommand command, int pass = 0);
 
 	void render();
 	// void renderMultidraw(Mesh* mesh, Material* material, GLsizei* counts, void** indices, GLsizei drawCount);

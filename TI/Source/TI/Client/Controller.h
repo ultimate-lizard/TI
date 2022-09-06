@@ -54,6 +54,9 @@ private:
 
 	void jump();
 
+	void increaseFlightSpeed();
+	void decreaseFlightSpeed();
+
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;
 	Client* client;

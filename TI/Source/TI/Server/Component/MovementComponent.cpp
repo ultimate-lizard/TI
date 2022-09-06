@@ -134,7 +134,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		}
 	}
 
-	if (shouldRotate)
+	if (shouldRotate && flightMode == false)
 	{
 		planeSideTransitionInProgress = true;
 
@@ -225,7 +225,10 @@ float MovementComponent::getWalkMaxSpeed() const
 
 void MovementComponent::setFlightSpeed(float flightSpeed)
 {
-	this->flightSpeed = flightSpeed;
+	if (flightMode)
+	{
+		this->flightSpeed = flightSpeed;
+	}
 }
 
 float MovementComponent::getFlightSpeed() const
@@ -464,12 +467,12 @@ void MovementComponent::handleFlight(float dt)
 		{
 			glm::vec3 position = transformComponent->getPosition();
 
-			if (physicsComponent)
-			{
-				CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
-				velocity = collisionResult.adjustedVelocity;
-				position = collisionResult.adjustedPosition;
-			}
+			//if (physicsComponent)
+			//{
+			//	CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
+			//	velocity = collisionResult.adjustedVelocity;
+			//	position = collisionResult.adjustedPosition;
+			//}
 
 			position += velocity * dt;
 			transformComponent->setPosition(position);

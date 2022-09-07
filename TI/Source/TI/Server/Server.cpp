@@ -11,6 +11,7 @@
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Plane.h>
+#include <TI/Server/Star.h>
 
 void Server::initEntityTemplates()
 {
@@ -127,12 +128,12 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 	return nullptr;
 }
 
-const std::vector<std::unique_ptr<Plane>>& Server::getPlanes() const
-{
-	return planes;
-}
+//const std::vector<std::unique_ptr<Plane>>& Server::getPlanes() const
+//{
+//	return planes;
+//}
 
-Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, const glm::vec3& position)
+Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, Plane* plane, const glm::vec3& position)
 {
 	Entity* result = nullptr;
 
@@ -141,11 +142,11 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 		std::unique_ptr<Entity> spawnedEntity = createEntityFromTemplate(templateName, id);
 		result = spawnedEntity.get();
 
-		if (!planes.empty() && result)
+		if (plane && result)
 		{
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
-				transformComponent->setPlane(getPlanes()[0].get());
+				transformComponent->setPlane(plane);
 				transformComponent->setPosition(position);
 			}
 		}
@@ -156,6 +157,11 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 	}
 
 	return result;
+}
+
+const std::vector<std::unique_ptr<Star>>& Server::getStars()
+{
+	return stars;
 }
 
 void Server::possesEntity(const std::string& entityName, Client* const client)

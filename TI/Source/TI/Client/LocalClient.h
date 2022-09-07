@@ -20,7 +20,9 @@ class Renderer;
 class DebugInformation;
 class Plane;
 class Camera;
-class PlanetMesh;
+class AstroBodyMesh;
+class AstroBody;
+class Star;
 
 class LocalClient : public Client
 {
@@ -44,7 +46,7 @@ public:
 
 	static DebugInformation* getDebugInformation();
 
-	void updateBlock(const glm::uvec3& position);
+	void updateBlock(Plane* plane, const glm::uvec3& position);
 
 	void setFrustumCullingEnabled(bool enabled);
 	bool isFrustumCullingEnabled() const;
@@ -53,11 +55,15 @@ private:
 	void loadConfig();
 	void loadMappings();
 
+	void initStarSystemVisuals(Star* star);
+
+	void updatePlaneVisuals(Plane* plane);
+
 	void renderDebugMeshes();
 	void renderWorld();
 	void renderEntities();
 
-	std::vector<glm::vec3> getSurroundingChunksPositions(const glm::vec3& position, unsigned short viewDistance);
+	std::vector<glm::vec3> getSurroundingChunksPositions(Plane* plane, const glm::vec3& position, unsigned short viewDistance);
 	std::vector<glm::ivec3> cullChunksPositions(const std::vector<glm::ivec3>& chunksPositions);
 
 private:
@@ -79,7 +85,8 @@ private:
 
 	static std::unique_ptr<DebugInformation> debugInformation;
 
-	const Plane* plane;
+	// const Plane* plane;
+	std::vector<Plane*> activePlanes;
 
 	glm::ivec3 playerLastChunkPosition;
 
@@ -90,9 +97,9 @@ private:
 
 	Camera* cachedEntityCamera;
 
-	std::vector<std::unique_ptr<PlanetMesh>> stars;
+	std::vector<std::unique_ptr<AstroBodyMesh>> stars;
 
-	std::vector<std::unique_ptr<PlanetMesh>> planets;
+	std::vector<std::unique_ptr<AstroBodyMesh>> planets;
 
 	// std::unique_ptr<PlanetMesh> planetLod;
 };

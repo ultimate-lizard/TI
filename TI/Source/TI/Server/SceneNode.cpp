@@ -119,6 +119,19 @@ void SceneNode::setPosition(const glm::vec3& position, CoordinateSystemScale coo
 		break;
 	}
 
+	std::cout << "planetary: " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.x <<
+		" " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.y <<
+		" " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.z << std::endl;
+
+	const glm::vec3 bounds{ 200.0f, 200.0f, 200.0f };
+	if (coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.x > bounds.x &&
+		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.y > bounds.y &&
+		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.z > bounds.z)
+	{
+		std::cout << "YOU HAVE LEFT THE BOUNDS" << std::endl;
+		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position = {};
+	}
+
 	updateTransform();
 }
 

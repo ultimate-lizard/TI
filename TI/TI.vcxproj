@@ -197,6 +197,7 @@
     <ClCompile Include="Source\TI\Renderer\Shader.cpp" />
     <ClCompile Include="Source\TI\Renderer\Texture.cpp" />
     <ClCompile Include="Source\TI\Renderer\Viewport.cpp" />
+    <ClCompile Include="Source\TI\Server\AstroBody.cpp" />
     <ClCompile Include="Source\TI\Server\Chunk.cpp" />
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
@@ -208,9 +209,11 @@
     <ClCompile Include="Source\TI\Server\ListenServer.cpp" />
     <ClCompile Include="Source\TI\Server\LocalServer.cpp" />
     <ClCompile Include="Source\TI\Server\Plane.cpp" />
+    <ClCompile Include="Source\TI\Server\Planet.cpp" />
     <ClCompile Include="Source\TI\Server\RemoteServer.cpp" />
     <ClCompile Include="Source\TI\Server\SceneNode.cpp" />
     <ClCompile Include="Source\TI\Server\Server.cpp" />
+    <ClCompile Include="Source\TI\Server\Star.cpp" />
     <ClCompile Include="Source\TI\SplitScreenManager.cpp" />
     <ClCompile Include="Source\TI\Util\Config.cpp" />
     <ClCompile Include="Source\TI\Util\File.cpp" />
@@ -242,6 +245,7 @@
     <ClInclude Include="Source\TI\Renderer\Shader.h" />
     <ClInclude Include="Source\TI\Renderer\Texture.h" />
     <ClInclude Include="Source\TI\Renderer\Viewport.h" />
+    <ClInclude Include="Source\TI\Server\AstroBody.h" />
     <ClInclude Include="Source\TI\Server\Block.h" />
     <ClInclude Include="Source\TI\Server\Chunk.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
@@ -255,10 +259,12 @@
     <ClInclude Include="Source\TI\Server\LocalServer.h" />
     <ClInclude Include="Source\TI\Server\Plane.h" />
     <ClInclude Include="Source\TI\Server\PlaneSide.h" />
+    <ClInclude Include="Source\TI\Server\Planet.h" />
     <ClInclude Include="Source\TI\Server\RemoteServer.h" />
     <ClInclude Include="Source\TI\Server\SceneNode.h" />
     <ClInclude Include="Source\TI\Server\Server.h" />
     <ClInclude Include="Source\TI\Server\ServerConnectionResponse.h" />
+    <ClInclude Include="Source\TI\Server\Star.h" />
     <ClInclude Include="Source\TI\SplitScreenManager.h" />
     <ClInclude Include="Source\TI\Util\Assert.h" />
     <ClInclude Include="Source\TI\Renderer\Renderer.h" />

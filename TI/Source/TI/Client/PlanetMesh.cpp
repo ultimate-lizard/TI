@@ -1,11 +1,14 @@
 #include "PlanetMesh.h"
 
-PlanetMesh::PlanetMesh(Model* model) :
+#include <TI/Server/AstroBody.h>
+
+AstroBodyMesh::AstroBodyMesh(AstroBody* astroBody, Model* model) :
+	astroBody(astroBody),
 	model(model)
 {
 }
 
-Model* PlanetMesh::getModel()
+Model* AstroBodyMesh::getModel()
 {
 	return model;
 }

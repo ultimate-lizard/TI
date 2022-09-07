@@ -10,11 +10,14 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/SceneNode.h>
 #include <TI/Server/Plane.h>
+// #include <TI/Server/AstroBody.h>
+#include <TI/Server/Star.h>
+#include <TI/Server/Planet.h>
 
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(10), 16));
+	initStarSystems();
 
 	// TODO: Remove this
 	if (app)
@@ -24,8 +27,10 @@ LocalServer::LocalServer(Application* app) :
 	}
 
 	initEntityTemplates();
+}
 
-	// spawnEntity("PlanetEntity", "planet_entity", { 40.0f, 40.0f, 40.0f });
+LocalServer::~LocalServer()
+{
 }
 
 void LocalServer::update(float dt)
@@ -40,7 +45,15 @@ void LocalServer::update(float dt)
 
 bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	spawnPlayer(client);
+	// Get home planet for spawn
+	if (Plane* plane = stars[0]->getPlanets()[0]->getPlane())
+	{
+		glm::ivec3 planeSize = plane->getSize();
+
+		glm::vec3 spawnLocation{ planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
+
+		spawnPlayer(client, plane, spawnLocation);
+	}
 
 	return true;
 }
@@ -50,14 +63,20 @@ void LocalServer::ejectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-void LocalServer::spawnPlayer(Client* const client)
+void LocalServer::initStarSystems()
 {
-	if (!planes.empty())
-	{
-		glm::ivec3 planeSize = planes[0].get()->getSize();
+	// planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(10), 16));
+	stars.push_back(std::make_unique<Star>());
+}
 
-		glm::vec3 spawnLocation { planeSize.x * planes[0].get()->getChunkSize() / 2.0f, planeSize.y * planes[0].get()->getChunkSize() + 3.0f, planeSize.z * planes[0].get()->getChunkSize() / 2.0f};
-		Entity* playerEntity = spawnEntity("Player", client->getName(), spawnLocation);
+void LocalServer::spawnPlayer(Client* const client, Plane* plane, const glm::vec3& position)
+{
+	if (plane)
+	{
+		// glm::ivec3 planeSize = plane->getSize();
+
+		// glm::vec3 spawnLocation { planeSize.x * planes[0].get()->getChunkSize() / 2.0f, planeSize.y * planes[0].get()->getChunkSize() + 3.0f, planeSize.z * planes[0].get()->getChunkSize() / 2.0f};
+		Entity* playerEntity = spawnEntity("Player", client->getName(), plane, position);
 		possesEntity(client->getName(), client);
 	}
 }

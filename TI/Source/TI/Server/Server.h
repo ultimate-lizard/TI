@@ -10,6 +10,7 @@
 
 class Application;
 class Plane;
+class Star;
 
 class Server
 {
@@ -33,8 +34,10 @@ public:
 
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
-	const std::vector<std::unique_ptr<Plane>>& getPlanes() const;
-	Entity* const spawnEntity(const std::string& templateName, const std::string& id, const glm::vec3& position);
+	// const std::vector<std::unique_ptr<Plane>>& getPlanes() const;
+	Entity* const spawnEntity(const std::string& templateName, const std::string& id, Plane* plane, const glm::vec3& position);
+
+	const std::vector<std::unique_ptr<Star>>& getStars();
 
 protected:
 	void initEntityTemplates();
@@ -48,5 +51,6 @@ protected:
 
 	std::atomic<bool> shuttingDown;
 
-	std::vector<std::unique_ptr<Plane>> planes;
+	std::vector<std::unique_ptr<Star>> stars;
+	// std::vector<std::unique_ptr<Plane>> planes;
 };

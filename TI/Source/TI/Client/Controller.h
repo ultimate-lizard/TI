@@ -41,7 +41,7 @@ private:
 
 	void quitGame();
 
-	void castRayWithCollision();
+	// void castRayWithCollision();
 
 	void destroyBlock();
 	void placeBlock();

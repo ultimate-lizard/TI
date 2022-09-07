@@ -4,8 +4,7 @@
 
 #include <TI/Util/Utils.h>
 
-Plane::Plane(const glm::vec3& position, const glm::uvec3& size, size_t chunkSize) :
-	position(position),
+Plane::Plane(const glm::uvec3& size, size_t chunkSize) :
 	size(size),
 	chunkSize(chunkSize),
 	gravityEnabled(true)
@@ -157,4 +156,9 @@ glm::uvec3 Plane::positionToChunkLocalPosition(const glm::uvec3& position) const
 		position.y % chunkSize,
 		position.z % chunkSize
 	);
+}
+
+glm::vec3 Plane::getCoordinateSystemBounds() const
+{
+	return bounds;
 }

@@ -100,18 +100,18 @@ void PlayerController::quitGame()
 	}
 }
 
-void PlayerController::castRayWithCollision()
-{
-	static int entityCount = 0;
-
-	auto playerPos = entity->findComponent<TransformComponent>()->getPosition();
-	auto playerForward = movementComponent->getHeadDirection();
-
-	auto spawnLocation = playerPos + playerForward * 1.5f;
-	auto spawnVelocity = playerForward * 50.0f;
-
-	auto projectile = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "123" + std::to_string(entityCount++), spawnLocation);
-}
+//void PlayerController::castRayWithCollision()
+//{
+//	static int entityCount = 0;
+//
+//	auto playerPos = entity->findComponent<TransformComponent>()->getPosition();
+//	auto playerForward = movementComponent->getHeadDirection();
+//
+//	auto spawnLocation = playerPos + playerForward * 1.5f;
+//	auto spawnVelocity = playerForward * 50.0f;
+//
+//	auto projectile = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "123" + std::to_string(entityCount++), spawnLocation);
+//}
 
 void PlayerController::destroyBlock()
 {
@@ -135,7 +135,7 @@ void PlayerController::destroyBlock()
 							{
 								plane->spawnBlock(rayEndPosition, 0);
 
-								localClient->updateBlock(rayEndPosition);
+								localClient->updateBlock(plane, rayEndPosition);
 
 								break;
 							}
@@ -181,7 +181,7 @@ void PlayerController::placeBlock()
 											{
 												if (auto localClient = dynamic_cast<LocalClient*>(client))
 												{
-													localClient->updateBlock(blockPosition);
+													localClient->updateBlock(plane, blockPosition);
 												}
 											}
 										}

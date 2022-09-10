@@ -48,7 +48,7 @@ bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 	// Get home planet for spawn
 	if (BlockGrid* plane = stars[0]->getPlanets()[0]->getPlane())
 	{
-		glm::ivec3 planeSize = plane->getSize();
+		glm::ivec3 planeSize = plane->getBlockGridSize();
 
 		glm::vec3 spawnLocation{ planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
 

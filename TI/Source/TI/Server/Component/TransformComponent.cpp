@@ -61,7 +61,7 @@ bool TransformComponent::isInCone(const glm::vec3& position, const OrientationIn
 {
 	if (BlockGrid* plane = getPlane())
 	{
-		float planetSize = plane->getSize().x * plane->getChunkSize();
+		float planetSize = plane->getBlockGridSize().x * plane->getChunkSize();
 
 		return orientationInfo.positive ?
 			position[orientationInfo.sideAxis] <= position[orientationInfo.heightAxis] && position[orientationInfo.sideAxis] >= planetSize - position[orientationInfo.heightAxis] &&

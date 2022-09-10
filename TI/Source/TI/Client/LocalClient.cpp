@@ -62,7 +62,7 @@ void LocalClient::connect(const std::string& ip, int port)
 		if (server->connectClient(this, ip, port))
 		{
 			BlockGrid* plane = server->getStars()[0]->getPlanets()[0]->getPlane();
-			activePlanes.push_back(plane);
+			activeBlockGrids.push_back(plane);
 
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -131,7 +131,7 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	for (BlockGrid* plane : activePlanes)
+	for (BlockGrid* plane : activeBlockGrids)
 	{
 		updatePlaneVisuals(plane);
 	}
@@ -173,20 +173,20 @@ DebugInformation* LocalClient::getDebugInformation()
 	return debugInformation.get();
 }
 
-void LocalClient::updateBlock(BlockGrid* plane, const glm::uvec3& position)
+void LocalClient::updateBlock(BlockGrid* blockGrid, const glm::uvec3& position)
 {
-	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
-	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
+	glm::uvec3 chunkPosition = blockGrid->positionToChunkPosition(position);
+	size_t chunkIndex = utils::positionToIndex(chunkPosition, blockGrid->getBlockGridSize());
 
 	if (chunkMeshesBank.find(chunkIndex) != chunkMeshesBank.end())
 	{
 		chunkMeshesBank[chunkIndex]->buildGreedy();
 
 		pool.freeChunkMesh(chunkIndex);
-		pool.insertChunkMesh(plane, chunkMeshesBank[chunkIndex].get());
+		pool.insertChunkMesh(blockGrid, chunkMeshesBank[chunkIndex].get());
 	}
 
-	glm::uvec3 blockLocalPosition = plane->positionToChunkLocalPosition(position);
+	glm::uvec3 blockLocalPosition = blockGrid->positionToChunkLocalPosition(position);
 
 	for (unsigned int axis = 0; axis < 3; ++axis)
 	{
@@ -196,21 +196,21 @@ void LocalClient::updateBlock(BlockGrid* plane, const glm::uvec3& position)
 		{
 			blockPositionInNeighborChunk[axis] -= 1;
 		}
-		else if (blockLocalPosition[axis] == static_cast<unsigned int>(plane->getChunkSize()) - 1)
+		else if (blockLocalPosition[axis] == static_cast<unsigned int>(blockGrid->getChunkSize()) - 1)
 		{
 			blockPositionInNeighborChunk[axis] += 1;
 		}
 
-		if (blockPositionInNeighborChunk != position && plane->isPositionInGridBounds(blockPositionInNeighborChunk))
+		if (blockPositionInNeighborChunk != position && blockGrid->isPositionInGridBounds(blockPositionInNeighborChunk))
 		{
-			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
-			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());
+			glm::uvec3 neighborChunkPosition = blockGrid->positionToChunkPosition(blockPositionInNeighborChunk);
+			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, blockGrid->getBlockGridSize());
 
 			if (chunkMeshesBank.find(neighborChunkIndex) != chunkMeshesBank.end())
 			{
 				chunkMeshesBank[neighborChunkIndex]->buildGreedy();
 				pool.freeChunkMesh(neighborChunkIndex);
-				pool.insertChunkMesh(plane, chunkMeshesBank[neighborChunkIndex].get());
+				pool.insertChunkMesh(blockGrid, chunkMeshesBank[neighborChunkIndex].get());
 			}
 		}
 	}
@@ -292,9 +292,9 @@ void LocalClient::loadMappings()
 	}
 }
 
-void LocalClient::updatePlaneVisuals(BlockGrid* plane)
+void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 {
-	if (possessedEntity && plane)
+	if (possessedEntity && blockGrid)
 	{
 		if (auto transformComponent = possessedEntity->findComponent<TransformComponent>())
 		{
@@ -310,18 +310,18 @@ void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 			glm::vec3 playerPosition = transformComponent->getPosition();
 			playerPosition.y -= 3.0f;
 
-			if (playerLastChunkPosition != plane->positionToChunkPosition(playerPosition))
+			if (playerLastChunkPosition != blockGrid->positionToChunkPosition(playerPosition))
 			{
-				playerLastChunkPosition = plane->positionToChunkPosition(playerPosition);
+				playerLastChunkPosition = blockGrid->positionToChunkPosition(playerPosition);
 
 				// TODO: Pass the chunk pool a list of visible chunks?
 				for (const auto& position : cachedVisibleChunksPositions)
 				{
-					pool.setChunkMeshVisibility(utils::positionToIndex(position, plane->getSize()), false);
+					pool.setChunkMeshVisibility(utils::positionToIndex(position, blockGrid->getBlockGridSize()), false);
 				}
 
 				const int VIEW_DISTANCE = 32;
-				cachedVisibleChunksPositions = getSurroundingChunksPositions(plane, playerPosition, VIEW_DISTANCE);
+				cachedVisibleChunksPositions = getSurroundingChunksPositions(blockGrid, playerPosition, VIEW_DISTANCE);
 
 				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
 				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
@@ -334,12 +334,12 @@ void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 				for (size_t i = 0; i < cachedVisibleChunksPositions.size(); ++i)
 				{
 					const glm::ivec3& chunkPosition = cachedVisibleChunksPositions[i];
-					const size_t chunkSize = plane->getChunkSize();
+					const size_t chunkSize = blockGrid->getChunkSize();
 
 					glm::ivec3 absoluteChunkPosition(chunkPosition.x * chunkSize, chunkPosition.y * chunkSize, chunkPosition.z * chunkSize);
 					if (frustum.IsBoxVisible(absoluteChunkPosition, { absoluteChunkPosition.x + chunkSize, absoluteChunkPosition.y + chunkSize, absoluteChunkPosition.z + chunkSize }))
 					{
-						const size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
+						const size_t chunkIndex = utils::positionToIndex(chunkPosition, blockGrid->getBlockGridSize());
 						// If mesh is built and not pending
 						meshesBankMutex.lock();
 						if (auto foundIter = chunkMeshesBank.find(chunkIndex); foundIter != chunkMeshesBank.end())
@@ -351,7 +351,7 @@ void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 							}
 							else
 							{
-								pool.insertChunkMesh(plane, foundIter->second.get());
+								pool.insertChunkMesh(blockGrid, foundIter->second.get());
 							}
 						}
 						// If mesh is not yet built
@@ -365,9 +365,9 @@ void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 									pendingChunks.push_back(chunkIndex);
 								}
 
-								app->threadPool.pushTask([this, plane, chunkPosition, chunkIndex]() {
+								app->threadPool.pushTask([this, blockGrid, chunkPosition, chunkIndex]() {
 									{
-										ChunkMesh* newMesh = new ChunkMesh(plane->getChunk(chunkPosition), plane);
+										ChunkMesh* newMesh = new ChunkMesh(blockGrid->getChunk(chunkPosition), blockGrid);
 										std::unique_lock<std::mutex> lock(meshesBankMutex);
 										chunkMeshesBank.emplace(chunkIndex, newMesh);
 										auto foundIter = std::find(pendingChunks.begin(), pendingChunks.end(), chunkIndex);
@@ -380,7 +380,7 @@ void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 					}
 					else
 					{
-						pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, plane->getSize()), false);
+						pool.setChunkMeshVisibility(utils::positionToIndex(chunkPosition, blockGrid->getBlockGridSize()), false);
 					}
 				}
 
@@ -431,7 +431,7 @@ void LocalClient::renderWorld()
 	RenderCommand cmd;
 	cmd.mesh = cachedPoolData.poolMesh;
 	cmd.material = chunkMaterial;
-	cmd.transform = glm::mat4(1.0f);
+	cmd.transform = activeBlockGrids[0]->getTransform();
 	cmd.viewportId = getViewportId();
 	cmd.counts = cachedPoolData.sizes.data();
 	cmd.indices = cachedPoolData.offsets.data();
@@ -493,12 +493,12 @@ void LocalClient::renderEntities()
 	}
 }
 
-std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(BlockGrid* plane, const glm::vec3& position, unsigned short viewDistance)
+std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(BlockGrid* blockGrid, const glm::vec3& position, unsigned short viewDistance)
 {
 	std::vector<glm::vec3> surroundingPositions;
 
 	// Find surrounding chunks
-	glm::ivec3 playerChunkPosition = plane->positionToChunkPosition(position);
+	glm::ivec3 playerChunkPosition = blockGrid->positionToChunkPosition(position);
 	for (int i = playerChunkPosition.x - viewDistance; i <= playerChunkPosition.x + viewDistance; ++i)
 	{
 		for (int j = playerChunkPosition.y - 10; j <= playerChunkPosition.y + 10; ++j)
@@ -506,7 +506,7 @@ std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(BlockGrid* pla
 			for (int k = playerChunkPosition.z - viewDistance; k <= playerChunkPosition.z + viewDistance; ++k)
 			{
 				// TODO: Find proper way to check validity of chunk position
-				if (!(i < 0 || j < 0 || k < 0 || i >= plane->getSize().x || j >= plane->getSize().y || k >= plane->getSize().z))
+				if (!(i < 0 || j < 0 || k < 0 || i >= blockGrid->getBlockGridSize().x || j >= blockGrid->getBlockGridSize().y || k >= blockGrid->getBlockGridSize().z))
 				{
 					surroundingPositions.push_back({ i, j, k });
 				}

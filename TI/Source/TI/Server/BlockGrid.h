@@ -6,17 +6,18 @@
 
 #include <TI/Server/Chunk.h>
 #include <TI/Server/Block.h>
+#include <TI/Server/SceneNode.h>
 
 static const size_t DEFAULT_CHUNK_SIZE = 16;
 
-class BlockGrid
+class BlockGrid : public SceneNode
 {
 public:
-	BlockGrid(const glm::uvec3& size, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+	BlockGrid(const glm::uvec3& blockGridSize, size_t chunkSize = DEFAULT_CHUNK_SIZE, const glm::vec3& blockGridPosition = glm::vec3(0.0f));
 	BlockGrid(const BlockGrid&) = delete;
 	BlockGrid(BlockGrid&&) = delete;
 
-	const glm::uvec3& getSize() const;
+	const glm::uvec3& getBlockGridSize() const;
 	size_t getChunkSize() const;
 
 	const std::vector<Chunk>& getChunks() const;
@@ -40,7 +41,8 @@ public:
 
 private:
 	// glm::vec3 position;
-	glm::uvec3 size;
+	// Size of block grid in chunks
+	glm::uvec3 blockGridSize;
 
 	const size_t chunkSize;
 

@@ -73,7 +73,7 @@ void ChunkPool::insertChunkMesh(const BlockGrid* plane, ChunkMesh* chunkMesh)
 
 	if (plane)
 	{
-		chunks.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunkMesh->getPosition()), plane->getSize()), ChunkData{ vertexOffset, elementOffset, chunkMesh->data.size() * sizeof(float), chunkMesh->elements.size() * sizeof(unsigned int), chunkMesh });
+		chunks.emplace(utils::positionToIndex(plane->positionToChunkPosition(chunkMesh->getPosition()), plane->getBlockGridSize()), ChunkData{ vertexOffset, elementOffset, chunkMesh->data.size() * sizeof(float), chunkMesh->elements.size() * sizeof(unsigned int), chunkMesh });
 	}
 	
 	// Adding new

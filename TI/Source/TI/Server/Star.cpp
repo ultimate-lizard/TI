@@ -11,7 +11,7 @@ Star::Star() :
 	// setPosition({ 0.0f, 200.0f, 0.0f }, getCoordinateSystemScale());
 	setScale(glm::vec3(100.0f), getCoordinateSystemScale());
 
-	// Load info about planet
+	// Load info about primary planet
 	auto body = std::make_unique<Planet>(glm::uvec3(10), 16);
 
 	body->setScale(glm::vec3(13.0f), coordinateSystem);

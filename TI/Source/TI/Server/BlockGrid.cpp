@@ -4,26 +4,32 @@
 
 #include <TI/Util/Utils.h>
 
-BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize) :
-	size(size),
+BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize, const glm::vec3& blockGridPosition) :
+	blockGridSize(size),
 	chunkSize(chunkSize),
 	gravityEnabled(true)
 {
+	setPosition(blockGridPosition);
+
 	for (unsigned int z = 0; z < size.z; ++z)
 	{
 		for (unsigned int y = 0; y < size.y; ++y)
 		{
 			for (unsigned int x = 0; x < size.x; ++x)
 			{
-				chunks.emplace_back(chunkSize, glm::vec3(static_cast<float>(x * chunkSize), static_cast<float>(y * chunkSize), static_cast<float>(z * chunkSize)));
+				glm::vec3 chunkPosition;
+				chunkPosition.x = static_cast<float>(x * chunkSize) + getPosition().x;
+				chunkPosition.y = static_cast<float>(y * chunkSize) + getPosition().y;
+				chunkPosition.z = static_cast<float>(z * chunkSize) + getPosition().z;
+				chunks.emplace_back(chunkSize, chunkPosition);
 			}
 		}
 	}
 }
 
-const glm::uvec3& BlockGrid::getSize() const
+const glm::uvec3& BlockGrid::getBlockGridSize() const
 {
-	return size;
+	return blockGridSize;
 }
 
 size_t BlockGrid::getChunkSize() const
@@ -58,7 +64,7 @@ void BlockGrid::spawnBlock(const glm::uvec3& position, unsigned int blockType)
 
 	glm::uvec3 chunkPosition = positionToChunkPosition(position);
 
-	Chunk& chunk = chunks[utils::positionToIndex(chunkPosition, size)];
+	Chunk& chunk = chunks[utils::positionToIndex(chunkPosition, blockGridSize)];
 	chunk.setBlock({ position.x % chunkSize, position.y % chunkSize, position.z % chunkSize }, blockType);
 }
 
@@ -71,7 +77,7 @@ unsigned int BlockGrid::getBlock(const glm::uvec3& position) const
 
 	glm::uvec3 chunkPosition = positionToChunkPosition(position);
 
-	const Chunk& chunk = chunks[utils::positionToIndex(chunkPosition, size)];
+	const Chunk& chunk = chunks[utils::positionToIndex(chunkPosition, blockGridSize)];
 	return chunk.getBlock({ position.x % chunkSize, position.y % chunkSize, position.z % chunkSize });
 }
 
@@ -116,13 +122,13 @@ const Chunk* BlockGrid::getChunk(const glm::uvec3& position) const
 		return nullptr;
 	}
 
-	return &chunks[utils::positionToIndex(position, size)];
+	return &chunks[utils::positionToIndex(position, blockGridSize)];
 }
 
 bool BlockGrid::isPositionInGridBounds(const glm::uvec3& position) const
 {
 	if (position.x < 0.0f || position.y < 0.0f || position.z < 0.0f ||
-		position.x >= size.x * chunkSize || position.y >= size.y * chunkSize || position.z >= size.z * chunkSize)
+		position.x >= blockGridSize.x * chunkSize || position.y >= blockGridSize.y * chunkSize || position.z >= blockGridSize.z * chunkSize)
 	{
 		return false;
 	}

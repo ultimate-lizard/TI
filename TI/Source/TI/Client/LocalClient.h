@@ -46,7 +46,7 @@ public:
 
 	static DebugInformation* getDebugInformation();
 
-	void updateBlock(BlockGrid* plane, const glm::uvec3& position);
+	void updateBlock(BlockGrid* blockGrid, const glm::uvec3& position);
 
 	void setFrustumCullingEnabled(bool enabled);
 	bool isFrustumCullingEnabled() const;
@@ -57,13 +57,13 @@ private:
 
 	void initStarSystemVisuals(Star* star);
 
-	void updatePlaneVisuals(BlockGrid* plane);
+	void updatePlaneVisuals(BlockGrid* blockGrid);
 
 	void renderDebugMeshes();
 	void renderWorld();
 	void renderEntities();
 
-	std::vector<glm::vec3> getSurroundingChunksPositions(BlockGrid* plane, const glm::vec3& position, unsigned short viewDistance);
+	std::vector<glm::vec3> getSurroundingChunksPositions(BlockGrid* blockGrid, const glm::vec3& position, unsigned short viewDistance);
 	std::vector<glm::ivec3> cullChunksPositions(const std::vector<glm::ivec3>& chunksPositions);
 
 private:
@@ -86,7 +86,7 @@ private:
 	static std::unique_ptr<DebugInformation> debugInformation;
 
 	// const Plane* plane;
-	std::vector<BlockGrid*> activePlanes;
+	std::vector<BlockGrid*> activeBlockGrids;
 
 	glm::ivec3 playerLastChunkPosition;
 
@@ -96,8 +96,6 @@ private:
 	bool frustumCullingEnabled;
 
 	Camera* cachedEntityCamera;
-
-	std::vector<std::unique_ptr<AstroBodyMesh>> stars;
 
 	std::vector<std::unique_ptr<AstroBodyMesh>> planets;
 

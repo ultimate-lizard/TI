@@ -3,7 +3,7 @@
 #include <TI/Server/Server.h>
 
 class Star;
-class Plane;
+class BlockGrid;
 
 class LocalServer : public Server
 {
@@ -20,5 +20,5 @@ public:
 protected:
 	void initStarSystems();
 
-	void spawnPlayer(Client* const client, Plane* plane, const glm::vec3& position);
+	void spawnPlayer(Client* const client, BlockGrid* plane, const glm::vec3& position);
 };

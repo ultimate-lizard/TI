@@ -1,4 +1,4 @@
-#include "PlanetMesh.h"
+#include "AstroBodyMesh.h"
 
 #include <TI/Server/AstroBody.h>
 

@@ -7,7 +7,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Entity.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Client/DebugInformation.h>
 
 PhysicsComponent::PhysicsComponent() :

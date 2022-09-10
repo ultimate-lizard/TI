@@ -10,7 +10,7 @@
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Server/Star.h>
 
 void Server::initEntityTemplates()
@@ -133,7 +133,7 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 //	return planes;
 //}
 
-Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, Plane* plane, const glm::vec3& position)
+Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* plane, const glm::vec3& position)
 {
 	Entity* result = nullptr;
 

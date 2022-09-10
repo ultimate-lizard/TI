@@ -6,11 +6,11 @@
 #include <glad/glad.h>
 
 #include <TI/Server/Chunk.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Util/Utils.h>
 
 // TODO: Change chunk pointer to reference
-ChunkMesh::ChunkMesh(const Chunk* const chunk, const Plane* const plane) :
+ChunkMesh::ChunkMesh(const Chunk* const chunk, const BlockGrid* const plane) :
 	chunkSize(chunk->getSize()), // Fix the hardcode
 	chunk(chunk),
 	plane(plane)
@@ -422,7 +422,7 @@ bool ChunkMesh::isFaceNextToAir(BlockFace face, const glm::uvec3& position)
 		position.z + static_cast<unsigned int>(chunk->getPosition().z)
 	);
 
-	return plane->getNeighborBlock(absolutePosition, face) == 0 && plane->isPositionInPlaneBounds(absolutePosition);
+	return plane->getNeighborBlock(absolutePosition, face) == 0 && plane->isPositionInGridBounds(absolutePosition);
 }
 
 void ChunkMesh::setFace(BlockFace face, const glm::uvec3& position)

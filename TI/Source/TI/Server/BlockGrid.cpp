@@ -1,10 +1,10 @@
-#include "Plane.h"
+#include "BlockGrid.h"
 
 #include <iostream>
 
 #include <TI/Util/Utils.h>
 
-Plane::Plane(const glm::uvec3& size, size_t chunkSize) :
+BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize) :
 	size(size),
 	chunkSize(chunkSize),
 	gravityEnabled(true)
@@ -21,22 +21,22 @@ Plane::Plane(const glm::uvec3& size, size_t chunkSize) :
 	}
 }
 
-const glm::uvec3& Plane::getSize() const
+const glm::uvec3& BlockGrid::getSize() const
 {
 	return size;
 }
 
-size_t Plane::getChunkSize() const
+size_t BlockGrid::getChunkSize() const
 {
 	return chunkSize;
 }
 
-const std::vector<Chunk>& Plane::getChunks() const
+const std::vector<Chunk>& BlockGrid::getChunks() const
 {
 	return chunks;
 }
 
-void Plane::spawnRandomBlock()
+void BlockGrid::spawnRandomBlock()
 {
 	if (!chunks.empty())
 	{
@@ -49,9 +49,9 @@ void Plane::spawnRandomBlock()
 	}
 }
 
-void Plane::spawnBlock(const glm::uvec3& position, unsigned int blockType)
+void BlockGrid::spawnBlock(const glm::uvec3& position, unsigned int blockType)
 {
-	if (!isPositionInPlaneBounds(position) || chunks.empty())
+	if (!isPositionInGridBounds(position) || chunks.empty())
 	{
 		return;
 	}
@@ -62,9 +62,9 @@ void Plane::spawnBlock(const glm::uvec3& position, unsigned int blockType)
 	chunk.setBlock({ position.x % chunkSize, position.y % chunkSize, position.z % chunkSize }, blockType);
 }
 
-unsigned int Plane::getBlock(const glm::uvec3& position) const
+unsigned int BlockGrid::getBlock(const glm::uvec3& position) const
 {
-	if (!isPositionInPlaneBounds(position))
+	if (!isPositionInGridBounds(position))
 	{
 		return 0;
 	}
@@ -75,7 +75,7 @@ unsigned int Plane::getBlock(const glm::uvec3& position) const
 	return chunk.getBlock({ position.x % chunkSize, position.y % chunkSize, position.z % chunkSize });
 }
 
-unsigned int Plane::getNeighborBlock(const glm::uvec3& position, BlockFace direction) const
+unsigned int BlockGrid::getNeighborBlock(const glm::uvec3& position, BlockFace direction) const
 {
 	glm::uvec3 blockPosition = position;
 
@@ -101,7 +101,7 @@ unsigned int Plane::getNeighborBlock(const glm::uvec3& position, BlockFace direc
 		break;
 	}
 
-	if (!isPositionInPlaneBounds(blockPosition))
+	if (!isPositionInGridBounds(blockPosition))
 	{
 		return 0;
 	}
@@ -109,9 +109,9 @@ unsigned int Plane::getNeighborBlock(const glm::uvec3& position, BlockFace direc
 	return getBlock(blockPosition);
 }
 
-const Chunk* Plane::getChunk(const glm::uvec3& position) const
+const Chunk* BlockGrid::getChunk(const glm::uvec3& position) const
 {
-	if (!isPositionInPlaneBounds({position.x * chunkSize, position.y * chunkSize, position.z * chunkSize }))
+	if (!isPositionInGridBounds({position.x * chunkSize, position.y * chunkSize, position.z * chunkSize }))
 	{
 		return nullptr;
 	}
@@ -119,7 +119,7 @@ const Chunk* Plane::getChunk(const glm::uvec3& position) const
 	return &chunks[utils::positionToIndex(position, size)];
 }
 
-bool Plane::isPositionInPlaneBounds(const glm::uvec3& position) const
+bool BlockGrid::isPositionInGridBounds(const glm::uvec3& position) const
 {
 	if (position.x < 0.0f || position.y < 0.0f || position.z < 0.0f ||
 		position.x >= size.x * chunkSize || position.y >= size.y * chunkSize || position.z >= size.z * chunkSize)
@@ -130,17 +130,17 @@ bool Plane::isPositionInPlaneBounds(const glm::uvec3& position) const
 	return true;
 }
 
-void Plane::setGravityEnabled(bool gravityEnabled)
+void BlockGrid::setGravityEnabled(bool gravityEnabled)
 {
 	this->gravityEnabled = gravityEnabled;
 }
 
-bool Plane::isGravityEnabled() const
+bool BlockGrid::isGravityEnabled() const
 {
 	return gravityEnabled;
 }
 
-glm::ivec3 Plane::positionToChunkPosition(const glm::vec3& position) const
+glm::ivec3 BlockGrid::positionToChunkPosition(const glm::vec3& position) const
 {
 	return glm::uvec3(
 		position.x / chunkSize,
@@ -149,16 +149,11 @@ glm::ivec3 Plane::positionToChunkPosition(const glm::vec3& position) const
 	);
 }
 
-glm::uvec3 Plane::positionToChunkLocalPosition(const glm::uvec3& position) const
+glm::uvec3 BlockGrid::positionToChunkLocalPosition(const glm::uvec3& position) const
 {
 	return glm::uvec3(
 		position.x % chunkSize,
 		position.y % chunkSize,
 		position.z % chunkSize
 	);
-}
-
-glm::vec3 Plane::getCoordinateSystemBounds() const
-{
-	return bounds;
 }

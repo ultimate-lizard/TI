@@ -1,8 +1,5 @@
 #pragma once
 
-// #include <TI/Server/SceneNode.h>
-// #include <TI/Server/AstroBody.h>
-
 class Model;
 class AstroBody;
 

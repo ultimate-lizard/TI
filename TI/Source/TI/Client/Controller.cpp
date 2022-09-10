@@ -11,7 +11,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Application.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Renderer/Renderer.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Server/LocalServer.h>
@@ -119,7 +119,7 @@ void PlayerController::destroyBlock()
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			if (Plane* plane = transformComponent->getPlane())
+			if (BlockGrid* plane = transformComponent->getPlane())
 			{
 				if (auto localClient = dynamic_cast<LocalClient*>(client))
 				{
@@ -160,7 +160,7 @@ void PlayerController::placeBlock()
 
 				for (float i = 0; i < 5.0f; i += 0.1f)
 				{
-					if (Plane* plane = transformComponent->getPlane())
+					if (BlockGrid* plane = transformComponent->getPlane())
 					{
 						if (plane->getBlock(headPosition + movementComponent->getHeadDirection() * i) == 1)
 						{
@@ -218,7 +218,7 @@ void PlayerController::toggleFlyMode()
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			if (Plane* const plane = transformComponent->getPlane())
+			if (BlockGrid* const plane = transformComponent->getPlane())
 			{
 				plane->setGravityEnabled(!plane->isGravityEnabled());
 			}

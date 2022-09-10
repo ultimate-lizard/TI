@@ -1,6 +1,6 @@
 #include "TransformComponent.h"
 
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Server/Entity.h>
 
@@ -23,12 +23,12 @@ void TransformComponent::tick(float dt)
 
 }
 
-void TransformComponent::setPlane(Plane* plane)
+void TransformComponent::setPlane(BlockGrid* plane)
 {
 	this->plane = plane;
 }
 
-Plane* TransformComponent::getPlane() const
+BlockGrid* TransformComponent::getPlane() const
 {
 	return plane;
 }
@@ -59,7 +59,7 @@ std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 
 bool TransformComponent::isInCone(const glm::vec3& position, const OrientationInfo& orientationInfo) const
 {
-	if (Plane* plane = getPlane())
+	if (BlockGrid* plane = getPlane())
 	{
 		float planetSize = plane->getSize().x * plane->getChunkSize();
 

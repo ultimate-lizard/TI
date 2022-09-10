@@ -4,7 +4,7 @@
 
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Util/Utils.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 
 ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
 	freeVertexOffsetEnd(0),
@@ -16,7 +16,7 @@ ChunkPool::ChunkPool(size_t vboSize, size_t eboSize) :
 	poolMesh = builder.buildDyanmic(vboSize, eboSize);
 }
 
-void ChunkPool::insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh)
+void ChunkPool::insertChunkMesh(const BlockGrid* plane, ChunkMesh* chunkMesh)
 {
 	if (chunkMesh->data.empty())
 	{

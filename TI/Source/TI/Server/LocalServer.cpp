@@ -9,7 +9,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/SceneNode.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 // #include <TI/Server/AstroBody.h>
 #include <TI/Server/Star.h>
 #include <TI/Server/Planet.h>
@@ -46,7 +46,7 @@ void LocalServer::update(float dt)
 bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
 	// Get home planet for spawn
-	if (Plane* plane = stars[0]->getPlanets()[0]->getPlane())
+	if (BlockGrid* plane = stars[0]->getPlanets()[0]->getPlane())
 	{
 		glm::ivec3 planeSize = plane->getSize();
 
@@ -69,7 +69,7 @@ void LocalServer::initStarSystems()
 	stars.push_back(std::make_unique<Star>());
 }
 
-void LocalServer::spawnPlayer(Client* const client, Plane* plane, const glm::vec3& position)
+void LocalServer::spawnPlayer(Client* const client, BlockGrid* plane, const glm::vec3& position)
 {
 	if (plane)
 	{

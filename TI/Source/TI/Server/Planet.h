@@ -4,17 +4,17 @@
 
 #include <TI/Server/AstroBody.h>
 
-class Plane;
+class BlockGrid;
 
 class Planet : public AstroBody
 {
 public:
 	Planet(const glm::uvec3& size, size_t chunkSize);
-	Planet(std::unique_ptr<Plane> plane);
+	Planet(std::unique_ptr<BlockGrid> plane);
 	~Planet();
 
-	Plane* getPlane();
+	BlockGrid* getPlane();
 
 private:
-	std::unique_ptr<Plane> plane;
+	std::unique_ptr<BlockGrid> plane;
 };

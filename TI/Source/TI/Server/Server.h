@@ -9,7 +9,7 @@
 #include <TI/Server/Entity.h>
 
 class Application;
-class Plane;
+class BlockGrid;
 class Star;
 
 class Server
@@ -35,7 +35,7 @@ public:
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
 
 	// const std::vector<std::unique_ptr<Plane>>& getPlanes() const;
-	Entity* const spawnEntity(const std::string& templateName, const std::string& id, Plane* plane, const glm::vec3& position);
+	Entity* const spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* plane, const glm::vec3& position);
 
 	const std::vector<std::unique_ptr<Star>>& getStars();
 

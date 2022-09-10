@@ -7,7 +7,7 @@
 #include <TI/Server/SceneNode.h>
 #include <TI/Server/PlaneSide.h>
 
-class Plane;
+class BlockGrid;
 
 class TransformComponent : public Component, public SceneNode
 {
@@ -18,8 +18,8 @@ public:
 
 	void tick(float dt) override;
 
-	void setPlane(Plane* plane);
-	Plane* getPlane() const;
+	void setPlane(BlockGrid* plane);
+	BlockGrid* getPlane() const;
 
 	std::unique_ptr<Component> clone() const override;
 
@@ -29,5 +29,5 @@ private:
 	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
 
 private:
-	Plane* plane;
+	BlockGrid* plane;
 };

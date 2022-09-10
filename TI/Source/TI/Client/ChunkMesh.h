@@ -11,13 +11,13 @@
 #include <TI/Server/Block.h>
 
 class Chunk;
-class Plane;
+class BlockGrid;
 
 class ChunkMesh
 {
 
 public:
-	ChunkMesh(const Chunk* const chunk, const Plane* const plane);
+	ChunkMesh(const Chunk* const chunk, const BlockGrid* const plane);
 
 	ChunkMesh(const ChunkMesh&) = delete;
 	ChunkMesh(ChunkMesh&&) = delete;
@@ -49,5 +49,5 @@ private:
 	std::map<std::pair<size_t, BlockFace>, std::array<float, 32>> faceVerticesMap;
 
 	const Chunk* const chunk;
-	const Plane* const plane;
+	const BlockGrid* const plane;
 };

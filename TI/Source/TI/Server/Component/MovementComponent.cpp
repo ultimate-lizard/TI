@@ -13,7 +13,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Util/Math.h>

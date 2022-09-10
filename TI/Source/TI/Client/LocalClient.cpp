@@ -6,7 +6,7 @@
 
 #include <TI/Application.h>
 #include <TI/Server/LocalServer.h>
-#include <TI/Server/Plane.h>
+#include <TI/Server/BlockGrid.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
@@ -14,7 +14,7 @@
 #include <TI/Server/Planet.h>
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/Controller.h>
-#include <TI/Client/PlanetMesh.h>
+#include <TI/Client/AstroBodyMesh.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Renderer/Renderer.h>
@@ -61,7 +61,7 @@ void LocalClient::connect(const std::string& ip, int port)
 	{
 		if (server->connectClient(this, ip, port))
 		{
-			Plane* plane = server->getStars()[0]->getPlanets()[0]->getPlane();
+			BlockGrid* plane = server->getStars()[0]->getPlanets()[0]->getPlane();
 			activePlanes.push_back(plane);
 
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
@@ -131,7 +131,7 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	for (Plane* plane : activePlanes)
+	for (BlockGrid* plane : activePlanes)
 	{
 		updatePlaneVisuals(plane);
 	}
@@ -173,7 +173,7 @@ DebugInformation* LocalClient::getDebugInformation()
 	return debugInformation.get();
 }
 
-void LocalClient::updateBlock(Plane* plane, const glm::uvec3& position)
+void LocalClient::updateBlock(BlockGrid* plane, const glm::uvec3& position)
 {
 	glm::uvec3 chunkPosition = plane->positionToChunkPosition(position);
 	size_t chunkIndex = utils::positionToIndex(chunkPosition, plane->getSize());
@@ -201,7 +201,7 @@ void LocalClient::updateBlock(Plane* plane, const glm::uvec3& position)
 			blockPositionInNeighborChunk[axis] += 1;
 		}
 
-		if (blockPositionInNeighborChunk != position && plane->isPositionInPlaneBounds(blockPositionInNeighborChunk))
+		if (blockPositionInNeighborChunk != position && plane->isPositionInGridBounds(blockPositionInNeighborChunk))
 		{
 			glm::uvec3 neighborChunkPosition = plane->positionToChunkPosition(blockPositionInNeighborChunk);
 			size_t neighborChunkIndex = utils::positionToIndex(neighborChunkPosition, plane->getSize());
@@ -292,7 +292,7 @@ void LocalClient::loadMappings()
 	}
 }
 
-void LocalClient::updatePlaneVisuals(Plane* plane)
+void LocalClient::updatePlaneVisuals(BlockGrid* plane)
 {
 	if (possessedEntity && plane)
 	{
@@ -493,7 +493,7 @@ void LocalClient::renderEntities()
 	}
 }
 
-std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(Plane* plane, const glm::vec3& position, unsigned short viewDistance)
+std::vector<glm::vec3> LocalClient::getSurroundingChunksPositions(BlockGrid* plane, const glm::vec3& position, unsigned short viewDistance)
 {
 	std::vector<glm::vec3> surroundingPositions;
 

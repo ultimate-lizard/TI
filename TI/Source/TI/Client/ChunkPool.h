@@ -7,7 +7,7 @@
 
 class Mesh;
 class ChunkMesh;
-class Plane;
+class BlockGrid;
 
 struct MultiDrawData
 {
@@ -43,7 +43,7 @@ public:
 
 	ChunkPool(size_t vboSize, size_t eboSize);
 
-	void insertChunkMesh(const Plane* plane, ChunkMesh* chunkMesh);
+	void insertChunkMesh(const BlockGrid* plane, ChunkMesh* chunkMesh);
 	void freeChunkMesh(size_t index);
 	bool findChunkMesh(size_t index) const;
 

@@ -181,7 +181,7 @@
     <ClCompile Include="Source\TI\Client\Controller.cpp" />
     <ClCompile Include="Source\TI\Client\DebugInformation.cpp" />
     <ClCompile Include="Source\TI\Client\LocalClient.cpp" />
-    <ClCompile Include="Source\TI\Client\PlanetMesh.cpp" />
+    <ClCompile Include="Source\TI\Client\AstroBodyMesh.cpp" />
     <ClCompile Include="Source\TI\Common\ThreadPool.cpp" />
     <ClCompile Include="Source\TI\Input.cpp" />
     <ClCompile Include="Source\TI\Client\Input\InputHandler.cpp" />
@@ -208,7 +208,7 @@
     <ClCompile Include="Source\TI\Server\Entity.cpp" />
     <ClCompile Include="Source\TI\Server\ListenServer.cpp" />
     <ClCompile Include="Source\TI\Server\LocalServer.cpp" />
-    <ClCompile Include="Source\TI\Server\Plane.cpp" />
+    <ClCompile Include="Source\TI\Server\BlockGrid.cpp" />
     <ClCompile Include="Source\TI\Server\Planet.cpp" />
     <ClCompile Include="Source\TI\Server\RemoteServer.cpp" />
     <ClCompile Include="Source\TI\Server\SceneNode.cpp" />
@@ -224,6 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\TI\Application.h" />
+    <ClInclude Include="Source\TI\Client\AstroBodyMesh.h" />
     <ClInclude Include="Source\TI\Client\ChunkMesh.h" />
     <ClInclude Include="Source\TI\Client\ChunkPool.h" />
     <ClInclude Include="Source\TI\Client\Client.h" />
@@ -232,7 +233,6 @@
     <ClInclude Include="Source\TI\Client\DebugInformation.h" />
     <ClInclude Include="Source\TI\Client\Input\InputHandler.h" />
     <ClInclude Include="Source\TI\Client\LocalClient.h" />
-    <ClInclude Include="Source\TI\Client\PlanetMesh.h" />
     <ClInclude Include="Source\TI\Common\ThreadPool.h" />
     <ClInclude Include="Source\TI\Input.h" />
     <ClInclude Include="Source\TI\Renderer\Camera.h" />
@@ -257,7 +257,7 @@
     <ClInclude Include="Source\TI\Server\Entity.h" />
     <ClInclude Include="Source\TI\Server\ListenServer.h" />
     <ClInclude Include="Source\TI\Server\LocalServer.h" />
-    <ClInclude Include="Source\TI\Server\Plane.h" />
+    <ClInclude Include="Source\TI\Server\BlockGrid.h" />
     <ClInclude Include="Source\TI\Server\PlaneSide.h" />
     <ClInclude Include="Source\TI\Server\Planet.h" />
     <ClInclude Include="Source\TI\Server\RemoteServer.h" />

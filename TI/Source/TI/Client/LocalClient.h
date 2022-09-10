@@ -18,7 +18,7 @@ class Mesh;
 class ChunkMesh;
 class Renderer;
 class DebugInformation;
-class Plane;
+class BlockGrid;
 class Camera;
 class AstroBodyMesh;
 class AstroBody;
@@ -46,7 +46,7 @@ public:
 
 	static DebugInformation* getDebugInformation();
 
-	void updateBlock(Plane* plane, const glm::uvec3& position);
+	void updateBlock(BlockGrid* plane, const glm::uvec3& position);
 
 	void setFrustumCullingEnabled(bool enabled);
 	bool isFrustumCullingEnabled() const;
@@ -57,13 +57,13 @@ private:
 
 	void initStarSystemVisuals(Star* star);
 
-	void updatePlaneVisuals(Plane* plane);
+	void updatePlaneVisuals(BlockGrid* plane);
 
 	void renderDebugMeshes();
 	void renderWorld();
 	void renderEntities();
 
-	std::vector<glm::vec3> getSurroundingChunksPositions(Plane* plane, const glm::vec3& position, unsigned short viewDistance);
+	std::vector<glm::vec3> getSurroundingChunksPositions(BlockGrid* plane, const glm::vec3& position, unsigned short viewDistance);
 	std::vector<glm::ivec3> cullChunksPositions(const std::vector<glm::ivec3>& chunksPositions);
 
 private:
@@ -86,7 +86,7 @@ private:
 	static std::unique_ptr<DebugInformation> debugInformation;
 
 	// const Plane* plane;
-	std::vector<Plane*> activePlanes;
+	std::vector<BlockGrid*> activePlanes;
 
 	glm::ivec3 playerLastChunkPosition;
 

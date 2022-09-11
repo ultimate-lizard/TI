@@ -1,7 +1,6 @@
 #include "AstroBody.h"
 
-AstroBody::AstroBody(CoordinateSystemScale coordinateSystem) :
-	coordinateSystem(coordinateSystem)
+AstroBody::AstroBody()
 {
 
 }
@@ -14,11 +13,6 @@ AstroBody::~AstroBody()
 //{
 //	orbitingBodies.push_back(std::move(body));
 //}
-
-CoordinateSystemScale AstroBody::getCoordinateSystemScale() const
-{
-	return coordinateSystem;
-}
 
 //const std::vector<std::unique_ptr<AstroBody>>& AstroBody::getOrbitingBodies() const
 //{

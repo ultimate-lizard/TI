@@ -29,7 +29,7 @@ std::unique_ptr<Entity> Entity::clone() const
 
 	for (const std::unique_ptr<Component>& checkedComponent : components)
 	{
-		if (auto checkedNode = dynamic_cast<SceneNode*>(checkedComponent.get()))
+		if (auto checkedNode = dynamic_cast<SceneMultiNode*>(checkedComponent.get()))
 		{
 			std::unique_ptr<Component> clonedComponent;
 			if (auto iter = clonedComponents.find(checkedComponent.get()); iter != clonedComponents.end())
@@ -42,10 +42,10 @@ std::unique_ptr<Entity> Entity::clone() const
 				clonedComponents.emplace(checkedComponent.get(), nullptr);
 			}
 
-			auto clonedSceneNode = dynamic_cast<SceneNode*>(clonedComponent.get());
+			auto clonedSceneNode = dynamic_cast<SceneMultiNode*>(clonedComponent.get());
 			for (const std::unique_ptr<Component>& checkedInnerComponent : components)
 			{
-				if (auto checkedInnerNode = dynamic_cast<SceneNode*>(checkedInnerComponent.get()))
+				if (auto checkedInnerNode = dynamic_cast<SceneMultiNode*>(checkedInnerComponent.get()))
 				{
 					if (checkedInnerNode->isChildOf(checkedNode) && checkedComponent.get() != checkedInnerComponent.get())
 					{
@@ -60,7 +60,7 @@ std::unique_ptr<Entity> Entity::clone() const
 							clonedComponents.emplace(checkedInnerComponent.get(), nullptr);
 						}
 
-						auto clonedChildSceneNode = dynamic_cast<SceneNode*>(clonedChild.get());
+						auto clonedChildSceneNode = dynamic_cast<SceneMultiNode*>(clonedChild.get());
 						clonedSceneNode->addChild(clonedChildSceneNode);
 
 						clonedComponents[checkedInnerComponent.get()] = std::move(clonedChild);

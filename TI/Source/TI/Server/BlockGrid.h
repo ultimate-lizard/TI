@@ -10,10 +10,10 @@
 
 static const size_t DEFAULT_CHUNK_SIZE = 16;
 
-class BlockGrid : public SceneNode
+class BlockGrid : public SceneMultiNode
 {
 public:
-	BlockGrid(const glm::uvec3& blockGridSize, size_t chunkSize = DEFAULT_CHUNK_SIZE, const glm::vec3& blockGridPosition = glm::vec3(0.0f));
+	BlockGrid(const glm::uvec3& blockGridSize, size_t chunkSize = DEFAULT_CHUNK_SIZE);
 	BlockGrid(const BlockGrid&) = delete;
 	BlockGrid(BlockGrid&&) = delete;
 

@@ -8,7 +8,7 @@
 class Model;
 class ResourceManager;
 
-class MeshComponent : public Component, public SceneNode
+class MeshComponent : public Component, public SceneMultiNode
 {
 public:
 	MeshComponent(ResourceManager* modelManager);

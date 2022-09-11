@@ -61,7 +61,7 @@ void LocalClient::connect(const std::string& ip, int port)
 	{
 		if (server->connectClient(this, ip, port))
 		{
-			BlockGrid* plane = server->getStars()[0]->getPlanets()[0]->getPlane();
+			BlockGrid* plane = server->getStars()[0]->getPlanets()[0]->getBlockGrid();
 			activeBlockGrids.push_back(plane);
 
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
@@ -431,12 +431,12 @@ void LocalClient::renderWorld()
 	RenderCommand cmd;
 	cmd.mesh = cachedPoolData.poolMesh;
 	cmd.material = chunkMaterial;
-	cmd.transform = activeBlockGrids[0]->getTransform();
+	cmd.transform = glm::mat4(1.0f);
 	cmd.viewportId = getViewportId();
 	cmd.counts = cachedPoolData.sizes.data();
 	cmd.indices = cachedPoolData.offsets.data();
 	cmd.multiDrawCount = cachedPoolData.drawCount;
-	renderer->pushRender(cmd, 2);
+	renderer->pushRender(cmd, 0);
 	
 	//for (auto& planetMesh : stars)
 	//{
@@ -459,7 +459,7 @@ void LocalClient::renderWorld()
 			RenderCommand cmd2;
 			cmd2.mesh = planetMesh->getModel()->getMesh();
 			cmd2.material = planetMesh->getModel()->getMaterial();
-			cmd2.transform = planetMesh->getAstroBody()->getTransform(CoordinateSystemScale::Interplanetary);
+			cmd2.transform = planetMesh->getAstroBody()->getTransform(CoordinateSystem::Interplanetary);
 			cmd2.viewportId = getViewportId();
 			cmd2.cullFaces = false;
 			renderer->pushRender(cmd2, 1);
@@ -486,7 +486,7 @@ void LocalClient::renderEntities()
 
 				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId }, 2);
+					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId }, 0);
 				}
 			}
 		}
@@ -534,6 +534,6 @@ void LocalClient::renderDebugMeshes()
 {
 	for (const DebugMeshInfo& debugMeshInfo : debugInformation->getMeshes())
 	{
-		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false }, 2);
+		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false }, 0);
 	}
 }

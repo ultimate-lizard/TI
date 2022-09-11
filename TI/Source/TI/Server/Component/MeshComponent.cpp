@@ -6,7 +6,7 @@
 
 MeshComponent::MeshComponent(ResourceManager* modelManager) :
 	Component(),
-	SceneNode(),
+	SceneMultiNode(),
 	modelManager(modelManager),
 	model(nullptr)
 {
@@ -15,7 +15,7 @@ MeshComponent::MeshComponent(ResourceManager* modelManager) :
 
 MeshComponent::MeshComponent(const MeshComponent& other) :
 	Component(other),
-	SceneNode(other),
+	SceneMultiNode(other),
 	modelManager(other.modelManager),
 	model(other.model)
 {

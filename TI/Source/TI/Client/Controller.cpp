@@ -119,7 +119,7 @@ void PlayerController::destroyBlock()
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			if (BlockGrid* plane = transformComponent->getPlane())
+			if (BlockGrid* plane = transformComponent->getCurrentBlockGrid())
 			{
 				if (auto localClient = dynamic_cast<LocalClient*>(client))
 				{
@@ -160,7 +160,7 @@ void PlayerController::placeBlock()
 
 				for (float i = 0; i < 5.0f; i += 0.1f)
 				{
-					if (BlockGrid* plane = transformComponent->getPlane())
+					if (BlockGrid* plane = transformComponent->getCurrentBlockGrid())
 					{
 						if (plane->getBlock(headPosition + movementComponent->getHeadDirection() * i) == 1)
 						{
@@ -218,7 +218,7 @@ void PlayerController::toggleFlyMode()
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
 		{
-			if (BlockGrid* const plane = transformComponent->getPlane())
+			if (BlockGrid* const plane = transformComponent->getCurrentBlockGrid())
 			{
 				plane->setGravityEnabled(!plane->isGravityEnabled());
 			}

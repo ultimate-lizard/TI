@@ -13,8 +13,8 @@ public:
 	Planet(std::unique_ptr<BlockGrid> plane);
 	~Planet();
 
-	BlockGrid* getPlane();
+	BlockGrid* getBlockGrid();
 
 private:
-	std::unique_ptr<BlockGrid> plane;
+	std::unique_ptr<BlockGrid> blockGrid;
 };

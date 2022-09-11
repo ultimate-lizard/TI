@@ -9,7 +9,7 @@
 
 class BlockGrid;
 
-class TransformComponent : public Component, public SceneNode
+class TransformComponent : public Component, public SceneMultiNode
 {
 public:
 	TransformComponent();
@@ -18,8 +18,8 @@ public:
 
 	void tick(float dt) override;
 
-	void setPlane(BlockGrid* plane);
-	BlockGrid* getPlane() const;
+	void setCurrentBlockGrid(BlockGrid* plane);
+	BlockGrid* getCurrentBlockGrid() const;
 
 	std::unique_ptr<Component> clone() const override;
 
@@ -29,5 +29,5 @@ private:
 	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
 
 private:
-	BlockGrid* plane;
+	BlockGrid* blockGrid;
 };

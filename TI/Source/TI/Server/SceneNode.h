@@ -6,70 +6,98 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-enum class CoordinateSystemScale
+enum CoordinateSystem
 {
 	Planetary = 0,
-	Interplanetary,
-	Interstellar,
-	COUNT = 3
+	Interplanetary = 1
 };
 
-struct CoordinateSystem
+class SceneMultiNode
 {
-	glm::mat4 transform = glm::mat4(1.0f);
+	class SceneNode
+	{
+	public:
+		SceneNode();
 
-	glm::vec3 position = glm::vec3(0.0f);
-	glm::quat orientation;
-	glm::vec3 scale = glm::vec3(1.0f);
-};
+		SceneNode(const SceneNode&);
+		SceneNode(SceneNode&&) = delete;
 
-class SceneNode
-{
+		glm::mat4 getTransform() const;
+
+		void setPosition(const glm::vec3& position);
+		void offset(const glm::vec3& position);
+		void setOrientation(const glm::quat& orientation);
+		void setScale(const glm::vec3& scale);
+		void setRotation(const glm::vec3& rotation);
+		// void setRotationInWorldSpace(const glm::vec3& rotation);
+
+		void rotateInWorldSpace(float angle, const glm::vec3& axis);
+		void rotate(float angle, const glm::vec3& axis);
+
+		glm::vec3 getPosition() const;
+		glm::quat getOrientation() const;
+		glm::vec3 getScale() const;
+		// glm::vec3 getRotation() const;
+
+		void setParent(SceneNode* parent);
+		void addChild(SceneNode* child);
+		bool isChildOf(SceneNode* node);
+
+		glm::vec3 getForwardVector();
+		glm::vec3 getUpVector();
+		glm::vec3 getRightVector();
+
+	protected:
+		void updateTransform();
+		glm::quat getOrientationInWorldSpace() const;
+
+	protected:
+		SceneNode* parent;
+		std::vector<SceneNode*> children;
+
+		glm::mat4 transform;
+
+		glm::vec3 position;
+		glm::quat orientation;
+		glm::vec3 scale;
+	};
+
 public:
-	SceneNode();
+	SceneMultiNode();
 
-	SceneNode(const SceneNode&);
-	SceneNode(SceneNode&&) = delete;
+	SceneMultiNode(const SceneMultiNode&);
+	SceneMultiNode(SceneMultiNode&&) = delete;
 
-	glm::mat4 getTransform(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary) const;
+	glm::mat4 getTransform(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
-	void setPosition(const glm::vec3& position, CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
-	// void setPositionInterplanetary(const glm::vec3& position);
-	// void setOrientation(const glm::quat& orientation, CoordinateSystemScale coordinateScale);
-	void setOrientation(const glm::quat& orientation);
-	void setScale(const glm::vec3& scale, CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
-	// void setScaleInterplanetary(const glm::vec3& scale);
-	// Sets rotation in euler angles
-	// void setRotation(const glm::vec3& rotation, CoordinateSystemScale coordinateScale);
-	void setRotation(const glm::vec3& rotation);
-	// void setRotationInWorldSpace(const glm::vec3& rotation, CoordinateSystemScale coordinateScale);
-	void setRotationInWorldSpace(const glm::vec3& rotation);
+	void setPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	// void setRotationInWorldSpace(const glm::vec3& rotation);
 
-	void rotateInWorldSpace(float angle, const glm::vec3& axis);
+	void rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void rotateInWorldSpaceExclusive(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void rotate(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 
-	glm::vec3 getPosition(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary) const;
-	// glm::quat getOrientation(CoordinateSystemScale coordinateScale) const;
-	glm::quat getOrientation() const;
-	glm::vec3 getScale(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary) const;
-	// Gets rotation in euler angles
-	// glm::vec3 getRotation(CoordinateSystemScale coordinateScale) const;
-	glm::vec3 getRotation() const;
+	glm::vec3 getPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::quat getOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::vec3 getScale(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	// glm::vec3 getRotation() const;
 
-	void setParent(SceneNode* parent);
-	void addChild(SceneNode* child);
-	bool isChildOf(SceneNode* node);
+	glm::vec3 getForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 
-	glm::vec3 getForwardVector(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
-	glm::vec3 getUpVector(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
-	glm::vec3 getRightVector(CoordinateSystemScale coordinateScale = CoordinateSystemScale::Planetary);
+	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void addChild(SceneMultiNode* child);
+	bool isChildOf(SceneMultiNode* node);
 
-protected:
-	void updateTransform();
-	glm::quat getOrientationInWorldSpace() const;
+// protected:
+	// void updateTransform();
+	// glm::quat getOrientationInWorldSpace() const;
 
-protected:
-	SceneNode* parent;
-	std::vector<SceneNode*> children;
-
-	std::array<CoordinateSystem, static_cast<int>(CoordinateSystemScale::COUNT)> coordinateSystems;
+private:
+	std::array<SceneNode, 2> coordinateSystems;
 };

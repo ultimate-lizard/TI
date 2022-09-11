@@ -100,7 +100,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			const glm::quat originalOrientation = transformComponent->getOrientation();
 
 			// Rotate for test
-			transformComponent->rotateInWorldSpace(glm::radians(90.0f), cross);
+			transformComponent->rotateInWorldSpaceExclusive(glm::radians(90.0f), cross);
 
 			if (physicsComponent)
 			{
@@ -143,13 +143,13 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 		if (currentRotationAngle < rotationAngle)
 		{
-			transformComponent->rotateInWorldSpace(glm::radians(rotationStep), sideRotationAxis);
+			transformComponent->rotate(glm::radians(rotationStep), sideRotationAxis);
 			currentRotationAngle += rotationStep;
 		}
 		else
 		{
 			const float remainingRotationStep = rotationAngle - currentRotationAngle;
-			transformComponent->rotateInWorldSpace(glm::radians(remainingRotationStep), sideRotationAxis);
+			transformComponent->rotate(glm::radians(remainingRotationStep), sideRotationAxis);
 
 			currentRotationAngle = 0.0f;
 			shouldRotate = false;
@@ -382,8 +382,8 @@ void MovementComponent::handleWalk(float dt)
 			}
 		}
 
-		position += velocity * dt;
 		transformComponent->setPosition(position);
+		transformComponent->offset(velocity * dt);
 	}
 }
 
@@ -394,12 +394,12 @@ void MovementComponent::handleFall(float dt)
 		return;
 	}
 
-	if (!transformComponent->getPlane())
+	if (!transformComponent->getCurrentBlockGrid())
 	{
 		return;
 	}
 
-	bool gravityEnabled = transformComponent->getPlane()->isGravityEnabled();
+	bool gravityEnabled = transformComponent->getCurrentBlockGrid()->isGravityEnabled();
 
 	// In air control
 	if (walkDirection != glm::vec3(0.0f))
@@ -435,8 +435,8 @@ void MovementComponent::handleFall(float dt)
 			velocity = collisionResult.adjustedVelocity;
 		}
 
-		position += velocity * dt;
 		transformComponent->setPosition(position);
+		transformComponent->offset(velocity * dt);
 	}
 }
 
@@ -465,8 +465,6 @@ void MovementComponent::handleFlight(float dt)
 
 		if (transformComponent)
 		{
-			glm::vec3 position = transformComponent->getPosition();
-
 			//if (physicsComponent)
 			//{
 			//	CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
@@ -474,8 +472,7 @@ void MovementComponent::handleFlight(float dt)
 			//	position = collisionResult.adjustedPosition;
 			//}
 
-			position += velocity * dt;
-			transformComponent->setPosition(position);
+			transformComponent->offset(velocity * dt);
 		}
 	}
 }

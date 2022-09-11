@@ -116,12 +116,12 @@ CollisionResult PhysicsComponent::resolveCollision(const glm::vec3& position, co
 				blockCenterPosition.y += 0.5f;
 				blockCenterPosition.z += 0.5f;
 
-				if (!transformComponent->getPlane())
+				if (!transformComponent->getCurrentBlockGrid())
 				{
 					continue;
 				}
 
-				if (transformComponent->getPlane()->getBlock(blockPosition) != 0)
+				if (transformComponent->getCurrentBlockGrid()->getBlock(blockPosition) != 0)
 				{
 					if (renderCollisions)
 					{

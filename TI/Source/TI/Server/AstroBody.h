@@ -4,18 +4,16 @@
 
 #include <TI/Server/SceneNode.h>
 
-class AstroBody : public SceneNode
+class AstroBody : public SceneMultiNode
 {
 public:
-	AstroBody(CoordinateSystemScale coordinateSystem);
+	AstroBody();
 	~AstroBody();
 
 	// void addBodyToOrbit(std::unique_ptr<AstroBody> body);
 
-	CoordinateSystemScale getCoordinateSystemScale() const;
 	// const std::vector<std::unique_ptr<AstroBody>>& getOrbitingBodies() const;
 
 protected:
-	CoordinateSystemScale coordinateSystem;
 	// std::vector<std::unique_ptr<AstroBody>> orbitingBodies;
 };

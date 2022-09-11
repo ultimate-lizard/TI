@@ -6,19 +6,23 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
-SceneNode::SceneNode() :
+SceneMultiNode::SceneNode::SceneNode() :
 	parent(nullptr),
-	coordinateSystems({CoordinateSystem(), CoordinateSystem() })
+	transform(glm::mat4(1.0f)),
+	scale(glm::vec3(1.0f))
 {
 }
 
-SceneNode::SceneNode(const SceneNode& other) :
+SceneMultiNode::SceneNode::SceneNode(const SceneNode& other) :
 	parent(nullptr),
-	coordinateSystems(other.coordinateSystems)
+	transform(other.transform),
+	position(other.position),
+	orientation(other.orientation),
+	scale(other.scale)
 {
 }
 
-void SceneNode::setParent(SceneNode* parent)
+void SceneMultiNode::SceneNode::setParent(SceneNode* parent)
 {
 	this->parent = parent;
 	if (parent)
@@ -27,13 +31,13 @@ void SceneNode::setParent(SceneNode* parent)
 	}
 }
 
-void SceneNode::addChild(SceneNode* child)
+void SceneMultiNode::SceneNode::addChild(SceneNode* child)
 {
 	children.push_back(child);
 	child->parent = this;
 }
 
-bool SceneNode::isChildOf(SceneNode* node)
+bool SceneMultiNode::SceneNode::isChildOf(SceneNode* node)
 {
 	for (SceneNode* n : node->children)
 	{
@@ -46,39 +50,30 @@ bool SceneNode::isChildOf(SceneNode* node)
 	return false;
 }
 
-glm::vec3 SceneNode::getForwardVector(CoordinateSystemScale coordinateScale)
+glm::vec3 SceneMultiNode::SceneNode::getForwardVector()
 {
-	const int index = static_cast<int>(coordinateScale);
-
 	updateTransform();
-	return normalize(glm::vec3(coordinateSystems[index].transform[2]));
+	return normalize(glm::vec3(transform[2]));
 }
 
-glm::vec3 SceneNode::getUpVector(CoordinateSystemScale coordinateScale)
+glm::vec3 SceneMultiNode::SceneNode::getUpVector()
 {
-	const int index = static_cast<int>(coordinateScale);
-
 	updateTransform();
-	return normalize(glm::vec3(coordinateSystems[index].transform[1]));
+	return normalize(glm::vec3(transform[1]));
 }
 
-glm::vec3 SceneNode::getRightVector(CoordinateSystemScale coordinateScale)
+glm::vec3 SceneMultiNode::SceneNode::getRightVector()
 {
-	const int index = static_cast<int>(coordinateScale);
-
 	updateTransform();
-	return -normalize(glm::vec3(coordinateSystems[index].transform[0]));
+	return -normalize(glm::vec3(transform[0]));
 }
 
-void SceneNode::updateTransform()
+void SceneMultiNode::SceneNode::updateTransform()
 {
-	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), coordinateSystems[i].position);
-		transform *= glm::toMat4(coordinateSystems[i].orientation);
-		transform = glm::scale(transform, coordinateSystems[i].scale);
-		coordinateSystems[i].transform = parent ? parent->coordinateSystems[i].transform * transform : transform;
-	}
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
+	transform *= glm::toMat4(orientation);
+	transform = glm::scale(transform, scale);
+	this->transform = parent ? parent->transform * transform : transform;
 
 	for (SceneNode* child : children)
 	{
@@ -86,157 +81,228 @@ void SceneNode::updateTransform()
 	}
 }
 
-glm::mat4 SceneNode::getTransform(CoordinateSystemScale coordinateScale) const
+glm::mat4 SceneMultiNode::SceneNode::getTransform() const
 {
-	const int index = static_cast<int>(coordinateScale);
-
-	return coordinateSystems[index].transform;
+	return transform;
 }
 
-void SceneNode::setPosition(const glm::vec3& position, CoordinateSystemScale coordinateScale)
+void SceneMultiNode::SceneNode::setPosition(const glm::vec3& position)
 {
-	const float INTERPLANETARY_SCALE = 1000.0f;
-	const float INTERSTELLAR_SCALE = 1'000'000.0f;
+	this->position = position;
+	updateTransform();
+}
 
-	switch (coordinateScale)
-	{
-	case CoordinateSystemScale::Planetary:
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position = position;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position = (position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position) / INTERPLANETARY_SCALE;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interstellar)].position = (coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Interstellar)].position) / INTERSTELLAR_SCALE;
-		break;
-	case CoordinateSystemScale::Interplanetary:
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position = (coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position) * INTERPLANETARY_SCALE;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position = position;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interstellar)].position = (position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Interstellar)].position) / INTERPLANETARY_SCALE;
-		break;
-	case CoordinateSystemScale::Interstellar:
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position = (coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position) * INTERSTELLAR_SCALE;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position = (position - coordinateSystems[static_cast<int>(CoordinateSystemScale::Interplanetary)].position) * INTERPLANETARY_SCALE;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Interstellar)].position = position;
-		break;
-	default:
-		break;
-	}
+void SceneMultiNode::SceneNode::offset(const glm::vec3& offset)
+{
+	setPosition(getPosition() + offset);
+}
 
-	std::cout << "planetary: " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.x <<
-		" " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.y <<
-		" " << coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.z << std::endl;
+void SceneMultiNode::SceneNode::setOrientation(const glm::quat& orientation)
+{
+	this->orientation = orientation;
+	updateTransform();
+}
 
-	const glm::vec3 bounds{ 200.0f, 200.0f, 200.0f };
-	if (coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.x > bounds.x &&
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.y > bounds.y &&
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position.z > bounds.z)
-	{
-		std::cout << "YOU HAVE LEFT THE BOUNDS" << std::endl;
-		coordinateSystems[static_cast<int>(CoordinateSystemScale::Planetary)].position = {};
-	}
+void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
+{
+	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
+	this->orientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
 
 	updateTransform();
 }
 
-//void SceneNode::setPositionInterplanetary(const glm::vec3& position)
+//void SceneMultiNode::SceneNode::setRotationInWorldSpace(const glm::vec3& rotation)
 //{
-//	coordinateSystems[1].position = position;
+//	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
+//	glm::quat rotationQuat = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
+//
+//	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
+//	{
+//		coordinateSystems[i].orientation = coordinateSystems[i].orientation * glm::inverse(getOrientationInWorldSpace(CoordinateSystemScale::Planetary)) * rotationQuat * getOrientationInWorldSpace(CoordinateSystemScale::Planetary);
+//	}
+//
 //	updateTransform();
 //}
 
-void SceneNode::setOrientation(const glm::quat& orientation)
-{
-	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-	{
-		coordinateSystems[i].orientation = orientation;
-	}
-	
-	updateTransform();
-}
-
-void SceneNode::setRotation(const glm::vec3& rotation)
-{
-	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
-
-	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-	{
-		coordinateSystems[i].orientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
-	}
-	
-	// coordinateSystems[1].orientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
-
-	updateTransform();
-}
-
-void SceneNode::setRotationInWorldSpace(const glm::vec3& rotation)
-{
-	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
-	glm::quat rotationQuat = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
-
-	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-	{
-		coordinateSystems[i].orientation = coordinateSystems[i].orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
-	}
-
-	// coordinateSystems[1].orientation = coordinateSystems[0].orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
-
-	updateTransform();
-}
-
-void SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
+void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
 {
 	glm::quat rotationQuat = glm::angleAxis(angle, axis);
-
-	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-	{
-		coordinateSystems[i].orientation = coordinateSystems[i].orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
-	}
-
-	// coordinateSystems[1].orientation = coordinateSystems[1].orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
+	orientation = orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
 
 	updateTransform();
 }
 
-void SceneNode::setScale(const glm::vec3& scale, CoordinateSystemScale coordinateScale)
+void SceneMultiNode::SceneNode::rotate(float angle, const glm::vec3& axis)
 {
-	coordinateSystems[static_cast<int>(coordinateScale)].scale = scale;
+	glm::quat rotationQuat = glm::angleAxis(angle, axis);
+	orientation = rotationQuat * orientation;
+
 	updateTransform();
 }
 
-//void SceneNode::setScaleInterplanetary(const glm::vec3& scale)
+void SceneMultiNode::SceneNode::setScale(const glm::vec3& scale)
+{
+	this->scale = scale;
+	updateTransform();
+}
+
+glm::vec3 SceneMultiNode::SceneNode::getPosition() const
+{
+	return position;
+}
+
+glm::quat SceneMultiNode::SceneNode::getOrientation() const
+{
+	return orientation;
+}
+
+//glm::vec3 SceneMultiNode::SceneNode::getRotation() const
 //{
-//	coordinateSystems[1].scale = scale;
-//	updateTransform();
+//	// Warning! Suppose the rotation is the same for all coordinate systems
+//	glm::vec3 rot = glm::eulerAngles(coordinateSystems[0].orientation);
+//	return rot;
 //}
 
-glm::vec3 SceneNode::getPosition(CoordinateSystemScale coordinateScale) const
+glm::vec3 SceneMultiNode::SceneNode::getScale() const
 {
-	return coordinateSystems[static_cast<int>(coordinateScale)].position;
+	return scale;
 }
 
-glm::quat SceneNode::getOrientation() const
+glm::quat SceneMultiNode::SceneNode::getOrientationInWorldSpace() const
 {
-	// Warning! Suppose the orientation is the same for all coordinate systems
-	return coordinateSystems[0].orientation;
-}
-
-glm::vec3 SceneNode::getRotation() const
-{
-	// Warning! Suppose the rotation is the same for all coordinate systems
-	glm::vec3 rot = glm::eulerAngles(coordinateSystems[0].orientation);
-	return rot;
-}
-
-glm::vec3 SceneNode::getScale(CoordinateSystemScale coordinateScale) const
-{
-	return coordinateSystems[static_cast<int>(coordinateScale)].scale;
-}
-
-glm::quat SceneNode::getOrientationInWorldSpace() const
-{
-	// Warning! Suppose the orientation is the same for all coordinate systems
-
 	if (parent)
 	{
-		return parent->coordinateSystems[0].orientation * coordinateSystems[0].orientation;
+		return parent->orientation * orientation;
 	}
 
-	return coordinateSystems[0].orientation;
+	return orientation;
+}
+
+SceneMultiNode::SceneMultiNode() :
+	coordinateSystems({SceneNode(), SceneNode()})
+{
+
+}
+
+SceneMultiNode::SceneMultiNode(const SceneMultiNode& other) :
+	coordinateSystems(other.coordinateSystems)
+{
+}
+
+glm::mat4 SceneMultiNode::getTransform(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getTransform();
+}
+
+void SceneMultiNode::setPosition(const glm::vec3& position, CoordinateSystem cs)
+{
+	coordinateSystems[cs].setPosition(position);
+}
+
+void SceneMultiNode::offset(const glm::vec3& position, CoordinateSystem cs)
+{
+	float factor = 1.0f;
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].offset(position / factor);
+		factor *= 1000.0f;
+	}
+
+	//coordinateSystems[cs].offset(position);
+}
+
+void SceneMultiNode::setOrientation(const glm::quat& orientation, CoordinateSystem cs)
+{
+	coordinateSystems[cs].setOrientation(orientation);
+}
+
+void SceneMultiNode::setScale(const glm::vec3& scale, CoordinateSystem cs)
+{
+	coordinateSystems[cs].setScale(scale);
+}
+
+void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
+{
+	for (size_t i = 0; i < 2; ++i)
+	{
+		coordinateSystems[i].setRotation(rotation);
+	}
+}
+
+void SceneMultiNode::rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < 2; ++i)
+	{
+		coordinateSystems[i].rotateInWorldSpace(angle, axis);
+	}
+}
+
+void SceneMultiNode::rotateInWorldSpaceExclusive(float angle, const glm::vec3& axis, CoordinateSystem cs)
+{
+	coordinateSystems[cs].rotateInWorldSpace(angle, axis);
+}
+
+void SceneMultiNode::rotate(float angle, const glm::vec3& axis, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < 2; ++i)
+	{
+		coordinateSystems[i].rotate(angle, axis);
+	}
+}
+
+glm::vec3 SceneMultiNode::getPosition(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getPosition();
+}
+
+glm::quat SceneMultiNode::getOrientation(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getOrientation();
+}
+
+glm::vec3 SceneMultiNode::getScale(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getScale();
+}
+
+glm::vec3 SceneMultiNode::getForwardVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getForwardVector();
+}
+
+glm::vec3 SceneMultiNode::getUpVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getUpVector();
+}
+
+glm::vec3 SceneMultiNode::getRightVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getRightVector();
+}
+
+void SceneMultiNode::setParent(SceneMultiNode* parent, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].setParent(&parent->coordinateSystems[i]);
+	}
+}
+
+void SceneMultiNode::addChild(SceneMultiNode* child)
+{
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].addChild(&child->coordinateSystems[i]);
+	}
+}
+
+bool SceneMultiNode::isChildOf(SceneMultiNode* node)
+{
+	bool isChild = true;
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	{
+		isChild &= coordinateSystems[i].isChildOf(&node->coordinateSystems[i]);
+	}
+
+	return isChild;
 }

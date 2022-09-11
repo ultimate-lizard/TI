@@ -49,7 +49,6 @@ void Server::initEntityTemplates()
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 
-
 	auto planetEntity = std::make_unique<Entity>();
 	auto planetTransformComponent = planetEntity->addComponent<TransformComponent>();
 	auto planetMeshComponent = planetEntity->addComponent<MeshComponent>(app->getResourceManager());
@@ -133,7 +132,7 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 //	return planes;
 //}
 
-Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* plane, const glm::vec3& position)
+Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* blockGrid, const glm::vec3& position)
 {
 	Entity* result = nullptr;
 
@@ -142,11 +141,11 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 		std::unique_ptr<Entity> spawnedEntity = createEntityFromTemplate(templateName, id);
 		result = spawnedEntity.get();
 
-		if (plane && result)
+		if (blockGrid && result)
 		{
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
-				transformComponent->setPlane(plane);
+				transformComponent->setCurrentBlockGrid(blockGrid);
 				transformComponent->setPosition(position);
 			}
 		}

@@ -3,14 +3,14 @@
 #include <TI/Server/BlockGrid.h>
 
 Planet::Planet(const glm::uvec3& size, size_t chunkSize) :
-	AstroBody(CoordinateSystemScale::Interplanetary)
+	AstroBody()
 {
-	plane = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	blockGrid = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 }
 
 Planet::Planet(std::unique_ptr<BlockGrid> plane) :
-	AstroBody(CoordinateSystemScale::Interplanetary),
-	plane(std::move(plane))
+	AstroBody(),
+	blockGrid(std::move(plane))
 {
 
 }
@@ -20,7 +20,7 @@ Planet::~Planet()
 
 }
 
-BlockGrid* Planet::getPlane()
+BlockGrid* Planet::getBlockGrid()
 {
-	return plane.get();
+	return blockGrid.get();
 }

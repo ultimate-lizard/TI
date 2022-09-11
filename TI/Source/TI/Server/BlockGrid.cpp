@@ -4,13 +4,11 @@
 
 #include <TI/Util/Utils.h>
 
-BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize, const glm::vec3& blockGridPosition) :
+BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize) :
 	blockGridSize(size),
 	chunkSize(chunkSize),
 	gravityEnabled(true)
 {
-	setPosition(blockGridPosition);
-
 	for (unsigned int z = 0; z < size.z; ++z)
 	{
 		for (unsigned int y = 0; y < size.y; ++y)
@@ -18,9 +16,9 @@ BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize, const glm::vec3& 
 			for (unsigned int x = 0; x < size.x; ++x)
 			{
 				glm::vec3 chunkPosition;
-				chunkPosition.x = static_cast<float>(x * chunkSize) + getPosition().x;
-				chunkPosition.y = static_cast<float>(y * chunkSize) + getPosition().y;
-				chunkPosition.z = static_cast<float>(z * chunkSize) + getPosition().z;
+				chunkPosition.x = static_cast<float>(x * chunkSize);
+				chunkPosition.y = static_cast<float>(y * chunkSize);
+				chunkPosition.z = static_cast<float>(z * chunkSize);
 				chunks.emplace_back(chunkSize, chunkPosition);
 			}
 		}

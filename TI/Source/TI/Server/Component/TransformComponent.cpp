@@ -6,15 +6,15 @@
 
 TransformComponent::TransformComponent() :
 	Component(),
-	SceneNode(),
-	plane(nullptr)
+	SceneMultiNode(),
+	blockGrid(nullptr)
 {
 }
 
 TransformComponent::TransformComponent(const TransformComponent& other) :
 	Component(other),
-	SceneNode(other),
-	plane(other.plane)
+	SceneMultiNode(other),
+	blockGrid(other.blockGrid)
 {
 }
 
@@ -23,14 +23,14 @@ void TransformComponent::tick(float dt)
 
 }
 
-void TransformComponent::setPlane(BlockGrid* plane)
+void TransformComponent::setCurrentBlockGrid(BlockGrid* blockGrid)
 {
-	this->plane = plane;
+	this->blockGrid = blockGrid;
 }
 
-BlockGrid* TransformComponent::getPlane() const
+BlockGrid* TransformComponent::getCurrentBlockGrid() const
 {
-	return plane;
+	return blockGrid;
 }
 
 std::unique_ptr<Component> TransformComponent::clone() const
@@ -42,7 +42,7 @@ std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 {
 	std::optional<OrientationInfo> result;
 
-	if (plane)
+	if (blockGrid)
 	{
 		const std::vector<OrientationInfo> orientations { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
 		for (const OrientationInfo& orientationInfo : orientations)
@@ -59,7 +59,7 @@ std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 
 bool TransformComponent::isInCone(const glm::vec3& position, const OrientationInfo& orientationInfo) const
 {
-	if (BlockGrid* plane = getPlane())
+	if (BlockGrid* plane = getCurrentBlockGrid())
 	{
 		float planetSize = plane->getBlockGridSize().x * plane->getChunkSize();
 

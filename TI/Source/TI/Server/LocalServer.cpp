@@ -59,18 +59,13 @@ void LocalServer::update(float dt)
 						angle = 0;
 					}
 
-					const float radius = 200.0f;
+					const float radius = 750.0f;
 
-					// std::cout << angle << std::endl;
 					glm::vec3 newPosition(glm::cos(glm::radians(angle)) * radius, 0.0f, glm::sin(glm::radians(angle)) * radius);
 
 					glm::vec3 offset = newPosition - planet->getPosition(CoordinateSystem::Interplanetary);
-					// planet->offset(offset, CoordinateSystem::Interplanetary);
-					planet->rotate(0.5f * dt, { 0.0f, 1.0f, 0.0f }, CoordinateSystem::Interplanetary);
-
-					// planet->offset(glm::vec3(glm::sin((float)SDL_GetTicks() / 1000.0f - 0.5f) * 500.0f, 0.0f, glm::cos((float)SDL_GetTicks() / 1000.0f - 0.5f) * 500.0f) * dt, CoordinateSystemScale::Interplanetary);
-					/*glm::vec3 newPosition = glm::vec3(glm::sin((float)SDL_GetTicks() / 9000.0f) * 500.0f, 0.0f, glm::cos((float)SDL_GetTicks() / 9000.0f) * 500.0f);
-					planet->setPosition(newPosition, CoordinateSystemScale::Interplanetary);*/
+					planet->offset(offset, CoordinateSystem::Interplanetary);
+					planet->rotate(0.01f * dt, { 0.0f, 1.0f, 0.0f }, CoordinateSystem::Interplanetary);
 				}
 			}
 		}
@@ -117,8 +112,9 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 
 			if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
 			{
-				// transformComponent->setPosition({ 200.0f, 200.0f, 0.0f }, CoordinateSystem::Interplanetary);
+				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f}, CoordinateSystem::Interplanetary);
 				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
+				// transformComponent->setScale(transformComponent->getScale(CoordinateSystem::Interplanetary) * 1212312313.001f, CoordinateSystem::Interplanetary);
 			}
 		}
 	}

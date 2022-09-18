@@ -22,7 +22,7 @@ void Server::initEntityTemplates()
 
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
 	meshComponent->loadModel("Player");
-	meshComponent->setScale({ 0.6f, 0.6f, 1.0f });
+	meshComponent->setLocalScale({ 0.6f, 0.6f, 1.0f });
 
 	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
 	physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
@@ -30,10 +30,9 @@ void Server::initEntityTemplates()
 	auto movementComponent = playerEntity->addComponent<MovementComponent>();
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
-	auto camera = std::make_unique<Camera>();
-	cameraComponent->setCamera(std::move(camera));
 	cameraComponent->setParent(transformComponent);
-	cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
+	cameraComponent->setLocalPosition({ 0.0f, 1.75f, 0.0f });
+
 	meshComponent->setParent(cameraComponent);
 
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
@@ -55,7 +54,7 @@ void Server::initEntityTemplates()
 
 	planetEntity->setName("PlanetEntity");
 
-	planetTransformComponent->setScale(glm::vec3(55.0f));
+	planetTransformComponent->setLocalScale(glm::vec3(55.0f));
 	planetMeshComponent->setParent(planetTransformComponent);
 	planetMeshComponent->loadModel("Planet");
 
@@ -146,7 +145,7 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
 				transformComponent->setCurrentBlockGrid(blockGrid);
-				transformComponent->setPosition(position);
+				transformComponent->setLocalPosition(position);
 			}
 		}
 

@@ -7,7 +7,7 @@
 
 Camera::Camera(const glm::vec3& position)
 {
-	setPosition(position);
+	setLocalPosition(position);
 }
 
 Camera::Camera(const Camera& other) :

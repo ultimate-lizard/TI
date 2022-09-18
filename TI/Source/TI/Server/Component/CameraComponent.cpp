@@ -6,8 +6,10 @@
 
 CameraComponent::CameraComponent() :
 	Component(),
-	SceneMultiNode()
+	SceneMultiNode(),
+	camera(std::make_unique<Camera>())
 {
+	camera->setParent(this);
 }
 
 CameraComponent::CameraComponent(const CameraComponent& other) :
@@ -23,11 +25,11 @@ std::unique_ptr<Component> CameraComponent::clone() const
 	return std::make_unique<CameraComponent>(*this);
 }
 
-void CameraComponent::setCamera(std::unique_ptr<Camera> camera)
-{
-	this->camera = std::move(camera);
-	// camera->setParent(this);
-}
+//void CameraComponent::setCamera(std::unique_ptr<Camera> camera)
+//{
+//	this->camera = std::move(camera);
+//	// camera->setParent(this);
+//}
 
 Camera* CameraComponent::getCamera() const
 {

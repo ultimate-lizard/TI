@@ -5,26 +5,28 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 SceneMultiNode::SceneNode::SceneNode() :
 	parent(nullptr),
 	transform(glm::mat4(1.0f)),
-	scale(glm::vec3(1.0f))
+	localScale(glm::vec3(1.0f))
 {
 }
 
 SceneMultiNode::SceneNode::SceneNode(const SceneNode& other) :
 	parent(nullptr),
 	transform(other.transform),
-	position(other.position),
-	orientation(other.orientation),
-	scale(other.scale)
+	localPosition(other.localPosition),
+	localOrientation(other.localOrientation),
+	localScale(other.localScale)
 {
 }
 
 void SceneMultiNode::SceneNode::setParent(SceneNode* parent)
 {
 	this->parent = parent;
+	updateTransform();
 	if (parent)
 	{
 		parent->addChild(this);
@@ -35,6 +37,7 @@ void SceneMultiNode::SceneNode::addChild(SceneNode* child)
 {
 	children.push_back(child);
 	child->parent = this;
+	updateTransform();
 }
 
 bool SceneMultiNode::SceneNode::isChildOf(SceneNode* node)
@@ -70,10 +73,32 @@ glm::vec3 SceneMultiNode::SceneNode::getRightVector()
 
 void SceneMultiNode::SceneNode::updateTransform()
 {
-	glm::mat4 transform = glm::translate(glm::mat4(1.0f), position);
-	transform *= glm::toMat4(orientation);
-	transform = glm::scale(transform, scale);
-	this->transform = parent ? parent->transform * transform : transform;
+	glm::vec3 derivedPosition = localPosition;
+	glm::quat derivedOrientation = localOrientation;
+
+	if (parent)
+	{
+		glm::vec3 parentPosition;
+		glm::quat parentOrientation;
+		glm::vec3 parentScale;
+		glm::vec3 scew;
+		glm::vec4 perspective;
+
+		glm::decompose(parent->transform, parentScale, parentOrientation, parentPosition, scew, perspective);
+
+		parentOrientation = glm::conjugate(parentOrientation);
+
+		// derivedPosition = parentOrientation * (parentScale * localPosition); // AKNOWLEDGE PARENT'S SCALE
+		derivedPosition = parentOrientation * localPosition;
+		derivedPosition += parentPosition;
+
+		derivedOrientation = parentOrientation * derivedOrientation;
+	}
+
+	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), derivedPosition);
+	newTransform *= glm::toMat4(derivedOrientation);
+	newTransform = glm::scale(newTransform, localScale);
+	this->transform = newTransform;
 
 	for (SceneNode* child : children)
 	{
@@ -88,7 +113,7 @@ glm::mat4 SceneMultiNode::SceneNode::getTransform() const
 
 void SceneMultiNode::SceneNode::setPosition(const glm::vec3& position)
 {
-	this->position = position;
+	this->localPosition = position;
 	updateTransform();
 }
 
@@ -99,14 +124,14 @@ void SceneMultiNode::SceneNode::offset(const glm::vec3& offset)
 
 void SceneMultiNode::SceneNode::setOrientation(const glm::quat& orientation)
 {
-	this->orientation = orientation;
+	this->localOrientation = orientation;
 	updateTransform();
 }
 
 void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
 {
 	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
-	this->orientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
+	this->localOrientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
 
 	updateTransform();
 }
@@ -127,7 +152,7 @@ void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
 void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
 {
 	glm::quat rotationQuat = glm::angleAxis(angle, axis);
-	orientation = orientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
+	localOrientation = localOrientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
 
 	updateTransform();
 }
@@ -135,25 +160,25 @@ void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3&
 void SceneMultiNode::SceneNode::rotate(float angle, const glm::vec3& axis)
 {
 	glm::quat rotationQuat = glm::angleAxis(angle, axis);
-	orientation = rotationQuat * orientation;
+	localOrientation = rotationQuat * localOrientation;
 
 	updateTransform();
 }
 
 void SceneMultiNode::SceneNode::setScale(const glm::vec3& scale)
 {
-	this->scale = scale;
+	this->localScale = scale;
 	updateTransform();
 }
 
 glm::vec3 SceneMultiNode::SceneNode::getPosition() const
 {
-	return position;
+	return localPosition;
 }
 
 glm::quat SceneMultiNode::SceneNode::getOrientation() const
 {
-	return orientation;
+	return localOrientation;
 }
 
 //glm::vec3 SceneMultiNode::SceneNode::getRotation() const
@@ -165,17 +190,17 @@ glm::quat SceneMultiNode::SceneNode::getOrientation() const
 
 glm::vec3 SceneMultiNode::SceneNode::getScale() const
 {
-	return scale;
+	return localScale;
 }
 
 glm::quat SceneMultiNode::SceneNode::getOrientationInWorldSpace() const
 {
 	if (parent)
 	{
-		return parent->orientation * orientation;
+		return parent->localOrientation * localOrientation;
 	}
 
-	return orientation;
+	return localOrientation;
 }
 
 SceneMultiNode::SceneMultiNode() :
@@ -194,7 +219,7 @@ glm::mat4 SceneMultiNode::getTransform(CoordinateSystem cs) const
 	return coordinateSystems[cs].getTransform();
 }
 
-void SceneMultiNode::setPosition(const glm::vec3& position, CoordinateSystem cs)
+void SceneMultiNode::setLocalPosition(const glm::vec3& position, CoordinateSystem cs)
 {
 	coordinateSystems[cs].setPosition(position);
 }
@@ -216,7 +241,7 @@ void SceneMultiNode::setOrientation(const glm::quat& orientation, CoordinateSyst
 	coordinateSystems[cs].setOrientation(orientation);
 }
 
-void SceneMultiNode::setScale(const glm::vec3& scale, CoordinateSystem cs)
+void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)
 {
 	coordinateSystems[cs].setScale(scale);
 }
@@ -288,9 +313,9 @@ void SceneMultiNode::setParent(SceneMultiNode* parent, CoordinateSystem cs)
 	}
 }
 
-void SceneMultiNode::addChild(SceneMultiNode* child)
+void SceneMultiNode::addChild(SceneMultiNode* child, CoordinateSystem cs)
 {
-	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
 	{
 		coordinateSystems[i].addChild(&child->coordinateSystems[i]);
 	}

@@ -20,7 +20,7 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 
 void TransformComponent::tick(float dt)
 {
-
+	// drawDebugPoint(getPosition(), { 1.0f, 0.0f, 0.0f, 1.0f }, 50.0f, false);
 }
 
 void TransformComponent::setCurrentBlockGrid(BlockGrid* blockGrid)

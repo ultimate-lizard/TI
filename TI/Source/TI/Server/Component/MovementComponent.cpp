@@ -382,7 +382,7 @@ void MovementComponent::handleWalk(float dt)
 			}
 		}
 
-		transformComponent->setPosition(position);
+		transformComponent->setLocalPosition(position);
 		transformComponent->offset(velocity * dt);
 	}
 }
@@ -435,7 +435,7 @@ void MovementComponent::handleFall(float dt)
 			velocity = collisionResult.adjustedVelocity;
 		}
 
-		transformComponent->setPosition(position);
+		transformComponent->setLocalPosition(position);
 		transformComponent->offset(velocity * dt);
 	}
 }

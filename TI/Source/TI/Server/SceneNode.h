@@ -57,9 +57,9 @@ class SceneMultiNode
 
 		glm::mat4 transform;
 
-		glm::vec3 position;
-		glm::quat orientation;
-		glm::vec3 scale;
+		glm::vec3 localPosition;
+		glm::quat localOrientation;
+		glm::vec3 localScale;
 	};
 
 public:
@@ -70,10 +70,10 @@ public:
 
 	glm::mat4 getTransform(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
-	void setPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void setScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
 	// void setRotationInWorldSpace(const glm::vec3& rotation);
 
@@ -91,7 +91,7 @@ public:
 	glm::vec3 getRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void addChild(SceneMultiNode* child);
+	void addChild(SceneMultiNode* child, CoordinateSystem cs = CoordinateSystem::Planetary);
 	bool isChildOf(SceneMultiNode* node);
 
 // protected:

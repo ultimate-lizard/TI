@@ -16,7 +16,7 @@ public:
 
 	std::unique_ptr<Component> clone() const override;
 
-	void setCamera(std::unique_ptr<Camera> camera);
+	// void setCamera(std::unique_ptr<Camera> camera);
 	Camera* getCamera() const;
 
 private:

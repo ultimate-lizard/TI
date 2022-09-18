@@ -8,15 +8,16 @@
 Star::Star() :
 	AstroBody()
 {
-	setPosition({ 0.0f, 200.0f, 0.0f }, CoordinateSystem::Interplanetary);
-	setScale(glm::vec3(100.0f), CoordinateSystem::Interplanetary);
+	// setPosition({ 0.0f, 200.0f, 0.0f }, CoordinateSystem::Interplanetary);
+	setLocalScale(glm::vec3(100.0f), CoordinateSystem::Interplanetary);
 
 	// Load info about primary planet
 	auto body = std::make_unique<Planet>(glm::uvec3(10), 16);
 
-	body->setScale(glm::vec3(10.0f), CoordinateSystem::Interplanetary);
+	body->setLocalScale(glm::vec3(0.08f), CoordinateSystem::Interplanetary);
+	body->rotate(25.0f, { 0.0f, 0.0f, 1.0f }, CoordinateSystem::Interplanetary);
 
-	body->setPosition({ getPosition(CoordinateSystem::Interplanetary).x + 200.0f, getPosition(CoordinateSystem::Interplanetary).y, getPosition(CoordinateSystem::Interplanetary).z}, CoordinateSystem::Interplanetary);
+	// body->setLocalPosition({ getPosition(CoordinateSystem::Interplanetary).x + 700.0f, getPosition(CoordinateSystem::Interplanetary).y, getPosition(CoordinateSystem::Interplanetary).z}, CoordinateSystem::Interplanetary);
 
 	addPlanet(std::move(body));
 }

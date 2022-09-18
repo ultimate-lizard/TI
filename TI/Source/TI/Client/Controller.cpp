@@ -115,6 +115,15 @@ void PlayerController::quitGame()
 
 void PlayerController::destroyBlock()
 {
+	if (Entity* ent = client->getApplication()->getCurrentServer()->findEntity("box"))
+	{
+		if (auto transf = ent->findComponent<TransformComponent>())
+		{
+			transf->setLocalPosition(glm::vec3());
+			transf->setParent(entity->findComponent<TransformComponent>());
+		}
+	}
+
 	if (entity)
 	{
 		if (auto transformComponent = entity->findComponent<TransformComponent>())
@@ -259,7 +268,7 @@ void PlayerController::toggleThirdperson()
 			{
 				glm::vec3 cameraPosition = camera->getPosition();
 				cameraPosition.z = thirdperson ? -3.0f : 0.0f;
-				camera->setPosition(cameraPosition);
+				camera->setLocalPosition(cameraPosition);
 			}
 		}
 	}

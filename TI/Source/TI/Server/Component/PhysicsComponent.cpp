@@ -63,7 +63,7 @@ void PhysicsComponent::tick(float dt)
 	{
 		if (transformComponent)
 		{
-			glm::vec3 position = transformComponent->getPosition();
+			glm::vec3 position = transformComponent->getLocalPosition();
 			drawDebugBox({ position.x + collisionBox.getOffset().x - collisionBox.getSize().x / 2.0f, position.y + collisionBox.getOffset().y - collisionBox.getSize().y / 2.0f , position.z + collisionBox.getOffset().z - collisionBox.getSize().z / 2.0f}, collisionBox.getSize(), {0.0f, 1.0f, 0.0f, 1.0f}, 1.0f, false);
 		}
 	}

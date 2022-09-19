@@ -307,7 +307,7 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 			}*/
 
 			// TODO: Find a way to get the chunk an entity stands on
-			glm::vec3 playerPosition = transformComponent->getPosition();
+			glm::vec3 playerPosition = transformComponent->getLocalPosition();
 			playerPosition.y -= 3.0f;
 
 			if (playerLastChunkPosition != blockGrid->positionToChunkPosition(playerPosition))

@@ -12,6 +12,8 @@
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Application.h>
 #include <TI/Server/BlockGrid.h>
+#include <TI/Server/Star.h>
+#include <TI/Server/Planet.h>
 #include <TI/Renderer/Renderer.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Server/LocalServer.h>
@@ -183,7 +185,7 @@ void PlayerController::placeBlock()
 									{
 										glm::vec3 blockCenterPosition {blockPosition.x + 0.5f, blockPosition.y + 0.5f, blockPosition.z + 0.5f};
 
-										if (!physicsComponent->checkCollision(blockCenterPosition, transformComponent->getPosition() + physicsComponent->getCollisionBox().getOffset(), {glm::vec3(1.0f), glm::vec3(0.0f)}, physicsComponent->getCollisionBox()))
+										if (!physicsComponent->checkCollision(blockCenterPosition, transformComponent->getLocalPosition() + physicsComponent->getCollisionBox().getOffset(), {glm::vec3(1.0f), glm::vec3(0.0f)}, physicsComponent->getCollisionBox()))
 										{
 											plane->spawnBlock(blockPosition, 1);
 											if (client)
@@ -266,7 +268,7 @@ void PlayerController::toggleThirdperson()
 		{
 			if (Camera* camera = cameraComponent->getCamera())
 			{
-				glm::vec3 cameraPosition = camera->getPosition();
+				glm::vec3 cameraPosition = camera->getLocalPosition();
 				cameraPosition.z = thirdperson ? -3.0f : 0.0f;
 				camera->setLocalPosition(cameraPosition);
 			}
@@ -306,6 +308,43 @@ void PlayerController::decreaseFlightSpeed()
 	}
 }
 
+void PlayerController::teleportHome()
+{
+	if (Server* server = client->getApplication()->getCurrentServer())
+	{
+		// TODO: Very badly hardcoded. Fix it
+		if (Entity* player = server->findEntity("Player"))
+		{
+			if (auto playerTransform = player->findComponent<TransformComponent>())
+			{
+				Planet* planet = server->getStars()[0]->getPlanets()[0].get();
+				BlockGrid* bg = planet->getBlockGrid();
+
+				glm::ivec3 planeSize = bg->getBlockGridSize();
+				glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
+
+				if (auto playerMovement = player->findComponent<MovementComponent>())
+				{
+					playerMovement->setVelocity({});
+					playerMovement->setFlightSpeed(25.0f);
+				}
+
+				playerTransform->setLocalPosition(glm::uvec3(0.0f));
+				playerTransform->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
+				playerTransform->setLocalPosition(spawnLocation, CoordinateSystem::Planetary);
+				if (!playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
+				{
+					playerTransform->setParent(planet, CoordinateSystem::Interplanetary);
+				}
+			}
+		}
+	}
+}
+
+void PlayerController::togglePlanetRelativeMovement()
+{
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -334,5 +373,7 @@ void PlayerController::setupInputHandler()
 
 		inputHandler->bindKey("IncreaseFlightSpeed", ActionInputType::Press, std::bind(&PlayerController::increaseFlightSpeed, this));
 		inputHandler->bindKey("DecreaseFlightSpeed", ActionInputType::Press, std::bind(&PlayerController::decreaseFlightSpeed, this));
+
+		inputHandler->bindKey("TeleportHome", ActionInputType::Press, std::bind(&PlayerController::teleportHome, this));
 	}
 }

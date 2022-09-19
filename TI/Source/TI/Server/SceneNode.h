@@ -34,13 +34,19 @@ class SceneMultiNode
 		void rotateInWorldSpace(float angle, const glm::vec3& axis);
 		void rotate(float angle, const glm::vec3& axis);
 
-		glm::vec3 getPosition() const;
+		glm::vec3 getLocalPosition() const;
+		glm::vec3 getDerivedPosition() const;
+
 		glm::quat getOrientation() const;
 		glm::vec3 getScale() const;
 		// glm::vec3 getRotation() const;
 
 		void setParent(SceneNode* parent);
+		void removeParent();
+
 		void addChild(SceneNode* child);
+		void removeChild(SceneNode* child);
+
 		bool isChildOf(SceneNode* node);
 
 		glm::vec3 getForwardVector();
@@ -81,7 +87,9 @@ public:
 	void rotateInWorldSpaceExclusive(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void rotate(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 
-	glm::vec3 getPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::vec3 getLocalPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+
 	glm::quat getOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	glm::vec3 getScale(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	// glm::vec3 getRotation() const;
@@ -91,8 +99,12 @@ public:
 	glm::vec3 getRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void removeParent(CoordinateSystem cs = CoordinateSystem::Planetary);
+
 	void addChild(SceneMultiNode* child, CoordinateSystem cs = CoordinateSystem::Planetary);
-	bool isChildOf(SceneMultiNode* node);
+	void removeChild(SceneMultiNode* child, CoordinateSystem cs = CoordinateSystem::Planetary);
+
+	bool isChildOf(SceneMultiNode* node, CoordinateSystem cs = CoordinateSystem::Planetary);
 
 // protected:
 	// void updateTransform();

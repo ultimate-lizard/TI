@@ -64,6 +64,8 @@ public:
 	const glm::vec3& getHeadRotation() const;
 	glm::vec3 getHeadPosition() const;
 
+	void setVelocity(const glm::vec3& newVelocity);
+
 private:
 	void handleInput(float dt);
 

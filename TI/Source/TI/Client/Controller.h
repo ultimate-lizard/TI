@@ -57,6 +57,9 @@ private:
 	void increaseFlightSpeed();
 	void decreaseFlightSpeed();
 
+	void teleportHome();
+	void togglePlanetRelativeMovement();
+
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;
 	Client* client;

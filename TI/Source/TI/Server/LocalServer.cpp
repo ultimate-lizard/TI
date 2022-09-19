@@ -63,9 +63,26 @@ void LocalServer::update(float dt)
 
 					glm::vec3 newPosition(glm::cos(glm::radians(angle)) * radius, 0.0f, glm::sin(glm::radians(angle)) * radius);
 
-					glm::vec3 offset = newPosition - planet->getPosition(CoordinateSystem::Interplanetary);
+					glm::vec3 offset = newPosition - planet->getLocalPosition(CoordinateSystem::Interplanetary);
 					planet->offset(offset, CoordinateSystem::Interplanetary);
 					planet->rotate(0.01f * dt, { 0.0f, 1.0f, 0.0f }, CoordinateSystem::Interplanetary);
+
+					// TODO: For each player on the server
+					if (Entity* player = findEntity("Player"))
+					{
+						if (auto playerTransform = player->findComponent<TransformComponent>())
+						{
+							if (playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
+							{
+								const float playerToPlanetDist = glm::distance(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), planet->getDerivedPosition(CoordinateSystem::Interplanetary));
+								if (playerToPlanetDist > 2.0f)
+								{
+									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
+									playerTransform->removeParent();
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -112,7 +129,9 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 
 			if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
 			{
+				// TODO: This adjustment must be implicit
 				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f}, CoordinateSystem::Interplanetary);
+
 				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
 				// transformComponent->setScale(transformComponent->getScale(CoordinateSystem::Interplanetary) * 1212312313.001f, CoordinateSystem::Interplanetary);
 			}

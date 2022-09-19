@@ -26,17 +26,39 @@ SceneMultiNode::SceneNode::SceneNode(const SceneNode& other) :
 void SceneMultiNode::SceneNode::setParent(SceneNode* parent)
 {
 	this->parent = parent;
-	updateTransform();
 	if (parent)
 	{
 		parent->addChild(this);
 	}
+
+	updateTransform();
+}
+
+void SceneMultiNode::SceneNode::removeParent()
+{
+	if (parent)
+	{
+		parent->removeChild(this);
+		parent = nullptr;
+	}
+
+	updateTransform();
 }
 
 void SceneMultiNode::SceneNode::addChild(SceneNode* child)
 {
 	children.push_back(child);
 	child->parent = this;
+	updateTransform();
+}
+
+void SceneMultiNode::SceneNode::removeChild(SceneNode* child)
+{
+	if (auto foundIter = std::find(children.begin(), children.end(), child); foundIter != children.end())
+	{
+		children.erase(foundIter);
+	}
+
 	updateTransform();
 }
 
@@ -119,7 +141,7 @@ void SceneMultiNode::SceneNode::setPosition(const glm::vec3& position)
 
 void SceneMultiNode::SceneNode::offset(const glm::vec3& offset)
 {
-	setPosition(getPosition() + offset);
+	setPosition(getLocalPosition() + offset);
 }
 
 void SceneMultiNode::SceneNode::setOrientation(const glm::quat& orientation)
@@ -171,9 +193,14 @@ void SceneMultiNode::SceneNode::setScale(const glm::vec3& scale)
 	updateTransform();
 }
 
-glm::vec3 SceneMultiNode::SceneNode::getPosition() const
+glm::vec3 SceneMultiNode::SceneNode::getLocalPosition() const
 {
 	return localPosition;
+}
+
+glm::vec3 SceneMultiNode::SceneNode::getDerivedPosition() const
+{
+	return parent ? parent->getDerivedPosition() + getLocalPosition() : getLocalPosition();
 }
 
 glm::quat SceneMultiNode::SceneNode::getOrientation() const
@@ -275,9 +302,14 @@ void SceneMultiNode::rotate(float angle, const glm::vec3& axis, CoordinateSystem
 	}
 }
 
-glm::vec3 SceneMultiNode::getPosition(CoordinateSystem cs) const
+glm::vec3 SceneMultiNode::getLocalPosition(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getPosition();
+	return coordinateSystems[cs].getLocalPosition();
+}
+
+glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getDerivedPosition();
 }
 
 glm::quat SceneMultiNode::getOrientation(CoordinateSystem cs) const
@@ -313,6 +345,14 @@ void SceneMultiNode::setParent(SceneMultiNode* parent, CoordinateSystem cs)
 	}
 }
 
+void SceneMultiNode::removeParent(CoordinateSystem cs)
+{
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].removeParent();
+	}
+}
+
 void SceneMultiNode::addChild(SceneMultiNode* child, CoordinateSystem cs)
 {
 	for (size_t i = cs; i < coordinateSystems.size(); ++i)
@@ -321,10 +361,18 @@ void SceneMultiNode::addChild(SceneMultiNode* child, CoordinateSystem cs)
 	}
 }
 
-bool SceneMultiNode::isChildOf(SceneMultiNode* node)
+void SceneMultiNode::removeChild(SceneMultiNode* child, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].removeChild(&child->coordinateSystems[i]);
+	}
+}
+
+bool SceneMultiNode::isChildOf(SceneMultiNode* node, CoordinateSystem cs)
 {
 	bool isChild = true;
-	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
 	{
 		isChild &= coordinateSystems[i].isChildOf(&node->coordinateSystems[i]);
 	}

@@ -95,7 +95,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		currentHeightVector[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
 
 		glm::vec3 cross = glm::cross(previousHeightVector, currentHeightVector);
-		std::cout << "Cross: " << cross.x << " " << cross.y << " " << cross.z << std::endl;
 		if (cross == glm::vec3(0.0f))
 		{
 			// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
@@ -124,7 +123,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			{
 				// Assume block grid are always cubical
 				const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
-				const float distanceToBgCenter = glm::distance(transformComponent->getPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
+				const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
 				const float escapeAltitude = bgSizeInBlocks;
 				if (distanceToBgCenter > escapeAltitude)
 				{
@@ -150,7 +149,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				physicsComponent->setCollisionBox(std::move(box));
 
 				// Test resolve
-				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getPosition(), {}, dt);
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
 
 				// TODO: Add another collision box to prevent colliding camera with world during side transition
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
@@ -325,10 +324,15 @@ glm::vec3 MovementComponent::getHeadPosition() const
 			headPositionOriented *= -1.0f;
 		}
 
-		return transformComponent->getPosition() + headPositionOriented;
+		return transformComponent->getLocalPosition() + headPositionOriented;
 	}
 
 	return glm::vec3(0.0f);
+}
+
+void MovementComponent::setVelocity(const glm::vec3& newVelocity)
+{
+	velocity = newVelocity;
 }
 
 void MovementComponent::handleInput(float dt)
@@ -397,7 +401,7 @@ void MovementComponent::handleWalk(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 position = transformComponent->getLocalPosition();
 
 		// Apply collisions
 		if (physicsComponent)
@@ -452,7 +456,7 @@ void MovementComponent::handleFall(float dt)
 
 	if (transformComponent)
 	{
-		glm::vec3 position = transformComponent->getPosition();
+		glm::vec3 position = transformComponent->getLocalPosition();
 
 		if (physicsComponent)
 		{

@@ -113,4 +113,5 @@ private:
 	glm::vec3 sideRotationAxis;
 
 	float rotationStartHeight = 0.0f;
+	float pendingRotationAngle;
 };

@@ -38,7 +38,8 @@ MovementComponent::MovementComponent() :
 	movementState(MovementState::Fall),
 	shouldRotate(false),
 	planeSideTransitionInProgress(false),
-	currentRotationAngle(0.0f)
+	currentRotationAngle(0.0f),
+	pendingRotationAngle(90.0f)
 {
 }
 
@@ -94,13 +95,50 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		currentHeightVector[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
 
 		glm::vec3 cross = glm::cross(previousHeightVector, currentHeightVector);
+		std::cout << "Cross: " << cross.x << " " << cross.y << " " << cross.z << std::endl;
+		if (cross == glm::vec3(0.0f))
+		{
+			// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
+			// TODO: WARNING! Find better soultion. Might be different result with a different compilator?
+			for (glm::vec3::length_type i = 0; i < 3; ++i)
+			{
+				if (std::signbit(cross[i]))
+				{
+					cross[i] = 1.0f;
+					break;
+				}
+			}
 
-		if (!planeSideTransitionInProgress)
+			pendingRotationAngle = 180.0f;
+			
+		}
+		else
+		{
+			pendingRotationAngle = 90.0f;
+		}
+
+		bool shouldEscape = false;
+		if (transformComponent)
+		{
+			if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
+			{
+				// Assume block grid are always cubical
+				const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
+				const float distanceToBgCenter = glm::distance(transformComponent->getPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
+				const float escapeAltitude = bgSizeInBlocks;
+				if (distanceToBgCenter > escapeAltitude)
+				{
+					shouldEscape = true;
+				}
+			}
+		}
+
+		if (!planeSideTransitionInProgress && !flightMode && !shouldEscape)
 		{
 			const glm::quat originalOrientation = transformComponent->getOrientation();
 
 			// Rotate for test
-			transformComponent->rotateInWorldSpaceExclusive(glm::radians(90.0f), cross);
+			transformComponent->rotateInWorldSpaceExclusive(glm::radians(pendingRotationAngle), cross);
 
 			if (physicsComponent)
 			{
@@ -134,21 +172,20 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		}
 	}
 
-	if (shouldRotate && flightMode == false)
+	if (shouldRotate && !flightMode)
 	{
 		planeSideTransitionInProgress = true;
 
-		const float rotationAngle = 90.0f;
 		const float rotationStep = 300.0f * dt;
 
-		if (currentRotationAngle < rotationAngle)
+		if (currentRotationAngle < pendingRotationAngle)
 		{
 			transformComponent->rotate(glm::radians(rotationStep), sideRotationAxis);
 			currentRotationAngle += rotationStep;
 		}
 		else
 		{
-			const float remainingRotationStep = rotationAngle - currentRotationAngle;
+			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
 			transformComponent->rotate(glm::radians(remainingRotationStep), sideRotationAxis);
 
 			currentRotationAngle = 0.0f;

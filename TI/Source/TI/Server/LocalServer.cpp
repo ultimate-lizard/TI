@@ -79,8 +79,10 @@ void LocalServer::update(float dt)
 								{
 									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
 									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
-									/*playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
-									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);*/
+
+									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
+									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
+
 									playerTransform->removeParent();
 								}
 							}
@@ -113,7 +115,6 @@ void LocalServer::ejectClient(Client* client)
 
 void LocalServer::initStarSystems()
 {
-	// planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(10), 16));
 	stars.push_back(std::make_unique<Star>());
 	stars[0]->initHomeStarSystem();
 
@@ -132,9 +133,6 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 	{
 		if (BlockGrid* blockGrid = planet->getBlockGrid())
 		{
-			// glm::ivec3 planeSize = plane->getSize();
-
-			// glm::vec3 spawnLocation { planeSize.x * planes[0].get()->getChunkSize() / 2.0f, planeSize.y * planes[0].get()->getChunkSize() + 3.0f, planeSize.z * planes[0].get()->getChunkSize() / 2.0f};
 			Entity* playerEntity = spawnEntity("Player", client->getName(), blockGrid, position);
 			possesEntity(client->getName(), client);
 
@@ -142,9 +140,7 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 			{
 				// TODO: This adjustment must be implicit
 				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
-
 				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
-				// transformComponent->setScale(transformComponent->getScale(CoordinateSystem::Interplanetary) * 1212312313.001f, CoordinateSystem::Interplanetary);
 			}
 		}
 	}

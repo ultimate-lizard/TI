@@ -336,13 +336,16 @@ void PlayerController::teleportHome()
 
 				playerTransform->setLocalPosition(spawnLocation, CoordinateSystem::Planetary);
 
+				playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary);
+				playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar);
+
+				playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interplanetary);
+				playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interstellar);
+
 				if (!playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
 				{
 					playerTransform->setParent(planet, CoordinateSystem::Interplanetary);
 				}
-
-				// playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary);
-				// playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar);
 			}
 		}
 	}

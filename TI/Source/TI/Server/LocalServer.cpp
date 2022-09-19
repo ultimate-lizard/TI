@@ -52,7 +52,7 @@ void LocalServer::update(float dt)
 				if (Planet* planet = planets[0].get())
 				{
 					static float angle = 0;
-					angle += 0.5f * dt;
+					angle += 0.01f * dt;
 
 					if (angle > 360.0f)
 					{
@@ -78,6 +78,9 @@ void LocalServer::update(float dt)
 								if (playerToPlanetDist > 2.0f)
 								{
 									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
+									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
+									/*playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
+									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);*/
 									playerTransform->removeParent();
 								}
 							}
@@ -92,11 +95,10 @@ void LocalServer::update(float dt)
 bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
 	// Get home planet for spawn
-	if (BlockGrid* plane = stars[0]->getPlanets()[0]->getBlockGrid())
+	if (BlockGrid* bg = stars[0]->getPlanets()[0]->getBlockGrid())
 	{
-		glm::ivec3 planeSize = plane->getBlockGridSize();
-
-		glm::vec3 spawnLocation{ planeSize.x * plane->getChunkSize() / 2.0f, planeSize.y * plane->getChunkSize() + 3.0f, planeSize.z * plane->getChunkSize() / 2.0f };
+		glm::ivec3 planeSize = bg->getBlockGridSize();
+		glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() / 2.0f, 3.0f };
 
 		spawnPlayer(client, stars[0]->getPlanets()[0].get(), spawnLocation);
 	}
@@ -113,6 +115,15 @@ void LocalServer::initStarSystems()
 {
 	// planes.push_back(std::make_unique<Plane>(glm::vec3(0.0f), glm::uvec3(10), 16));
 	stars.push_back(std::make_unique<Star>());
+	stars[0]->initHomeStarSystem();
+
+	const size_t numStars = 100;
+	for (size_t i = 0; i < numStars; ++i)
+	{
+		auto newStar = std::make_unique<Star>();
+		newStar->initRandomStar();
+		stars.push_back(std::move(newStar));
+	}
 }
 
 void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::vec3& position)
@@ -130,7 +141,7 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 			if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
 			{
 				// TODO: This adjustment must be implicit
-				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f}, CoordinateSystem::Interplanetary);
+				transformComponent->setLocalPosition({ 0.0f, 0.0f, -0.085f }, CoordinateSystem::Interplanetary);
 
 				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
 				// transformComponent->setScale(transformComponent->getScale(CoordinateSystem::Interplanetary) * 1212312313.001f, CoordinateSystem::Interplanetary);

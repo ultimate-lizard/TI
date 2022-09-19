@@ -75,7 +75,7 @@ void Renderer::render()
 			continue;
 		}
 
-		for (int i = 1; i >= 0; --i) // coordinate systems
+		for (int i = 2; i >= 0; --i) // coordinate systems
 		{
 			CoordinateSystem currentSystem = static_cast<CoordinateSystem>(i);
 

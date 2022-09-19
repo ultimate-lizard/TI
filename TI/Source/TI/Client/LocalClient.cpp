@@ -239,6 +239,12 @@ void LocalClient::initStarSystemVisuals(Star* star)
 			{
 				auto planetMesh = std::make_unique<AstroBodyMesh>(star, model);
 				planets.push_back(std::move(planetMesh));
+
+				for (const auto& starPtr : localServer->getStars())
+				{
+					auto starMesh = std::make_unique<AstroBodyMesh>(starPtr.get(), model);
+					stars.push_back(std::move(starMesh));
+				}
 			}
 
 			for (const std::unique_ptr<Planet>& orbitingBody : star->getPlanets())
@@ -436,7 +442,7 @@ void LocalClient::renderWorld()
 	cmd.counts = cachedPoolData.sizes.data();
 	cmd.indices = cachedPoolData.offsets.data();
 	cmd.multiDrawCount = cachedPoolData.drawCount;
-	renderer->pushRender(cmd, 0);
+	renderer->pushRender(cmd, CoordinateSystem::Planetary);
 	
 	//for (auto& planetMesh : stars)
 	//{
@@ -462,7 +468,21 @@ void LocalClient::renderWorld()
 			cmd2.transform = planetMesh->getAstroBody()->getTransform(CoordinateSystem::Interplanetary);
 			cmd2.viewportId = getViewportId();
 			cmd2.cullFaces = false;
-			renderer->pushRender(cmd2, 1);
+			renderer->pushRender(cmd2, CoordinateSystem::Interplanetary);
+		}
+	}
+
+	for (auto& starMesh : stars)
+	{
+		if (starMesh)
+		{
+			RenderCommand cmd2;
+			cmd2.mesh = starMesh->getModel()->getMesh();
+			cmd2.material = starMesh->getModel()->getMaterial();
+			cmd2.transform = starMesh->getAstroBody()->getTransform(CoordinateSystem::Interstellar);
+			cmd2.viewportId = getViewportId();
+			cmd2.cullFaces = false;
+			renderer->pushRender(cmd2, CoordinateSystem::Interstellar);
 		}
 	}
 }
@@ -481,7 +501,7 @@ void LocalClient::renderEntities()
 				// Don't render your entity as we play in first person
 				if (entity->getId() == name)
 				{
-					// continue;
+					continue;
 				}
 
 				if (auto transformComponent = entity->findComponent<TransformComponent>())

@@ -134,7 +134,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 		if (!planeSideTransitionInProgress && !flightMode && !shouldEscape)
 		{
-			const glm::quat originalOrientation = transformComponent->getOrientation();
+			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
 
 			// Rotate for test
 			transformComponent->rotateInWorldSpaceExclusive(glm::radians(pendingRotationAngle), cross);
@@ -166,7 +166,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 					physicsComponent->setCollisionBox(originalBox);
 				}
 				
-				transformComponent->setOrientation(originalOrientation);
+				transformComponent->setLocalOrientation(originalOrientation);
 			}
 		}
 	}

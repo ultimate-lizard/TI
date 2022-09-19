@@ -144,7 +144,7 @@ void SceneMultiNode::SceneNode::offset(const glm::vec3& offset)
 	setPosition(getLocalPosition() + offset);
 }
 
-void SceneMultiNode::SceneNode::setOrientation(const glm::quat& orientation)
+void SceneMultiNode::SceneNode::setLocalOrientation(const glm::quat& orientation)
 {
 	this->localOrientation = orientation;
 	updateTransform();
@@ -200,12 +200,17 @@ glm::vec3 SceneMultiNode::SceneNode::getLocalPosition() const
 
 glm::vec3 SceneMultiNode::SceneNode::getDerivedPosition() const
 {
-	return parent ? parent->getDerivedPosition() + getLocalPosition() : getLocalPosition();
+	return parent ? parent->getDerivedOrientation() * getLocalPosition() + parent->getDerivedPosition() : getLocalPosition();
 }
 
-glm::quat SceneMultiNode::SceneNode::getOrientation() const
+glm::quat SceneMultiNode::SceneNode::getLocalOrientation() const
 {
 	return localOrientation;
+}
+
+glm::quat SceneMultiNode::SceneNode::getDerivedOrientation() const
+{
+	return parent ? parent->getDerivedOrientation() * getLocalOrientation() : getLocalOrientation();
 }
 
 //glm::vec3 SceneMultiNode::SceneNode::getRotation() const
@@ -263,9 +268,9 @@ void SceneMultiNode::offset(const glm::vec3& position, CoordinateSystem cs)
 	//coordinateSystems[cs].offset(position);
 }
 
-void SceneMultiNode::setOrientation(const glm::quat& orientation, CoordinateSystem cs)
+void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs)
 {
-	coordinateSystems[cs].setOrientation(orientation);
+	coordinateSystems[cs].setLocalOrientation(orientation);
 }
 
 void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)
@@ -275,7 +280,7 @@ void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)
 
 void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
 {
-	for (size_t i = 0; i < 2; ++i)
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
 	{
 		coordinateSystems[i].setRotation(rotation);
 	}
@@ -283,7 +288,7 @@ void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
 
 void SceneMultiNode::rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < 2; ++i)
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
 	{
 		coordinateSystems[i].rotateInWorldSpace(angle, axis);
 	}
@@ -296,7 +301,7 @@ void SceneMultiNode::rotateInWorldSpaceExclusive(float angle, const glm::vec3& a
 
 void SceneMultiNode::rotate(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < 2; ++i)
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
 	{
 		coordinateSystems[i].rotate(angle, axis);
 	}
@@ -312,9 +317,14 @@ glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs) const
 	return coordinateSystems[cs].getDerivedPosition();
 }
 
-glm::quat SceneMultiNode::getOrientation(CoordinateSystem cs) const
+glm::quat SceneMultiNode::getLocalOrientation(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getOrientation();
+	return coordinateSystems[cs].getLocalOrientation();
+}
+
+glm::quat SceneMultiNode::getDerivedOrientation(CoordinateSystem cs) const
+{
+	return coordinateSystems[cs].getDerivedOrientation();
 }
 
 glm::vec3 SceneMultiNode::getScale(CoordinateSystem cs) const

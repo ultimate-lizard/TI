@@ -9,7 +9,8 @@
 enum CoordinateSystem
 {
 	Planetary = 0,
-	Interplanetary = 1
+	Interplanetary,
+	Interstellar
 };
 
 class SceneMultiNode
@@ -26,7 +27,7 @@ class SceneMultiNode
 
 		void setPosition(const glm::vec3& position);
 		void offset(const glm::vec3& position);
-		void setOrientation(const glm::quat& orientation);
+		void setLocalOrientation(const glm::quat& orientation);
 		void setScale(const glm::vec3& scale);
 		void setRotation(const glm::vec3& rotation);
 		// void setRotationInWorldSpace(const glm::vec3& rotation);
@@ -37,7 +38,9 @@ class SceneMultiNode
 		glm::vec3 getLocalPosition() const;
 		glm::vec3 getDerivedPosition() const;
 
-		glm::quat getOrientation() const;
+		glm::quat getLocalOrientation() const;
+		glm::quat getDerivedOrientation() const;
+
 		glm::vec3 getScale() const;
 		// glm::vec3 getRotation() const;
 
@@ -78,7 +81,7 @@ public:
 
 	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void setOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
 	// void setRotationInWorldSpace(const glm::vec3& rotation);
@@ -90,7 +93,9 @@ public:
 	glm::vec3 getLocalPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
-	glm::quat getOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::quat getLocalOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::quat getDerivedOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+
 	glm::vec3 getScale(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	// glm::vec3 getRotation() const;
 
@@ -111,5 +116,5 @@ public:
 	// glm::quat getOrientationInWorldSpace() const;
 
 private:
-	std::array<SceneNode, 2> coordinateSystems;
+	std::array<SceneNode, 3> coordinateSystems;
 };

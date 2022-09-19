@@ -98,6 +98,7 @@ private:
 	Camera* cachedEntityCamera;
 
 	std::vector<std::unique_ptr<AstroBodyMesh>> planets;
+	std::vector<std::unique_ptr<AstroBodyMesh>> stars;
 
 	// std::unique_ptr<PlanetMesh> planetLod;
 };

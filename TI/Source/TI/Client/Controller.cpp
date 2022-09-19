@@ -321,7 +321,7 @@ void PlayerController::teleportHome()
 				BlockGrid* bg = planet->getBlockGrid();
 
 				glm::ivec3 planeSize = bg->getBlockGridSize();
-				glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
+				glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() / 2.0f, 3.0f };
 
 				if (auto playerMovement = player->findComponent<MovementComponent>())
 				{
@@ -330,12 +330,16 @@ void PlayerController::teleportHome()
 				}
 
 				playerTransform->setLocalPosition(glm::uvec3(0.0f));
-				playerTransform->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
+				playerTransform->setLocalPosition({ 0.0f, 0.0f, -0.085f }, CoordinateSystem::Interplanetary);
+				playerTransform->setLocalPosition({ }, CoordinateSystem::Interstellar);
 				playerTransform->setLocalPosition(spawnLocation, CoordinateSystem::Planetary);
 				if (!playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
 				{
 					playerTransform->setParent(planet, CoordinateSystem::Interplanetary);
 				}
+
+				playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary);
+				playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar);
 			}
 		}
 	}

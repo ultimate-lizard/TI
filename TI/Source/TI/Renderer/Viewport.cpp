@@ -65,7 +65,7 @@ void Viewport::updateCameraPerspective()
 			glm::radians(95.0f),
 			static_cast<float>(size.x) / static_cast<float>(size.y),
 			0.01f,
-			10000.0f
+			100000.0f
 		);
 	}
 }

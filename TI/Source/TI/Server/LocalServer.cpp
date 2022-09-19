@@ -98,7 +98,7 @@ bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 	if (BlockGrid* bg = stars[0]->getPlanets()[0]->getBlockGrid())
 	{
 		glm::ivec3 planeSize = bg->getBlockGridSize();
-		glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() / 2.0f, 3.0f };
+		glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
 
 		spawnPlayer(client, stars[0]->getPlanets()[0].get(), spawnLocation);
 	}
@@ -141,7 +141,7 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 			if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
 			{
 				// TODO: This adjustment must be implicit
-				transformComponent->setLocalPosition({ 0.0f, 0.0f, -0.085f }, CoordinateSystem::Interplanetary);
+				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
 
 				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
 				// transformComponent->setScale(transformComponent->getScale(CoordinateSystem::Interplanetary) * 1212312313.001f, CoordinateSystem::Interplanetary);

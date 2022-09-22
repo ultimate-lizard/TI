@@ -22,7 +22,12 @@ public:
 	void loadModel(const std::string& name);
 	Model* const getModel() const;
 
+	void setVisibleForParentEntity(bool newVisibility);
+	bool isVisibleForParentEntity() const;
+
 private:
 	ResourceManager* modelManager;
 	Model* model;
+
+	bool visibleForParentEntity;
 };

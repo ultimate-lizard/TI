@@ -25,9 +25,17 @@ public:
 
 	std::optional<OrientationInfo> getOrientationInfo() const;
 
+	void setTargetLocalOrientation(const glm::quat& orientation, CoordinateSystem cs);
+
+	glm::quat lastOrientation;
+
 private:
 	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
 
 private:
 	BlockGrid* blockGrid;
+
+	bool orientationInProgress = false;
+	glm::quat targetOrientation;
+	CoordinateSystem targetCs = CoordinateSystem::Planetary;
 };

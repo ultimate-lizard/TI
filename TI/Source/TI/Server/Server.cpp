@@ -23,6 +23,7 @@ void Server::initEntityTemplates()
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
 	meshComponent->loadModel("Player");
 	meshComponent->setLocalScale({ 0.6f, 0.6f, 1.0f });
+	meshComponent->setVisibleForParentEntity(true);
 
 	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
 	physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });

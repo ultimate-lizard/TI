@@ -8,7 +8,8 @@ MeshComponent::MeshComponent(ResourceManager* modelManager) :
 	Component(),
 	SceneMultiNode(),
 	modelManager(modelManager),
-	model(nullptr)
+	model(nullptr),
+	visibleForParentEntity(true)
 {
 
 }
@@ -17,7 +18,8 @@ MeshComponent::MeshComponent(const MeshComponent& other) :
 	Component(other),
 	SceneMultiNode(other),
 	modelManager(other.modelManager),
-	model(other.model)
+	model(other.model),
+	visibleForParentEntity(other.visibleForParentEntity)
 {
 }
 
@@ -38,4 +40,14 @@ void MeshComponent::loadModel(const std::string& name)
 Model* const MeshComponent::getModel() const
 {
 	return model;
+}
+
+void MeshComponent::setVisibleForParentEntity(bool newVisibility)
+{
+	visibleForParentEntity = newVisibility;
+}
+
+bool MeshComponent::isVisibleForParentEntity() const
+{
+	return visibleForParentEntity;
 }

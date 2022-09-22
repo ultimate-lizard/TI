@@ -261,10 +261,7 @@ float MovementComponent::getWalkMaxSpeed() const
 
 void MovementComponent::setFlightSpeed(float flightSpeed)
 {
-	if (flightMode)
-	{
-		this->flightSpeed = flightSpeed;
-	}
+	this->flightSpeed = flightSpeed;
 }
 
 float MovementComponent::getFlightSpeed() const

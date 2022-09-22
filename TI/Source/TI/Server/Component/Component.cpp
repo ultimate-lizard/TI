@@ -9,3 +9,8 @@ Component::Component(const Component& otherComponent) :
 	entity(otherComponent.entity)
 {
 }
+
+Entity* Component::getParentEntity()
+{
+	return entity;
+}

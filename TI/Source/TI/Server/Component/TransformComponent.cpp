@@ -21,6 +21,16 @@ TransformComponent::TransformComponent(const TransformComponent& other) :
 void TransformComponent::tick(float dt)
 {
 	// drawDebugPoint(getPosition(), { 1.0f, 0.0f, 0.0f, 1.0f }, 50.0f, false);
+
+	if (orientationInProgress)
+	{
+		setLocalOrientation(glm::mix(getLocalOrientation(targetCs), targetOrientation, dt * 15.0f), targetCs, true);
+
+		float matching = glm::dot(getLocalOrientation(targetCs), targetOrientation);
+		if (abs(matching - 1.0f) < 0.00001f) {
+			orientationInProgress = false;
+		}
+	}
 }
 
 void TransformComponent::setCurrentBlockGrid(BlockGrid* blockGrid)
@@ -55,6 +65,17 @@ std::optional<OrientationInfo> TransformComponent::getOrientationInfo() const
 	}
 
 	return result;
+}
+
+void TransformComponent::setTargetLocalOrientation(const glm::quat& orientation, CoordinateSystem cs)
+{
+	if (!orientationInProgress)
+	{
+		orientationInProgress = true;
+
+		targetOrientation = orientation;
+		targetCs = cs;
+	}
 }
 
 bool TransformComponent::isInCone(const glm::vec3& position, const OrientationInfo& orientationInfo) const

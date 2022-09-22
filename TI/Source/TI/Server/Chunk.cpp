@@ -47,7 +47,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		{
 			blocks[i] = 1;
 		}
-		continue;
+		
 		if (isInCrust() || isInTroposphere())
 		{
 			 const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ

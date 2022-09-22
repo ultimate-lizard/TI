@@ -268,9 +268,19 @@ void SceneMultiNode::offset(const glm::vec3& position, CoordinateSystem cs)
 	//coordinateSystems[cs].offset(position);
 }
 
-void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs)
+void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs, bool propagateToChildren)
 {
-	coordinateSystems[cs].setLocalOrientation(orientation);
+	if (propagateToChildren)
+	{
+		for (size_t i = cs; i < coordinateSystems.size(); ++i)
+		{
+			coordinateSystems[i].setLocalOrientation(orientation);
+		}
+	}
+	else
+	{
+		coordinateSystems[cs].setLocalOrientation(orientation);
+	}
 }
 
 void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)

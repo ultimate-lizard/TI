@@ -499,7 +499,7 @@ void LocalClient::renderEntities()
 			if (auto meshComp = entity->findComponent<MeshComponent>(); meshComp)
 			{
 				// Don't render your entity as we play in first person
-				if (entity->getId() == name)
+				if (possessedEntity->getId() == meshComp->getParentEntity()->getId() && meshComp->isVisibleForParentEntity())
 				{
 					continue;
 				}

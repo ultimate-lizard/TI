@@ -77,13 +77,34 @@ void LocalServer::update(float dt)
 								const float playerToPlanetDist = glm::distance(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), planet->getDerivedPosition(CoordinateSystem::Interplanetary));
 								if (playerToPlanetDist > 2.0f)
 								{
+									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Planetary), CoordinateSystem::Planetary);
 									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
 									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
 
-									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
-									playerTransform->setLocalOrientation(playerTransform->getDerivedOrientation(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
+									// playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar, true);
+
+
+									// playerTransform->setLocalOrientation(, CoordinateSystem::Planetary, true);
+									// playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Interplanetary);
+									glm::quat originQuat = playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary);
+
 
 									playerTransform->removeParent();
+
+									// playerTransform->setLocalOrientation({}, CoordinateSystem::Planetary);
+									// playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(), CoordinateSystem::Planetary, true);
+
+									playerTransform->setLocalOrientation(originQuat, CoordinateSystem::Interplanetary, true);
+
+									//std::cout << std::endl;
+
+									//playerTransform->lastOrientation = playerTransform->getLocalOrientation();
+
+									//playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Interplanetary);
+									//playerTransform->setLocalOrientation({}, CoordinateSystem::Planetary);
+
+									// playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary, true);
+									// playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Planetary);
 								}
 							}
 						}
@@ -118,7 +139,7 @@ void LocalServer::initStarSystems()
 	stars.push_back(std::make_unique<Star>());
 	stars[0]->initHomeStarSystem();
 
-	const size_t numStars = 100;
+	const size_t numStars = 150;
 	for (size_t i = 0; i < numStars; ++i)
 	{
 		auto newStar = std::make_unique<Star>();
@@ -140,7 +161,7 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 			{
 				// TODO: This adjustment must be implicit
 				transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
-				transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
+				transformComponent->setParent(planet, CoordinateSystem::Planetary);
 			}
 		}
 	}

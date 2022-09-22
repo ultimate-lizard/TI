@@ -238,7 +238,6 @@ void PlayerController::toggleFlyMode()
 		if (movementComponent)
 		{
 			movementComponent->setFlyModeEnabled(!movementComponent->isFlightModeEnabled());
-			movementComponent->setFlightSpeed(25.0f);
 		}
 	}
 }
@@ -297,7 +296,10 @@ void PlayerController::increaseFlightSpeed()
 {
 	if (movementComponent)
 	{
-		movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 2.0f);
+		if (movementComponent->isFlightModeEnabled())
+		{
+			movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 2.0f);
+		}
 	}
 }
 
@@ -305,7 +307,10 @@ void PlayerController::decreaseFlightSpeed()
 {
 	if (movementComponent)
 	{
-		movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 0.5f);
+		if (movementComponent->isFlightModeEnabled())
+		{
+			movementComponent->setFlightSpeed(movementComponent->getFlightSpeed() * 0.5f);
+		}
 	}
 }
 
@@ -327,6 +332,8 @@ void PlayerController::teleportHome()
 				if (auto playerMovement = player->findComponent<MovementComponent>())
 				{
 					playerMovement->setVelocity({});
+					movementComponent->setFlightSpeed(25.0f);
+					// playerTransform->setTargetLocalOrientation(playerTransform->lastOrientation, CoordinateSystem::Planetary);
 				}
 
 				playerTransform->setLocalPosition(glm::uvec3(0.0f));
@@ -342,9 +349,9 @@ void PlayerController::teleportHome()
 				playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interplanetary);
 				playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interstellar);
 
-				if (!playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
+				if (!playerTransform->isChildOf(planet, CoordinateSystem::Planetary))
 				{
-					playerTransform->setParent(planet, CoordinateSystem::Interplanetary);
+					playerTransform->setParent(planet, CoordinateSystem::Planetary);
 				}
 			}
 		}

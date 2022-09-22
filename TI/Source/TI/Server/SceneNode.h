@@ -81,7 +81,7 @@ public:
 
 	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToChildren = false);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
 	// void setRotationInWorldSpace(const glm::vec3& rotation);

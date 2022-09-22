@@ -20,6 +20,8 @@ public:
 
 	virtual std::unique_ptr<Component> clone() const = 0;
 
+	Entity* getParentEntity();
+
 protected:
 	Entity* entity;
 };

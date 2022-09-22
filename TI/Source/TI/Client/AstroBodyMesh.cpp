@@ -1,8 +1,8 @@
 #include "AstroBodyMesh.h"
 
-#include <TI/Server/AstroBody.h>
+#include <TI/Server/CelestialBody.h>
 
-AstroBodyMesh::AstroBodyMesh(AstroBody* astroBody, Model* model) :
+AstroBodyMesh::AstroBodyMesh(CelestialBody* astroBody, Model* model) :
 	astroBody(astroBody),
 	model(model)
 {

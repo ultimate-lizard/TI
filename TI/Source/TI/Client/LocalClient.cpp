@@ -12,6 +12,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Star.h>
 #include <TI/Server/Planet.h>
+#include <TI/Server/SolarSystem.h>
 #include <TI/Client/Input/InputHandler.h>
 #include <TI/Client/Controller.h>
 #include <TI/Client/AstroBodyMesh.h>
@@ -57,25 +58,27 @@ LocalClient::~LocalClient()
 
 void LocalClient::connect(const std::string& ip, int port)
 {
-	if (Server* server = app->getCurrentServer())
+	if (LocalServer* server = dynamic_cast<LocalServer*>(app->getCurrentServer()))
 	{
 		if (server->connectClient(this, ip, port))
 		{
-			BlockGrid* plane = server->getStars()[0]->getPlanets()[0]->getBlockGrid();
-			activeBlockGrids.push_back(plane);
+			if (Planet* homePlanet = server->homePlanet)
+			{
+				BlockGrid* plane = homePlanet->getBlockGrid();
+				activeBlockGrids.push_back(plane);
 
+				ResourceManager* rm = app->getResourceManager();
+
+				initSolarSystemVisuals(homePlanet->getOrbitalSystem());
+			}
+			
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
 
 			if (app)
 			{
-				ResourceManager* rm = app->getResourceManager();
-
-				if (auto localServer = dynamic_cast<LocalServer*>(server))
-				{
-					initStarSystemVisuals(localServer->getStars()[0].get());
-				}
+				
 
 				//if (Model* model = rm->getModel("Star"))
 				//{
@@ -228,8 +231,13 @@ bool LocalClient::isFrustumCullingEnabled() const
 	return frustumCullingEnabled;
 }
 
-void LocalClient::initStarSystemVisuals(Star* star)
+void LocalClient::initSolarSystemVisuals(OrbitalSystem* solarSystem)
 {
+	if (!solarSystem)
+	{
+		return;
+	}
+
 	if (Server* server = app->getCurrentServer())
 	{
 		if (auto localServer = dynamic_cast<LocalServer*>(server))
@@ -237,21 +245,21 @@ void LocalClient::initStarSystemVisuals(Star* star)
 			ResourceManager* rm = app->getResourceManager();
 			if (Model* model = rm->getModel("Star"))
 			{
-				auto planetMesh = std::make_unique<AstroBodyMesh>(star, model);
+				auto planetMesh = std::make_unique<AstroBodyMesh>(solarSystem->getPrimaryBody(), model);
 				planets.push_back(std::move(planetMesh));
 
-				for (const auto& starPtr : localServer->getStars())
-				{
-					auto starMesh = std::make_unique<AstroBodyMesh>(starPtr.get(), model);
-					stars.push_back(std::move(starMesh));
-				}
+				//for (const auto& starPtr : localServer->getStars())
+				//{
+				//	auto starMesh = std::make_unique<AstroBodyMesh>(starPtr.get(), model);
+				//	stars.push_back(std::move(starMesh));
+				//}
 			}
 
-			for (const std::unique_ptr<Planet>& orbitingBody : star->getPlanets())
+			for (OrbitalSystem* planetarySystem : solarSystem->getOrbitingSystems())
 			{
 				if (Model* model = rm->getModel("Planet"))
 				{
-					auto planetMesh = std::make_unique<AstroBodyMesh>(orbitingBody.get(), model);
+					auto planetMesh = std::make_unique<AstroBodyMesh>(planetarySystem->getPrimaryBody(), model);
 					planets.push_back(std::move(planetMesh));
 				}
 			}

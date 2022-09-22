@@ -173,7 +173,7 @@ void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
 
 void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
 {
-	glm::quat rotationQuat = glm::angleAxis(angle, axis);
+	glm::quat rotationQuat = glm::angleAxis(glm::radians(angle), axis);
 	localOrientation = localOrientation * glm::inverse(getOrientationInWorldSpace()) * rotationQuat * getOrientationInWorldSpace();
 
 	updateTransform();
@@ -181,7 +181,7 @@ void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3&
 
 void SceneMultiNode::SceneNode::rotate(float angle, const glm::vec3& axis)
 {
-	glm::quat rotationQuat = glm::angleAxis(angle, axis);
+	glm::quat rotationQuat = glm::angleAxis(glm::radians(angle), axis);
 	localOrientation = rotationQuat * localOrientation;
 
 	updateTransform();

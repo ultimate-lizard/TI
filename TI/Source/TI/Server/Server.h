@@ -10,7 +10,8 @@
 
 class Application;
 class BlockGrid;
-class Star;
+class CelestialBody;
+class OrbitalSystem;
 
 class Server
 {
@@ -27,22 +28,18 @@ public:
 	virtual void shutdown();
 
 	Entity* const findEntity(const std::string& id);
-
 	void removeEntity(const std::string& id);
 
-	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
-
 	std::unique_ptr<Entity> createEntityFromTemplate(const std::string& name, const std::string& id);
-
 	Entity* const spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* blockGrid, const glm::vec3& position);
 
-	const std::vector<std::unique_ptr<Star>>& getStars();
+	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
+	const std::vector<std::unique_ptr<CelestialBody>>& getCelestialBodies();
 
 protected:
 	void initEntityTemplates();
 	void possesEntity(const std::string& entityName, Client* const client);
 
-protected:
 	Application* app;
 
 	std::map<std::string, std::unique_ptr<Entity>> spawnedEntities;
@@ -50,6 +47,7 @@ protected:
 
 	std::atomic<bool> shuttingDown;
 
-	std::vector<std::unique_ptr<Star>> stars;
-	// std::vector<std::unique_ptr<Plane>> planes;
+	std::vector<std::unique_ptr<BlockGrid>> blockGrids;
+	std::vector<std::unique_ptr<CelestialBody>> celestialBodies;
+	std::vector<std::unique_ptr<OrbitalSystem>> orbitalSystems;
 };

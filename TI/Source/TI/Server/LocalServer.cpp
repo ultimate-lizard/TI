@@ -10,14 +10,15 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/SceneNode.h>
 #include <TI/Server/BlockGrid.h>
-// #include <TI/Server/AstroBody.h>
 #include <TI/Server/Star.h>
 #include <TI/Server/Planet.h>
+#include <TI/Server/SolarSystem.h>
+#include <TI/Server/PlanetarySystem.h>
 
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	initStarSystems();
+	initHomeSolarSystem();
 
 	// TODO: Remove this
 	if (app)
@@ -42,88 +43,29 @@ void LocalServer::update(float dt)
 		entityPair.second->tick(dt);
 	}
 
-	if (!stars.empty())
+	for (const std::unique_ptr<OrbitalSystem>& solarSystem : orbitalSystems)
 	{
-		if (Star* star = stars[0].get())
+		if (solarSystem)
 		{
-			auto& planets = star->getPlanets();
-			if (!planets.empty())
-			{
-				if (Planet* planet = planets[0].get())
-				{
-					static float angle = 0;
-					angle += 0.01f * dt;
-
-					if (angle > 360.0f)
-					{
-						angle = 0;
-					}
-
-					const float radius = 750.0f;
-
-					glm::vec3 newPosition(glm::cos(glm::radians(angle)) * radius, 0.0f, glm::sin(glm::radians(angle)) * radius);
-
-					glm::vec3 offset = newPosition - planet->getLocalPosition(CoordinateSystem::Interplanetary);
-					planet->offset(offset, CoordinateSystem::Interplanetary);
-					planet->rotate(0.01f * dt, { 0.0f, 1.0f, 0.0f }, CoordinateSystem::Interplanetary);
-
-					// TODO: For each player on the server
-					if (Entity* player = findEntity("Player"))
-					{
-						if (auto playerTransform = player->findComponent<TransformComponent>())
-						{
-							if (playerTransform->isChildOf(planet, CoordinateSystem::Interplanetary))
-							{
-								const float playerToPlanetDist = glm::distance(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), planet->getDerivedPosition(CoordinateSystem::Interplanetary));
-								if (playerToPlanetDist > 2.0f)
-								{
-									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Planetary), CoordinateSystem::Planetary);
-									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interplanetary), CoordinateSystem::Interplanetary);
-									playerTransform->setLocalPosition(playerTransform->getDerivedPosition(CoordinateSystem::Interstellar), CoordinateSystem::Interstellar);
-
-									// playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar, true);
-
-
-									// playerTransform->setLocalOrientation(, CoordinateSystem::Planetary, true);
-									// playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Interplanetary);
-									glm::quat originQuat = playerTransform->getDerivedOrientation(CoordinateSystem::Interplanetary);
-
-
-									playerTransform->removeParent();
-
-									// playerTransform->setLocalOrientation({}, CoordinateSystem::Planetary);
-									// playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(), CoordinateSystem::Planetary, true);
-
-									playerTransform->setLocalOrientation(originQuat, CoordinateSystem::Interplanetary, true);
-
-									//std::cout << std::endl;
-
-									//playerTransform->lastOrientation = playerTransform->getLocalOrientation();
-
-									//playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Interplanetary);
-									//playerTransform->setLocalOrientation({}, CoordinateSystem::Planetary);
-
-									// playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary, true);
-									// playerTransform->setTargetLocalOrientation({}, CoordinateSystem::Planetary);
-								}
-							}
-						}
-					}
-				}
-			}
+			solarSystem->tick(dt);
 		}
 	}
 }
 
 bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	// Get home planet for spawn
-	if (BlockGrid* bg = stars[0]->getPlanets()[0]->getBlockGrid())
+	if (homePlanet)
 	{
-		glm::ivec3 planeSize = bg->getBlockGridSize();
-		glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
-
-		spawnPlayer(client, stars[0]->getPlanets()[0].get(), spawnLocation);
+		if (BlockGrid* bg = homePlanet->getBlockGrid())
+		{
+			glm::ivec3 planeSize = bg->getBlockGridSize();
+			glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
+			spawnPlayer(client, homePlanet, spawnLocation);
+		}
+	}
+	else
+	{
+		spawnPlayer(client, nullptr, {});
 	}
 
 	return true;
@@ -134,18 +76,44 @@ void LocalServer::ejectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-void LocalServer::initStarSystems()
+void LocalServer::initHomeSolarSystem()
 {
-	stars.push_back(std::make_unique<Star>());
-	stars[0]->initHomeStarSystem();
+	auto star = std::make_unique<Star>();
+	star->setLocalScale(glm::vec3(100.0f), CoordinateSystem::Interplanetary);
+	star->setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar);
 
-	const size_t numStars = 150;
-	for (size_t i = 0; i < numStars; ++i)
-	{
-		auto newStar = std::make_unique<Star>();
-		newStar->initRandomStar();
-		stars.push_back(std::move(newStar));
-	}
+	auto blockGrid = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	auto planet = std::make_unique<Planet>(blockGrid.get());
+
+	planet->setLocalScale(glm::vec3(0.08f), CoordinateSystem::Interplanetary);
+	// planet->rotate(25.0f, { 0.0f, 0.0f, 1.0f }, CoordinateSystem::Interplanetary);
+
+	OrbitalProperties properties;
+	properties.radius = 750.0f;
+	properties.orbitalVelocity = 0.0f;
+	properties.equatorialVelocity = 0.0f;
+
+	planet->setOrbitalProperties(std::move(properties));
+
+	homePlanet = planet.get();
+
+	auto solarSystem = std::make_unique<SolarSystem>(star.get());
+	auto planetarySystem = std::make_unique<PlanetarySystem>(planet.get());
+	solarSystem->addOrbitalSystem(planetarySystem.get());
+	
+	blockGrids.push_back(std::move(blockGrid));
+	celestialBodies.push_back(std::move(star));
+	celestialBodies.push_back(std::move(planet));
+	orbitalSystems.push_back(std::move(solarSystem));
+	orbitalSystems.push_back(std::move(planetarySystem));
+
+	//const size_t numStars = 150;
+	//for (size_t i = 0; i < numStars; ++i)
+	//{
+	//	auto newStar = std::make_unique<Star>();
+	//	newStar->initRandomStar();
+	//	celestialBodies.push_back(std::move(newStar));
+	//}
 }
 
 void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::vec3& position)

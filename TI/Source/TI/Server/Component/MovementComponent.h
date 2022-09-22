@@ -8,6 +8,7 @@
 
 class TransformComponent;
 class PhysicsComponent;
+class CelestialBody;
 
 class MovementComponent : public Component
 {
@@ -116,4 +117,6 @@ private:
 
 	float rotationStartHeight = 0.0f;
 	float pendingRotationAngle;
+
+	CelestialBody* primaryBody;
 };

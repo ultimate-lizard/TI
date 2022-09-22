@@ -2,19 +2,16 @@
 
 #include <memory>
 
-#include <TI/Server/AstroBody.h>
+#include <TI/Server/CelestialBody.h>
 
 class BlockGrid;
 
-class Planet : public AstroBody
+class Planet : public CelestialBody
 {
 public:
-	Planet(const glm::uvec3& size, size_t chunkSize);
-	Planet(std::unique_ptr<BlockGrid> plane);
-	~Planet();
+	Planet();
+	Planet(BlockGrid* blockGrid);
 
-	BlockGrid* getBlockGrid();
-
-private:
-	std::unique_ptr<BlockGrid> blockGrid;
+	Planet(const Planet&) = delete;
+	Planet(Planet&&) = delete;
 };

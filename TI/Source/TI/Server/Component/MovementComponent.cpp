@@ -14,6 +14,7 @@
 #include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/BlockGrid.h>
+#include <TI/Server/CelestialBody.h>
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Util/Math.h>
@@ -39,7 +40,8 @@ MovementComponent::MovementComponent() :
 	shouldRotate(false),
 	planeSideTransitionInProgress(false),
 	currentRotationAngle(0.0f),
-	pendingRotationAngle(90.0f)
+	pendingRotationAngle(90.0f),
+	primaryBody(nullptr)
 {
 }
 
@@ -116,28 +118,28 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			pendingRotationAngle = 90.0f;
 		}
 
-		bool shouldEscape = false;
-		if (transformComponent)
-		{
-			if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
-			{
-				// Assume block grid are always cubical
-				const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
-				const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
-				const float escapeAltitude = bgSizeInBlocks;
-				if (distanceToBgCenter > escapeAltitude)
-				{
-					shouldEscape = true;
-				}
-			}
-		}
+		//bool shouldEscape = false;
+		//if (transformComponent)
+		//{
+		//	if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
+		//	{
+		//		// Assume block grid are always cubical
+		//		const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
+		//		const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
+		//		const float escapeAltitude = bgSizeInBlocks;
+		//		if (distanceToBgCenter > escapeAltitude)
+		//		{
+		//			shouldEscape = true;
+		//		}
+		//	}
+		//}
 
-		if (!planeSideTransitionInProgress && !flightMode && !shouldEscape)
+		if (!planeSideTransitionInProgress && !flightMode) //&& !shouldEscape)
 		{
 			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
 
 			// Rotate for test
-			transformComponent->rotateInWorldSpaceExclusive(glm::radians(pendingRotationAngle), cross);
+			transformComponent->rotateInWorldSpaceExclusive(pendingRotationAngle, cross);
 
 			if (physicsComponent)
 			{
@@ -150,6 +152,8 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 				// Test resolve
 				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
+
+				drawDebugBox(transformComponent->getLocalPosition(), originalBox.getSize(), { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f);
 
 				// TODO: Add another collision box to prevent colliding camera with world during side transition
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
@@ -179,14 +183,14 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 		if (currentRotationAngle < pendingRotationAngle)
 		{
-			transformComponent->rotate(glm::radians(rotationStep), sideRotationAxis);
+			transformComponent->rotate(rotationStep, sideRotationAxis);
 			currentRotationAngle += rotationStep;
 		}
 		else
 		{
 			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
-			transformComponent->rotate(glm::radians(remainingRotationStep), sideRotationAxis);
-
+			transformComponent->rotate(rotationStep, sideRotationAxis, CoordinateSystem::Planetary);
+			std::cout << transformComponent->getLocalOrientation().x << " " << transformComponent->getLocalOrientation().y << " " << transformComponent->getLocalOrientation().z << std::endl;
 			currentRotationAngle = 0.0f;
 			shouldRotate = false;
 			planeSideTransitionInProgress = false;

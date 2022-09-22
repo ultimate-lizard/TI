@@ -12,6 +12,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/BlockGrid.h>
 #include <TI/Server/Star.h>
+#include <TI/Server/SolarSystem.h>
 
 void Server::initEntityTemplates()
 {
@@ -127,11 +128,6 @@ std::unique_ptr<Entity> Server::createEntityFromTemplate(const std::string& name
 	return nullptr;
 }
 
-//const std::vector<std::unique_ptr<Plane>>& Server::getPlanes() const
-//{
-//	return planes;
-//}
-
 Entity* const Server::spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* blockGrid, const glm::vec3& position)
 {
 	Entity* result = nullptr;
@@ -158,9 +154,9 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 	return result;
 }
 
-const std::vector<std::unique_ptr<Star>>& Server::getStars()
+const std::vector<std::unique_ptr<CelestialBody>>& Server::getCelestialBodies()
 {
-	return stars;
+	return celestialBodies;
 }
 
 void Server::possesEntity(const std::string& entityName, Client* const client)

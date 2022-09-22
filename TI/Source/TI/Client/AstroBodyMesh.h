@@ -1,20 +1,20 @@
 #pragma once
 
 class Model;
-class AstroBody;
+class CelestialBody;
 
 class AstroBodyMesh
 {
 public:
-	AstroBodyMesh(AstroBody* astroBody, Model* model);
+	AstroBodyMesh(CelestialBody* astroBody, Model* model);
 
 	Model* getModel();
-	inline AstroBody* getAstroBody()
+	inline CelestialBody* getAstroBody()
 	{
 		return astroBody;
 	}
 
 private:
-	AstroBody* astroBody;
+	CelestialBody* astroBody;
 	Model* model;
 };

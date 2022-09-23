@@ -153,8 +153,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 				// Test resolve
 				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
 
-				drawDebugBox(transformComponent->getLocalPosition(), originalBox.getSize(), { 0.0f, 1.0f, 0.0f, 1.0f }, 1.0f);
-
 				// TODO: Add another collision box to prevent colliding camera with world during side transition
 				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
 					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
@@ -189,8 +187,8 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		else
 		{
 			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
-			transformComponent->rotate(rotationStep, sideRotationAxis, CoordinateSystem::Planetary);
-			std::cout << transformComponent->getLocalOrientation().x << " " << transformComponent->getLocalOrientation().y << " " << transformComponent->getLocalOrientation().z << std::endl;
+			transformComponent->rotate(remainingRotationStep, sideRotationAxis, CoordinateSystem::Planetary);
+
 			currentRotationAngle = 0.0f;
 			shouldRotate = false;
 			planeSideTransitionInProgress = false;

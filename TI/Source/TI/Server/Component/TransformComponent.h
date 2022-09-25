@@ -23,14 +23,14 @@ public:
 
 	std::unique_ptr<Component> clone() const override;
 
-	std::optional<OrientationInfo> getOrientationInfo() const;
+	//std::optional<OrientationInfo> getOrientationInfo() const;
 
 	void setTargetLocalOrientation(const glm::quat& orientation, CoordinateSystem cs);
 
 	glm::quat lastOrientation;
 
 private:
-	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+	//bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
 
 private:
 	BlockGrid* blockGrid;

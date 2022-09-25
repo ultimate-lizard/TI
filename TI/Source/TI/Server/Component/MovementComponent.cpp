@@ -406,10 +406,10 @@ void MovementComponent::handleWalk(float dt)
 			// Check if no longer on ground
 			glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
 			CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
-			if (!groundTestResult.collidedAxis[blockGrid->getSideNormal(position)])
-			{
-				movementState = MovementState::Fall;
-			}
+			//if (!groundTestResult.collidedAxis[blockGrid->getSideNormal(position)])
+			//{
+			//	movementState = MovementState::Fall;
+			//}
 		}
 
 		transformComponent->setLocalPosition(position);
@@ -451,15 +451,15 @@ void MovementComponent::handleFall(float dt)
 		{
 			CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
 
-			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
-			{
-				if ((velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive) || (velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive))
-				{
-					// On land
-					movementState = MovementState::Walk;
-					velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
-				}
-			}
+			//if (collisionResult.collidedAxis[orientationInfo.heightAxis])
+			//{
+			//	if ((velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive) || (velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive))
+			//	{
+			//		// On land
+			//		movementState = MovementState::Walk;
+			//		velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
+			//	}
+			//}
 
 			position = collisionResult.adjustedPosition;
 			velocity = collisionResult.adjustedVelocity;
@@ -510,8 +510,7 @@ void MovementComponent::handleFlight(float dt)
 glm::vec3 MovementComponent::getGravityVector() const
 {
 	glm::vec3 gravityVector;
-	gravityVector[orientationInfo.heightAxis] = orientationInfo.positive ? -1 : 1;
-	
+	// gravityVector[orientationInfo.heightAxis] = orientationInfo.positive ? -1 : 1;
 	return gravityVector;
 }
 

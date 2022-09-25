@@ -39,6 +39,8 @@ public:
 	// Converts position to chunk's local position
 	glm::uvec3 positionToChunkLocalPosition(const glm::uvec3& position) const;
 
+	glm::vec3 getSideNormal(const glm::vec3& position);
+
 private:
 	// glm::vec3 position;
 	// Size of block grid in chunks

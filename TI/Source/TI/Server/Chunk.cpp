@@ -20,7 +20,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	chunkPosition(position)
 {
 	// if not 2 dimensional
-	orientations = { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
+	// orientations = { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
 
 	unsigned long long longSize = size;
 	blocks.resize(longSize * longSize * longSize, 0);
@@ -55,7 +55,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 			//const float MAX_AMPLITUDE = 4; // How far under or above 0 the terrain will differ
 			//const float TERRAIN_LOCATION_HEIGHT = chunkSize * 1; // From center
 			
-			for (const OrientationInfo& orientationInfo : orientations)
+			/*for (const OrientationInfo& orientationInfo : orientations)
 			{
 				const float generatedTerrainHeight = MAX_AMPLITUDE * noiseModule.GetValue(perlinPos.x, perlinPos.y, perlinPos.z);
 
@@ -73,7 +73,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 				{
 					blocks[i] = block;
 				}
-			}
+			}*/
 		}
 
 		// if core
@@ -153,12 +153,24 @@ bool Chunk::isInTroposphere() const
 glm::vec3 Chunk::getUpDirection(const glm::vec3& localPosition) const
 {
 	glm::vec3 checkedPosition = { this->chunkPosition.x + localPosition.x, this->chunkPosition.y + localPosition.y, this->chunkPosition.z + localPosition.z };
+	glm::vec3 planetCenter(glm::vec3(planetSize / 2.0f));
+
+	
+
+	static bool done = false;
+	if (!done)
+	{
+		
+		done = true;
+	}
 
 	if (checkedPosition.x <= checkedPosition.y && checkedPosition.x >= planetSize - 1.0f - checkedPosition.y &&
 		checkedPosition.z <= checkedPosition.y && checkedPosition.z >= planetSize - 1.0f - checkedPosition.y)
 	{
 
 	}
+
+	return {};
 }
 
 //std::optional<OrientationInfo> Chunk::getOrientationInfo(const glm::vec3& localPosition) const

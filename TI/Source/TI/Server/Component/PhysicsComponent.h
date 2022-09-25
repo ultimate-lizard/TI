@@ -20,15 +20,15 @@ private:
 	glm::vec3 size;
 	glm::vec3 offset;
 
-	OrientationInfo cachedOrientation;
+	// OrientationInfo cachedOrientation;
 
 public:
 	inline CollisionBox() :
 		unorientedSize(0.0f),
 		unorientedOffset(0.0f),
 		size(0.0f),
-		offset(0.0f),
-		cachedOrientation()
+		offset(0.0f)
+		//cachedOrientation()
 	{
 
 	}
@@ -37,8 +37,8 @@ public:
 		unorientedSize(size),
 		unorientedOffset(offset),
 		size(size),
-		offset(offset),
-		cachedOrientation()
+		offset(offset)
+		//cachedOrientation()
 	{
 
 	}
@@ -46,13 +46,13 @@ public:
 	inline void setSize(const glm::vec3& newSize)
 	{
 		unorientedSize = newSize;
-		orient(cachedOrientation);
+		//orient(cachedOrientation);
 	}
 
 	inline void setOffset(const glm::vec3& newOffset)
 	{
 		unorientedOffset = newOffset;
-		orient(cachedOrientation);
+		//orient(cachedOrientation);
 	}
 
 	// Returns oriented in space size
@@ -80,30 +80,30 @@ public:
 	}
 
 	// TODO: Unhardcore this!
-	inline void orient(const OrientationInfo& orientationInfo)
-	{
-		if (cachedOrientation != orientationInfo)
-		{
-			cachedOrientation = orientationInfo;
-		}
+	//inline void orient(const OrientationInfo& orientationInfo)
+	//{
+	//	if (cachedOrientation != orientationInfo)
+	//	{
+	//		cachedOrientation = orientationInfo;
+	//	}
 
-		size[orientationInfo.sideAxis] = unorientedSize.x;
-		size[orientationInfo.heightAxis] = unorientedSize.y;
-		size[orientationInfo.frontAxis] = unorientedSize.z;
+	//	size[orientationInfo.sideAxis] = unorientedSize.x;
+	//	size[orientationInfo.heightAxis] = unorientedSize.y;
+	//	size[orientationInfo.frontAxis] = unorientedSize.z;
 
-		offset[orientationInfo.sideAxis] = unorientedOffset.x;
-		offset[orientationInfo.heightAxis] = unorientedOffset.y;
-		offset[orientationInfo.frontAxis] = unorientedOffset.z;
+	//	offset[orientationInfo.sideAxis] = unorientedOffset.x;
+	//	offset[orientationInfo.heightAxis] = unorientedOffset.y;
+	//	offset[orientationInfo.frontAxis] = unorientedOffset.z;
 
-		if (!orientationInfo.positive)
-		{
-			for (size_t i = 0; i < 3; ++i)
-			{
-				// newSize[i] *= -1.0f;
-				offset[i] *= -1.0f;
-			}
-		}
-	}
+	//	if (!orientationInfo.positive)
+	//	{
+	//		for (size_t i = 0; i < 3; ++i)
+	//		{
+	//			// newSize[i] *= -1.0f;
+	//			offset[i] *= -1.0f;
+	//		}
+	//	}
+	//}
 };
 
 struct CollisionResult

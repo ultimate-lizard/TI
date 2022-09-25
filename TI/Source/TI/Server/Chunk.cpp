@@ -30,6 +30,11 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	for (unsigned short i = 0; i < 4096; ++i)
 	{
 		glm::vec3 localPosition = utils::indexToPosition(i, { 16, 16, 16 });
+		glm::vec3 absPosition = localPosition;
+		absPosition.x += position.x;
+		absPosition.y += position.y;
+		absPosition.z += position.z;
+
 		glm::vec3 perlinPos(localPosition.x + position.x, localPosition.y + position.y, localPosition.z + position.z);
 
 		static const float scale = 150.0f;
@@ -47,33 +52,35 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		{
 			blocks[i] = 1;
 		}
-		continue;
+
 		if (isInCrust() || isInTroposphere())
 		{
-			 const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
-			 const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
+			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
+			const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
 			//const float MAX_AMPLITUDE = 4; // How far under or above 0 the terrain will differ
 			//const float TERRAIN_LOCATION_HEIGHT = chunkSize * 1; // From center
 			
-			/*for (const OrientationInfo& orientationInfo : orientations)
-			{
-				const float generatedTerrainHeight = MAX_AMPLITUDE * noiseModule.GetValue(perlinPos.x, perlinPos.y, perlinPos.z);
+			const float generatedTerrainHeight = MAX_AMPLITUDE * noiseModule.GetValue(perlinPos.x, perlinPos.y, perlinPos.z);
 
-				unsigned int block = 0;
-				if (orientationInfo.positive)
+			unsigned int block = 0;
+
+			glm::vec3 normal = getSideNormal(absPosition);
+			if (normal != glm::vec3(0.0f))
+			{
+				for (size_t axis = 0; axis < 3; ++axis)
 				{
-					block = localPosition[orientationInfo.heightAxis] + chunkPosition[orientationInfo.heightAxis] - planetSize + TERRAIN_LOCATION_HEIGHT > generatedTerrainHeight ? 0 : 1;
+					if (normal[axis] > 0.0f)
+					{
+						blocks[i] = localPosition[axis] + chunkPosition[axis] - planetSize + TERRAIN_LOCATION_HEIGHT > generatedTerrainHeight ? 0 : 1;
+						break;
+					}
+					else if (normal[axis] < 0.0f)
+					{
+						blocks[i] = localPosition[axis] + chunkPosition[axis] < TERRAIN_LOCATION_HEIGHT - generatedTerrainHeight - 1 ? 0 : 1;
+						break;
+					}
 				}
-				else
-				{
-					block = localPosition[orientationInfo.heightAxis] + chunkPosition[orientationInfo.heightAxis] < TERRAIN_LOCATION_HEIGHT - generatedTerrainHeight ? 0 : 1;
-				}
-				
-				if (isInCone(localPosition, orientationInfo))
-				{
-					blocks[i] = block;
-				}
-			}*/
+			}
 		}
 
 		// if core
@@ -194,4 +201,41 @@ void Chunk::setBlock(size_t index, unsigned int blockType)
 void Chunk::setBlock(const glm::uvec3& position, unsigned int blockType)
 {
 	blocks[utils::positionToIndex(position, { size, size, size })] = blockType;
+}
+
+glm::vec3 Chunk::getSideNormal(const glm::vec3& inPosition)
+{
+	const float bgSize = planetSize;
+
+	std::vector<glm::vec3> positions{
+		{ inPosition.y, inPosition.x, inPosition.z },
+		{ inPosition.x, inPosition.y, inPosition.z },
+		{ inPosition.x, inPosition.z, inPosition.y }
+	};
+
+	// Check positive pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x <= positions[i].y && positions[i].x >= bgSize - 1 - positions[i].y &&
+			positions[i].z <= positions[i].y && positions[i].z >= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = 1.0f;
+			return normal;
+		}
+	}
+
+	// Check negative pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x >= positions[i].y && positions[i].x <= bgSize - 1 - positions[i].y &&
+			positions[i].z >= positions[i].y && positions[i].z <= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = -1.0f;
+			return normal;
+		}
+	}
+
+	return {};
 }

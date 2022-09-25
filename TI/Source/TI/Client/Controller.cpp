@@ -247,7 +247,7 @@ void PlayerController::toggleFlyMode()
 
 					if (auto localClient = dynamic_cast<LocalClient*>(client))
 					{
-						// localClient->updateAllBlocks(transformComponent->getCurrentBlockGrid());
+						localClient->updateAllBlocks(transformComponent->getCurrentBlockGrid());
 					}
 				}
 			}

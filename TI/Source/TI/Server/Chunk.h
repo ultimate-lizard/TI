@@ -32,6 +32,7 @@ public:
 
 private:
 	// bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+	glm::vec3 getSideNormal(const glm::vec3& position);
 
 	const size_t size;
 	glm::vec3 chunkPosition;

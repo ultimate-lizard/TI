@@ -46,6 +46,7 @@ public:
 	static DebugInformation* getDebugInformation();
 
 	void updateBlock(BlockGrid* blockGrid, const glm::uvec3& position);
+	void updateAllBlocks(BlockGrid* blockGrid);
 
 	void setFrustumCullingEnabled(bool enabled);
 	bool isFrustumCullingEnabled() const;

@@ -27,10 +27,10 @@ public:
 	bool isInCrust() const;
 	bool isInTroposphere() const;
 
-	std::optional<OrientationInfo> getOrientationInfo(const glm::vec3& localPosition) const;
+	glm::vec3 getUpDirection(const glm::vec3& localPosition) const;
 
 private:
-	bool isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const;
+	glm::vec3 getSideNormal(const glm::vec3& position);
 
 	const size_t size;
 	glm::vec3 chunkPosition;
@@ -38,5 +38,5 @@ private:
 	// Blocks
 	std::vector<unsigned int> blocks;
 
-	std::vector<OrientationInfo> orientations;
+	// std::vector<OrientationInfo> orientations;
 };

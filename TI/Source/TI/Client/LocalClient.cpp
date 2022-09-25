@@ -221,6 +221,19 @@ void LocalClient::updateBlock(BlockGrid* blockGrid, const glm::uvec3& position)
 	cachedPoolData = pool.buildMesh();
 }
 
+void LocalClient::updateAllBlocks(BlockGrid* blockGrid)
+{
+	for (auto& pair : chunkMeshesBank)
+	{
+		pair.second->buildGreedy();
+
+		pool.freeChunkMesh(pair.first);
+		pool.insertChunkMesh(blockGrid, chunkMeshesBank[pair.first].get());
+	}
+
+	cachedPoolData = pool.buildMesh();
+}
+
 void LocalClient::setFrustumCullingEnabled(bool enabled)
 {
 	frustumCullingEnabled = enabled;

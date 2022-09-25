@@ -93,6 +93,21 @@ glm::vec3 SceneMultiNode::SceneNode::getRightVector()
 	return -normalize(glm::vec3(transform[0]));
 }
 
+glm::vec3 SceneMultiNode::SceneNode::getLocalForwardVector()
+{
+	return normalize(glm::vec3(getLocalTransform()[2]));
+}
+
+glm::vec3 SceneMultiNode::SceneNode::getLocalUpVector()
+{
+	return normalize(glm::vec3(getLocalTransform()[1]));
+}
+
+glm::vec3 SceneMultiNode::SceneNode::getLocalRightVector()
+{
+	return -normalize(glm::vec3(getLocalTransform()[0]));
+}
+
 void SceneMultiNode::SceneNode::updateTransform()
 {
 	glm::vec3 derivedPosition = localPosition;
@@ -133,6 +148,15 @@ glm::mat4 SceneMultiNode::SceneNode::getTransform() const
 	return transform;
 }
 
+glm::mat4 SceneMultiNode::SceneNode::getLocalTransform() const
+{
+	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), localPosition);
+	newTransform *= glm::toMat4(localOrientation);
+	newTransform = glm::scale(newTransform, localScale);
+
+	return newTransform;
+}
+
 void SceneMultiNode::SceneNode::setPosition(const glm::vec3& position)
 {
 	this->localPosition = position;
@@ -154,6 +178,14 @@ void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
 {
 	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
 	this->localOrientation = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
+
+	updateTransform();
+}
+
+void SceneMultiNode::SceneNode::setRotation(float angle, const glm::vec3& axis)
+{
+	glm::quat rotationQuat = glm::angleAxis(glm::radians(angle), axis);
+	localOrientation = rotationQuat;
 
 	updateTransform();
 }
@@ -296,6 +328,14 @@ void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
 	}
 }
 
+void SceneMultiNode::setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].setRotation(angle, axis);
+	}
+}
+
 void SceneMultiNode::rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
 	for (size_t i = cs; i < coordinateSystems.size(); ++i)
@@ -355,6 +395,21 @@ glm::vec3 SceneMultiNode::getUpVector(CoordinateSystem cs)
 glm::vec3 SceneMultiNode::getRightVector(CoordinateSystem cs)
 {
 	return coordinateSystems[cs].getRightVector();
+}
+
+glm::vec3 SceneMultiNode::getLocalForwardVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getLocalForwardVector();
+}
+
+glm::vec3 SceneMultiNode::getLocalUpVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getLocalUpVector();
+}
+
+glm::vec3 SceneMultiNode::getLocalRightVector(CoordinateSystem cs)
+{
+	return coordinateSystems[cs].getLocalRightVector();
 }
 
 void SceneMultiNode::setParent(SceneMultiNode* parent, CoordinateSystem cs)

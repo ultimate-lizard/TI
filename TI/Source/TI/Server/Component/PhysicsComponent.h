@@ -20,15 +20,15 @@ private:
 	glm::vec3 size;
 	glm::vec3 offset;
 
-	OrientationInfo cachedOrientation;
+	// glm::vec3 currentUpDirection;
 
 public:
 	inline CollisionBox() :
 		unorientedSize(0.0f),
 		unorientedOffset(0.0f),
 		size(0.0f),
-		offset(0.0f),
-		cachedOrientation()
+		offset(0.0f)
+		//cachedOrientation()
 	{
 
 	}
@@ -37,8 +37,8 @@ public:
 		unorientedSize(size),
 		unorientedOffset(offset),
 		size(size),
-		offset(offset),
-		cachedOrientation()
+		offset(offset)
+		//cachedOrientation()
 	{
 
 	}
@@ -46,13 +46,13 @@ public:
 	inline void setSize(const glm::vec3& newSize)
 	{
 		unorientedSize = newSize;
-		orient(cachedOrientation);
+		//orient(cachedOrientation);
 	}
 
 	inline void setOffset(const glm::vec3& newOffset)
 	{
 		unorientedOffset = newOffset;
-		orient(cachedOrientation);
+		//orient(cachedOrientation);
 	}
 
 	// Returns oriented in space size
@@ -80,29 +80,58 @@ public:
 	}
 
 	// TODO: Unhardcore this!
-	inline void orient(const OrientationInfo& orientationInfo)
+	inline void orient(const glm::vec3& up, const glm::vec3& forward, const glm::vec3& right)
 	{
-		if (cachedOrientation != orientationInfo)
+		size_t upAxis = 0;
+		for (size_t axis = 0; axis < 3; ++axis)
 		{
-			cachedOrientation = orientationInfo;
-		}
-
-		size[orientationInfo.sideAxis] = unorientedSize.x;
-		size[orientationInfo.heightAxis] = unorientedSize.y;
-		size[orientationInfo.frontAxis] = unorientedSize.z;
-
-		offset[orientationInfo.sideAxis] = unorientedOffset.x;
-		offset[orientationInfo.heightAxis] = unorientedOffset.y;
-		offset[orientationInfo.frontAxis] = unorientedOffset.z;
-
-		if (!orientationInfo.positive)
-		{
-			for (size_t i = 0; i < 3; ++i)
+			if (up[axis] != 0.0f)
 			{
-				// newSize[i] *= -1.0f;
-				offset[i] *= -1.0f;
+				upAxis = axis;
+				break;
 			}
 		}
+
+		size_t forwardAxis = 0;
+		for (size_t axis = 0; axis < 3; ++axis)
+		{
+			if (forward[axis] != 0.0f)
+			{
+				forwardAxis = axis;
+				break;
+			}
+		}
+
+		size_t rightAxis = 0;
+		for (size_t axis = 0; axis < 3; ++axis)
+		{
+			if (right[axis] != 0.0f)
+			{
+				rightAxis = axis;
+				break;
+			}
+		}
+
+		size[rightAxis] = unorientedSize.x;
+		size[upAxis] = unorientedSize.y;
+		size[forwardAxis] = unorientedSize.z;
+
+		offset[rightAxis] = unorientedOffset.x;
+		offset[upAxis] = unorientedOffset.y;
+		offset[forwardAxis] = unorientedOffset.z;
+
+		offset[rightAxis] *= (right[rightAxis] >= 0.0f) ? 1.0f : -1.0f;
+		offset[upAxis] *= (up[upAxis] >= 0.0f) ? 1.0f : -1.0f;
+		offset[forwardAxis] *= (forward[forwardAxis] >= 0.0f) ? 1.0f : -1.0f;
+
+		//if (!orientationInfo.positive)
+		//{
+		//	for (size_t i = 0; i < 3; ++i)
+		//	{
+		//		// newSize[i] *= -1.0f;
+		//		offset[i] *= -1.0f;
+		//	}
+		//}
 	}
 };
 

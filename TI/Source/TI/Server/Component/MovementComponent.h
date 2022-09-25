@@ -107,8 +107,9 @@ private:
 	MovementState movementState;
 
 	// Planet side rotation members
-	OrientationInfo orientationInfo;
-	OrientationInfo previousOrientationInfo;
+	// OrientationInfo orientationInfo;
+	// OrientationInfo previousOrientationInfo;
+	glm::vec3 previousUpVector;
 
 	bool shouldRotate;
 	bool planeSideTransitionInProgress;

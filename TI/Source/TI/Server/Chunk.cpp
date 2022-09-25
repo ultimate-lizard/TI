@@ -19,9 +19,6 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	size(size),
 	chunkPosition(position)
 {
-	// if not 2 dimensional
-	orientations = { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
-
 	unsigned long long longSize = size;
 	blocks.resize(longSize * longSize * longSize, 0);
 
@@ -30,6 +27,11 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	for (unsigned short i = 0; i < 4096; ++i)
 	{
 		glm::vec3 localPosition = utils::indexToPosition(i, { 16, 16, 16 });
+		glm::vec3 absPosition = localPosition;
+		absPosition.x += position.x;
+		absPosition.y += position.y;
+		absPosition.z += position.z;
+
 		glm::vec3 perlinPos(localPosition.x + position.x, localPosition.y + position.y, localPosition.z + position.z);
 
 		static const float scale = 150.0f;
@@ -37,7 +39,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		perlinPos.x = perlinPos.x / scale;
 		perlinPos.y = perlinPos.y / scale;
 		perlinPos.z = perlinPos.z / scale;
-
+		
 		if (isInTroposphere())
 		{
 			blocks[i] = 0;
@@ -50,28 +52,30 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		continue;
 		if (isInCrust() || isInTroposphere())
 		{
-			 const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
-			 const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
+			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
+			const float TERRAIN_LOCATION_HEIGHT = 2 * chunkSize; // From center
 			//const float MAX_AMPLITUDE = 4; // How far under or above 0 the terrain will differ
 			//const float TERRAIN_LOCATION_HEIGHT = chunkSize * 1; // From center
 			
-			for (const OrientationInfo& orientationInfo : orientations)
-			{
-				const float generatedTerrainHeight = MAX_AMPLITUDE * noiseModule.GetValue(perlinPos.x, perlinPos.y, perlinPos.z);
+			const float generatedTerrainHeight = MAX_AMPLITUDE * noiseModule.GetValue(perlinPos.x, perlinPos.y, perlinPos.z);
 
-				unsigned int block = 0;
-				if (orientationInfo.positive)
+			unsigned int block = 0;
+
+			glm::vec3 normal = getSideNormal(absPosition);
+			if (normal != glm::vec3(0.0f))
+			{
+				for (size_t axis = 0; axis < 3; ++axis)
 				{
-					block = localPosition[orientationInfo.heightAxis] + chunkPosition[orientationInfo.heightAxis] - planetSize + TERRAIN_LOCATION_HEIGHT > generatedTerrainHeight ? 0 : 1;
-				}
-				else
-				{
-					block = localPosition[orientationInfo.heightAxis] + chunkPosition[orientationInfo.heightAxis] < TERRAIN_LOCATION_HEIGHT - generatedTerrainHeight ? 0 : 1;
-				}
-				
-				if (isInCone(localPosition, orientationInfo))
-				{
-					blocks[i] = block;
+					if (normal[axis] > 0.0f)
+					{
+						blocks[i] = localPosition[axis] + chunkPosition[axis] - planetSize + TERRAIN_LOCATION_HEIGHT > generatedTerrainHeight ? 0 : 1;
+						break;
+					}
+					else if (normal[axis] < 0.0f)
+					{
+						blocks[i] = localPosition[axis] + chunkPosition[axis] < TERRAIN_LOCATION_HEIGHT - generatedTerrainHeight - 1 ? 0 : 1;
+						break;
+					}
 				}
 			}
 		}
@@ -114,18 +118,6 @@ size_t Chunk::getSize() const
 	return size;
 }
 
-bool Chunk::isInCone(const glm::vec3& localPosition, const OrientationInfo& orientationInfo) const
-{
-	glm::vec3 checkedPosition = { this->chunkPosition.x + localPosition.x, this->chunkPosition.y + localPosition.y, this->chunkPosition.z + localPosition.z};
-
-	return orientationInfo.positive ?
-		checkedPosition[orientationInfo.sideAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
-		checkedPosition[orientationInfo.frontAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis]
-		:
-		checkedPosition[orientationInfo.sideAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
-		checkedPosition[orientationInfo.frontAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis];
-}
-
 bool Chunk::isInCore() const
 {
 	return chunkPosition.x >= atmosphere + crust && chunkPosition.x < atmosphere + crust + core &&
@@ -150,14 +142,24 @@ bool Chunk::isInTroposphere() const
 		chunkPosition.z < planetSize&& chunkPosition.z >= planetSize - atmosphere;
 }
 
-std::optional<OrientationInfo> Chunk::getOrientationInfo(const glm::vec3& localPosition) const
+glm::vec3 Chunk::getUpDirection(const glm::vec3& localPosition) const
 {
-	for (const OrientationInfo& orientationInfo : orientations)
+	glm::vec3 checkedPosition = { this->chunkPosition.x + localPosition.x, this->chunkPosition.y + localPosition.y, this->chunkPosition.z + localPosition.z };
+	glm::vec3 planetCenter(glm::vec3(planetSize / 2.0f));
+
+	
+
+	static bool done = false;
+	if (!done)
 	{
-		if (isInCone(localPosition, orientationInfo))
-		{
-			return orientationInfo;
-		}
+		
+		done = true;
+	}
+
+	if (checkedPosition.x <= checkedPosition.y && checkedPosition.x >= planetSize - 1.0f - checkedPosition.y &&
+		checkedPosition.z <= checkedPosition.y && checkedPosition.z >= planetSize - 1.0f - checkedPosition.y)
+	{
+
 	}
 
 	return {};
@@ -171,4 +173,41 @@ void Chunk::setBlock(size_t index, unsigned int blockType)
 void Chunk::setBlock(const glm::uvec3& position, unsigned int blockType)
 {
 	blocks[utils::positionToIndex(position, { size, size, size })] = blockType;
+}
+
+glm::vec3 Chunk::getSideNormal(const glm::vec3& inPosition)
+{
+	const float bgSize = planetSize;
+
+	std::vector<glm::vec3> positions{
+		{ inPosition.y, inPosition.x, inPosition.z },
+		{ inPosition.x, inPosition.y, inPosition.z },
+		{ inPosition.x, inPosition.z, inPosition.y }
+	};
+
+	// Check positive pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x <= positions[i].y && positions[i].x >= bgSize - 1 - positions[i].y &&
+			positions[i].z <= positions[i].y && positions[i].z >= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = 1.0f;
+			return normal;
+		}
+	}
+
+	// Check negative pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x >= positions[i].y && positions[i].x <= bgSize - 1 - positions[i].y &&
+			positions[i].z >= positions[i].y && positions[i].z <= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = -1.0f;
+			return normal;
+		}
+	}
+
+	return {};
 }

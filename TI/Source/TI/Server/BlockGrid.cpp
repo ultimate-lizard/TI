@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <TI/Util/Utils.h>
+#include <TI/Client/DebugInformation.h>
 
 BlockGrid::BlockGrid(const glm::uvec3& size, size_t chunkSize) :
 	blockGridSize(size),
@@ -160,4 +161,43 @@ glm::uvec3 BlockGrid::positionToChunkLocalPosition(const glm::uvec3& position) c
 		position.y % chunkSize,
 		position.z % chunkSize
 	);
+}
+
+glm::vec3 BlockGrid::getSideNormal(const glm::vec3& inPosition)
+{
+	const float bgSize = blockGridSize.x * chunkSize;
+
+	std::vector<glm::vec3> positions {
+		{ inPosition.y, inPosition.x, inPosition.z },
+		{ inPosition.x, inPosition.y, inPosition.z },
+		{ inPosition.x, inPosition.z, inPosition.y }
+	};
+
+	// Check positive pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x <= positions[i].y && positions[i].x >= bgSize - 1 - positions[i].y &&
+			positions[i].z <= positions[i].y && positions[i].z >= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = 1.0f;
+			// std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
+			return normal;
+		}
+	}
+
+	// Check negative pyramids
+	for (size_t i = 0; i < 3; ++i)
+	{
+		if (positions[i].x >= positions[i].y && positions[i].x <= bgSize - 1 - positions[i].y &&
+			positions[i].z >= positions[i].y && positions[i].z <= bgSize - 1 - positions[i].y)
+		{
+			glm::vec3 normal;
+			normal[i] = -1.0f;
+			//std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
+			return normal;
+		}
+	}
+
+	return {};
 }

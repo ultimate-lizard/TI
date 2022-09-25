@@ -18,6 +18,7 @@
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Util/Math.h>
+#include <TI/Util/Utils.h>
 
 MovementComponent::MovementComponent() :
 	Component(),
@@ -84,19 +85,22 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		return;
 	}
 
-	if (std::optional<OrientationInfo> orientation = transformComponent->getOrientationInfo(); orientation.has_value())
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
 	{
-		orientationInfo = orientation.value();
+		return;
 	}
 
-	if (orientationInfo != previousOrientationInfo)
+	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition());
+	if (previousUpVector == glm::vec3(0.0f))
 	{
-		glm::vec3 previousHeightVector;
-		previousHeightVector[previousOrientationInfo.heightAxis] = previousOrientationInfo.positive ? 1 : -1;
-		glm::vec3 currentHeightVector;
-		currentHeightVector[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
+		previousUpVector = currentUpVector;
+	}
 
-		glm::vec3 cross = glm::cross(previousHeightVector, currentHeightVector);
+	// This check is only for not executing this logic every frame
+	if (previousUpVector != currentUpVector)
+	{
+		glm::vec3 cross = glm::cross(previousUpVector, currentUpVector);
 		if (cross == glm::vec3(0.0f))
 		{
 			// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
@@ -111,7 +115,6 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 			}
 
 			pendingRotationAngle = 180.0f;
-			
 		}
 		else
 		{
@@ -134,6 +137,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		//	}
 		//}
 
+		// Rotate collision box
 		if (!planeSideTransitionInProgress && !flightMode) //&& !shouldEscape)
 		{
 			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
@@ -147,21 +151,24 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 				// Set a new box for test
 				CollisionBox box = originalBox;
-				box.orient(orientationInfo);
+
+				if (auto cameraComponent = entity->findComponent<CameraComponent>())
+				{
+					box.orient(currentUpVector, utils::alightVectorToAxis(transformComponent->getForwardVector()), utils::alightVectorToAxis(glm::cross(transformComponent->getForwardVector(), currentUpVector)));
+				}
+				
 				physicsComponent->setCollisionBox(std::move(box));
 
 				// Test resolve
 				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
 
 				// TODO: Add another collision box to prevent colliding camera with world during side transition
-				if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
-					!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
-					!collisionResult.collidedAxis[orientationInfo.heightAxis])
+				if (collisionResult.collidedAxis == glm::bvec3(false))
 				{
 					// Didn't collide with anything. Test successful
 					sideRotationAxis = cross;
 					shouldRotate = true;
-					previousOrientationInfo = orientationInfo;
+					previousUpVector = currentUpVector;
 				}
 				else
 				{
@@ -173,7 +180,7 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 		}
 	}
 
-	if (shouldRotate && !flightMode)
+	if (shouldRotate)
 	{
 		planeSideTransitionInProgress = true;
 
@@ -181,13 +188,18 @@ void MovementComponent::updatePlaneSideRotation(float dt)
 
 		if (currentRotationAngle < pendingRotationAngle)
 		{
+			//if (currentRotationAngle > pendingRotationAngle)
+			//{
+			//	currentRotationAngle = pendingRotationAngle;
+			//}
+
 			transformComponent->rotate(rotationStep, sideRotationAxis);
 			currentRotationAngle += rotationStep;
 		}
 		else
 		{
 			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
-			transformComponent->rotate(remainingRotationStep, sideRotationAxis, CoordinateSystem::Planetary);
+			transformComponent->rotate(remainingRotationStep, sideRotationAxis);
 
 			currentRotationAngle = 0.0f;
 			shouldRotate = false;
@@ -315,15 +327,7 @@ glm::vec3 MovementComponent::getHeadPosition() const
 {
 	if (transformComponent)
 	{
-		glm::vec3 headPositionOriented;
-		headPositionOriented[orientationInfo.heightAxis] = headPosition.y;
-
-		if (!orientationInfo.positive)
-		{
-			headPositionOriented *= -1.0f;
-		}
-
-		return transformComponent->getLocalPosition() + headPositionOriented;
+		return transformComponent->getLocalPosition() + (transformComponent->getLocalOrientation() * headPosition);
 	}
 
 	return glm::vec3(0.0f);
@@ -349,30 +353,43 @@ void MovementComponent::handleInput(float dt)
 
 	if (auto cameraComponent = entity->findComponent<CameraComponent>())
 	{
-		walkDirection = glm::normalize(cameraComponent->getForwardVector());
+		walkDirection = cameraComponent->getLocalForwardVector();
 
-		glm::vec3 up;
-		up[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
-		glm::vec3 right = glm::cross(walkDirection, up);
+		glm::vec3 right = glm::cross(walkDirection, {0.0f, 1.0f, 0.0f});
 
 		walkDirection = walkDirection * input.z;
 		walkDirection += right * input.x;
-		walkDirection[orientationInfo.heightAxis] = 0.0f;
+		walkDirection.y = 0.0f;
 
-		headDirection = cameraComponent->getForwardVector();
+		headDirection = glm::normalize(cameraComponent->getForwardVector());
 
 		cameraComponent->setRotation(headRotation);
-	}
-	
-	if (walkDirection != glm::vec3(0.0f))
-	{
-		walkDirection = glm::normalize(walkDirection);
+
+		drawDebugLine(transformComponent->getDerivedPosition(), transformComponent->getDerivedPosition() + utils::alightVectorToAxis(transformComponent->getForwardVector()), { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
+		/*drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getRightVector()), { 1.0f, 0.0f, 0.0f, 1.0f }, 5.0f, false);
+		drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getUpVector()), { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f, false);*/
+
+		if (walkDirection != glm::vec3(0.0f))
+		{
+			walkDirection = glm::normalize(transformComponent->getLocalOrientation() * walkDirection);
+		}
 	}
 }
 
 void MovementComponent::handleWalk(float dt)
 {
 	if (!entity)
+	{
+		return;
+	}
+
+	if (!transformComponent)
+	{
+		return;
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
 	{
 		return;
 	}
@@ -398,33 +415,42 @@ void MovementComponent::handleWalk(float dt)
 
 	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
 
-	if (transformComponent)
+	glm::vec3 position = transformComponent->getLocalPosition();
+
+	// Apply collisions
+	if (physicsComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
-
-		// Apply collisions
-		if (physicsComponent)
+		if (velocity != glm::vec3(0.0f))
 		{
-			if (velocity != glm::vec3(0.0f))
-			{
-				CollisionResult result = physicsComponent->resolveCollision(position, velocity, dt);
+			CollisionResult result = physicsComponent->resolveCollision(position, velocity, dt);
 
-				velocity = result.adjustedVelocity;
-				position = result.adjustedPosition;
-			}
+			velocity = result.adjustedVelocity;
+			position = result.adjustedPosition;
+		}
 
-			// Check if no longer on ground
-			glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
-			CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
-			if (!groundTestResult.collidedAxis[orientationInfo.heightAxis])
+		// Check if no longer on ground
+		glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
+		CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
+
+		glm::vec3 upVector = bg->getSideNormal(position);
+		size_t heightAxis = 0;
+		for (size_t i = 0; i < 3; ++i)
+		{
+			if (upVector[i] != 0.0f)
 			{
-				movementState = MovementState::Fall;
+				heightAxis = i;
+				break;
 			}
 		}
 
-		transformComponent->setLocalPosition(position);
-		transformComponent->offset(velocity * dt);
+		if (!groundTestResult.collidedAxis[heightAxis])
+		{
+			movementState = MovementState::Fall;
+		}
 	}
+
+	transformComponent->setLocalPosition(position);
+	transformComponent->offset(velocity * dt);
 }
 
 void MovementComponent::handleFall(float dt)
@@ -434,7 +460,13 @@ void MovementComponent::handleFall(float dt)
 		return;
 	}
 
-	if (!transformComponent->getCurrentBlockGrid())
+	if (!transformComponent)
+	{
+		return;
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
 	{
 		return;
 	}
@@ -453,31 +485,39 @@ void MovementComponent::handleFall(float dt)
 		velocity += getGravityVector() * 30.0f * dt;
 	}
 
-	if (transformComponent)
+	glm::vec3 position = transformComponent->getLocalPosition();
+
+	if (physicsComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
+		CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
 
-		if (physicsComponent)
+		glm::vec3 upVector = bg->getSideNormal(position);
+		size_t heightAxis = 0;
+		for (size_t i = 0; i < 3; ++i)
 		{
-			CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
-
-			if (collisionResult.collidedAxis[orientationInfo.heightAxis])
+			if (upVector[i] != 0.0f)
 			{
-				if ((velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive) || (velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive))
-				{
-					// On land
-					movementState = MovementState::Walk;
-					velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
-				}
+				heightAxis = i;
+				break;
 			}
-
-			position = collisionResult.adjustedPosition;
-			velocity = collisionResult.adjustedVelocity;
 		}
 
-		transformComponent->setLocalPosition(position);
-		transformComponent->offset(velocity * dt);
+		if (collisionResult.collidedAxis[heightAxis])
+		{
+			if ((velocity[heightAxis] < 0.0f && upVector[heightAxis] > 0.0f) || (velocity[heightAxis] > 0.0f && upVector[heightAxis] < 0.0f))
+			{
+				// On land
+				movementState = MovementState::Walk;
+				velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
+			}
+		}
+
+		position = collisionResult.adjustedPosition;
+		velocity = collisionResult.adjustedVelocity;
 	}
+
+	transformComponent->setLocalPosition(position);
+	transformComponent->offset(velocity * dt);
 }
 
 void MovementComponent::handleFlight(float dt)
@@ -519,10 +559,20 @@ void MovementComponent::handleFlight(float dt)
 
 glm::vec3 MovementComponent::getGravityVector() const
 {
-	glm::vec3 gravityVector;
-	gravityVector[orientationInfo.heightAxis] = orientationInfo.positive ? -1 : 1;
-	
-	return gravityVector;
+	if (!transformComponent)
+	{
+		return {};
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
+	{
+		return {};
+	}
+
+	glm::vec3 result = -bg->getSideNormal(transformComponent->getDerivedPosition());
+
+	return result;
 }
 
 void MovementComponent::addHorizontalLook(float value)

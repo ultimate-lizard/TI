@@ -24,12 +24,14 @@ class SceneMultiNode
 		SceneNode(SceneNode&&) = delete;
 
 		glm::mat4 getTransform() const;
+		glm::mat4 getLocalTransform() const;
 
 		void setPosition(const glm::vec3& position);
 		void offset(const glm::vec3& position);
 		void setLocalOrientation(const glm::quat& orientation);
 		void setScale(const glm::vec3& scale);
 		void setRotation(const glm::vec3& rotation);
+		void setRotation(float angle, const glm::vec3& axis);
 		// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 		void rotateInWorldSpace(float angle, const glm::vec3& axis);
@@ -55,6 +57,10 @@ class SceneMultiNode
 		glm::vec3 getForwardVector();
 		glm::vec3 getUpVector();
 		glm::vec3 getRightVector();
+
+		glm::vec3 getLocalForwardVector();
+		glm::vec3 getLocalUpVector();
+		glm::vec3 getLocalRightVector();
 
 	protected:
 		void updateTransform();
@@ -84,6 +90,7 @@ public:
 	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToChildren = false);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 	// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 	void rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
@@ -102,6 +109,10 @@ public:
 	glm::vec3 getForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 	glm::vec3 getUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 	glm::vec3 getRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+
+	glm::vec3 getLocalForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getLocalUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getLocalRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void removeParent(CoordinateSystem cs = CoordinateSystem::Planetary);

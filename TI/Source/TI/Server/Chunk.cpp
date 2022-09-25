@@ -19,9 +19,6 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 	size(size),
 	chunkPosition(position)
 {
-	// if not 2 dimensional
-	// orientations = { Orientations::TOP, Orientations::BOTTOM, Orientations::RIGHT, Orientations::LEFT, Orientations::FRONT, Orientations::BACK };
-
 	unsigned long long longSize = size;
 	blocks.resize(longSize * longSize * longSize, 0);
 
@@ -42,7 +39,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		perlinPos.x = perlinPos.x / scale;
 		perlinPos.y = perlinPos.y / scale;
 		perlinPos.z = perlinPos.z / scale;
-
+		
 		if (isInTroposphere())
 		{
 			blocks[i] = 0;
@@ -52,7 +49,7 @@ Chunk::Chunk(size_t size, const glm::vec3& position) :
 		{
 			blocks[i] = 1;
 		}
-
+		continue;
 		if (isInCrust() || isInTroposphere())
 		{
 			const float MAX_AMPLITUDE = 8; // How far under or above 0 the terrain will differ
@@ -121,18 +118,6 @@ size_t Chunk::getSize() const
 	return size;
 }
 
-//bool Chunk::isInCone(const glm::vec3& localPosition,) const
-//{
-//	glm::vec3 checkedPosition = { this->chunkPosition.x + localPosition.x, this->chunkPosition.y + localPosition.y, this->chunkPosition.z + localPosition.z};
-//
-//	return orientationInfo.positive ?
-//		checkedPosition[orientationInfo.sideAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
-//		checkedPosition[orientationInfo.frontAxis] <= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] >= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis]
-//		:
-//		checkedPosition[orientationInfo.sideAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.sideAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis] &&
-//		checkedPosition[orientationInfo.frontAxis] >= checkedPosition[orientationInfo.heightAxis] && checkedPosition[orientationInfo.frontAxis] <= planetSize - 1.0f - checkedPosition[orientationInfo.heightAxis];
-//}
-
 bool Chunk::isInCore() const
 {
 	return chunkPosition.x >= atmosphere + crust && chunkPosition.x < atmosphere + crust + core &&
@@ -179,19 +164,6 @@ glm::vec3 Chunk::getUpDirection(const glm::vec3& localPosition) const
 
 	return {};
 }
-
-//std::optional<OrientationInfo> Chunk::getOrientationInfo(const glm::vec3& localPosition) const
-//{
-//	for (const OrientationInfo& orientationInfo : orientations)
-//	{
-//		if (isInCone(localPosition, orientationInfo))
-//		{
-//			return orientationInfo;
-//		}
-//	}
-//
-//	return {};
-//}
 
 void Chunk::setBlock(size_t index, unsigned int blockType)
 {

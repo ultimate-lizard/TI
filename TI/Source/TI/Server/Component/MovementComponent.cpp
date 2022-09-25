@@ -367,6 +367,17 @@ void MovementComponent::handleWalk(float dt)
 		return;
 	}
 
+	if (!transformComponent)
+	{
+		return;
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
+	{
+		return;
+	}
+
 	// Acceleration
 	if (walkDirection != glm::vec3(0.0f))
 	{
@@ -388,33 +399,42 @@ void MovementComponent::handleWalk(float dt)
 
 	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
 
-	if (transformComponent)
+	glm::vec3 position = transformComponent->getLocalPosition();
+
+	// Apply collisions
+	if (physicsComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
-
-		// Apply collisions
-		if (physicsComponent)
+		if (velocity != glm::vec3(0.0f))
 		{
-			if (velocity != glm::vec3(0.0f))
-			{
-				CollisionResult result = physicsComponent->resolveCollision(position, velocity, dt);
+			CollisionResult result = physicsComponent->resolveCollision(position, velocity, dt);
 
-				velocity = result.adjustedVelocity;
-				position = result.adjustedPosition;
-			}
-
-			// Check if no longer on ground
-			glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
-			CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
-			//if (!groundTestResult.collidedAxis[blockGrid->getSideNormal(position)])
-			//{
-			//	movementState = MovementState::Fall;
-			//}
+			velocity = result.adjustedVelocity;
+			position = result.adjustedPosition;
 		}
 
-		transformComponent->setLocalPosition(position);
-		transformComponent->offset(velocity * dt);
+		// Check if no longer on ground
+		glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
+		CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
+
+		glm::vec3 upVector = bg->getSideNormal(position);
+		size_t heightAxis = 0;
+		for (size_t i = 0; i < 3; ++i)
+		{
+			if (upVector[i] != 0.0f)
+			{
+				heightAxis = i;
+				break;
+			}
+		}
+
+		if (!groundTestResult.collidedAxis[heightAxis])
+		{
+			movementState = MovementState::Fall;
+		}
 	}
+
+	transformComponent->setLocalPosition(position);
+	transformComponent->offset(velocity * dt);
 }
 
 void MovementComponent::handleFall(float dt)
@@ -424,7 +444,13 @@ void MovementComponent::handleFall(float dt)
 		return;
 	}
 
-	if (!transformComponent->getCurrentBlockGrid())
+	if (!transformComponent)
+	{
+		return;
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
 	{
 		return;
 	}
@@ -443,31 +469,39 @@ void MovementComponent::handleFall(float dt)
 		velocity += getGravityVector() * 30.0f * dt;
 	}
 
-	if (transformComponent)
+	glm::vec3 position = transformComponent->getLocalPosition();
+
+	if (physicsComponent)
 	{
-		glm::vec3 position = transformComponent->getLocalPosition();
+		CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
 
-		if (physicsComponent)
+		glm::vec3 upVector = bg->getSideNormal(position);
+		size_t heightAxis = 0;
+		for (size_t i = 0; i < 3; ++i)
 		{
-			CollisionResult collisionResult = physicsComponent->resolveCollision(position, velocity, dt);
-
-			//if (collisionResult.collidedAxis[orientationInfo.heightAxis])
-			//{
-			//	if ((velocity[orientationInfo.heightAxis] < 0.0f && orientationInfo.positive) || (velocity[orientationInfo.heightAxis] > 0.0f && !orientationInfo.positive))
-			//	{
-			//		// On land
-			//		movementState = MovementState::Walk;
-			//		velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
-			//	}
-			//}
-
-			position = collisionResult.adjustedPosition;
-			velocity = collisionResult.adjustedVelocity;
+			if (upVector[i] != 0.0f)
+			{
+				heightAxis = i;
+				break;
+			}
 		}
 
-		transformComponent->setLocalPosition(position);
-		transformComponent->offset(velocity * dt);
+		if (collisionResult.collidedAxis[heightAxis])
+		{
+			if ((velocity[heightAxis] < 0.0f && upVector[heightAxis] > 0.0f) || (velocity[heightAxis] > 0.0f && upVector[heightAxis] < 0.0f))
+			{
+				// On land
+				movementState = MovementState::Walk;
+				velocity = clampVectorMagnitude(velocity, walkMaxSpeed);
+			}
+		}
+
+		position = collisionResult.adjustedPosition;
+		velocity = collisionResult.adjustedVelocity;
 	}
+
+	transformComponent->setLocalPosition(position);
+	transformComponent->offset(velocity * dt);
 }
 
 void MovementComponent::handleFlight(float dt)
@@ -509,9 +543,20 @@ void MovementComponent::handleFlight(float dt)
 
 glm::vec3 MovementComponent::getGravityVector() const
 {
-	glm::vec3 gravityVector;
-	// gravityVector[orientationInfo.heightAxis] = orientationInfo.positive ? -1 : 1;
-	return gravityVector;
+	if (!transformComponent)
+	{
+		return {};
+	}
+
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	if (!bg)
+	{
+		return {};
+	}
+
+	glm::vec3 result = -bg->getSideNormal(transformComponent->getDerivedPosition());
+
+	return result;
 }
 
 void MovementComponent::addHorizontalLook(float value)

@@ -243,11 +243,11 @@ void PlayerController::toggleFlyMode()
 			{
 				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					transformComponent->getCurrentBlockGrid()->getSideNormal(transformComponent->getDerivedPosition());
+					// transformComponent->getCurrentBlockGrid()->getSideNormal(transformComponent->getDerivedPosition());
 
 					if (auto localClient = dynamic_cast<LocalClient*>(client))
 					{
-						localClient->updateAllBlocks(transformComponent->getCurrentBlockGrid());
+						// localClient->updateAllBlocks(transformComponent->getCurrentBlockGrid());
 					}
 				}
 			}

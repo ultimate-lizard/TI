@@ -107,8 +107,8 @@ private:
 	MovementState movementState;
 
 	// Planet side rotation members
-	OrientationInfo orientationInfo;
-	OrientationInfo previousOrientationInfo;
+	// OrientationInfo orientationInfo;
+	// OrientationInfo previousOrientationInfo;
 
 	bool shouldRotate;
 	bool planeSideTransitionInProgress;

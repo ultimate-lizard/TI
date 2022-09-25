@@ -24,6 +24,7 @@ class SceneMultiNode
 		SceneNode(SceneNode&&) = delete;
 
 		glm::mat4 getTransform() const;
+		glm::mat4 getLocalTransform() const;
 
 		void setPosition(const glm::vec3& position);
 		void offset(const glm::vec3& position);
@@ -55,6 +56,10 @@ class SceneMultiNode
 		glm::vec3 getForwardVector();
 		glm::vec3 getUpVector();
 		glm::vec3 getRightVector();
+
+		glm::vec3 getLocalForwardVector();
+		glm::vec3 getLocalUpVector();
+		glm::vec3 getLocalRightVector();
 
 	protected:
 		void updateTransform();
@@ -102,6 +107,10 @@ public:
 	glm::vec3 getForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 	glm::vec3 getUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 	glm::vec3 getRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+
+	glm::vec3 getLocalForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getLocalUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
+	glm::vec3 getLocalRightVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void removeParent(CoordinateSystem cs = CoordinateSystem::Planetary);

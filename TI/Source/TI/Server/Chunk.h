@@ -5,8 +5,6 @@
 
 #include <glm/glm.hpp>
 
-#include <TI/Server/PlaneSide.h>
-
 class Chunk
 {
 public:
@@ -37,6 +35,4 @@ private:
 
 	// Blocks
 	std::vector<unsigned int> blocks;
-
-	// std::vector<OrientationInfo> orientations;
 };

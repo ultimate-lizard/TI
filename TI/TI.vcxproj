@@ -262,7 +262,6 @@
     <ClInclude Include="Source\TI\Server\LocalServer.h" />
     <ClInclude Include="Source\TI\Server\BlockGrid.h" />
     <ClInclude Include="Source\TI\Server\OrbitalSystem.h" />
-    <ClInclude Include="Source\TI\Server\PlaneSide.h" />
     <ClInclude Include="Source\TI\Server\Planet.h" />
     <ClInclude Include="Source\TI\Server\PlanetarySystem.h" />
     <ClInclude Include="Source\TI\Server\RemoteServer.h" />

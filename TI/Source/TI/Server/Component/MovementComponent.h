@@ -4,7 +4,6 @@
 
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
-#include <TI/Server/PlaneSide.h>
 
 class TransformComponent;
 class PhysicsComponent;
@@ -106,9 +105,6 @@ private:
 
 	MovementState movementState;
 
-	// Planet side rotation members
-	// OrientationInfo orientationInfo;
-	// OrientationInfo previousOrientationInfo;
 	glm::vec3 previousUpVector;
 
 	bool shouldRotate;

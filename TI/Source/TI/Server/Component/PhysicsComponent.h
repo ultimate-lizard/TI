@@ -7,7 +7,6 @@
 
 #include <TI/Server/Component/Component.h>
 #include <TI/Server/SceneNode.h>
-#include <TI/Server/PlaneSide.h>
 
 class TransformComponent;
 

@@ -31,6 +31,7 @@ class SceneMultiNode
 		void setLocalOrientation(const glm::quat& orientation);
 		void setScale(const glm::vec3& scale);
 		void setRotation(const glm::vec3& rotation);
+		void setRotation(float angle, const glm::vec3& axis);
 		// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 		void rotateInWorldSpace(float angle, const glm::vec3& axis);
@@ -89,6 +90,7 @@ public:
 	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToChildren = false);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 	// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 	void rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);

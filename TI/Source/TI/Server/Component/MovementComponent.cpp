@@ -18,6 +18,7 @@
 #include <TI/Client/ChunkMesh.h>
 #include <TI/Client/DebugInformation.h>
 #include <TI/Util/Math.h>
+#include <TI/Util/Utils.h>
 
 MovementComponent::MovementComponent() :
 	Component(),
@@ -79,121 +80,131 @@ void MovementComponent::tick(float dt)
 
 void MovementComponent::updatePlaneSideRotation(float dt)
 {
-	//if (!transformComponent)
-	//{
-	//	return;
-	//}
+	if (!transformComponent)
+	{
+		return;
+	}
 
 	//if (std::optional<OrientationInfo> orientation = transformComponent->getOrientationInfo(); orientation.has_value())
 	//{
 	//	orientationInfo = orientation.value();
 	//}
 
-	//if (orientationInfo != previousOrientationInfo)
-	//{
-	//	glm::vec3 previousHeightVector;
-	//	previousHeightVector[previousOrientationInfo.heightAxis] = previousOrientationInfo.positive ? 1 : -1;
-	//	glm::vec3 currentHeightVector;
-	//	currentHeightVector[orientationInfo.heightAxis] = orientationInfo.positive ? 1 : -1;
+	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition());
 
-	//	glm::vec3 cross = glm::cross(previousHeightVector, currentHeightVector);
-	//	if (cross == glm::vec3(0.0f))
-	//	{
-	//		// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
-	//		// TODO: WARNING! Find better soultion. Might be different result with a different compilator?
-	//		for (glm::vec3::length_type i = 0; i < 3; ++i)
-	//		{
-	//			if (std::signbit(cross[i]))
-	//			{
-	//				cross[i] = 1.0f;
-	//				break;
-	//			}
-	//		}
+	// This check is only for not executing this logic every frame
+	if (previousUpVector != currentUpVector)
+	{
+		glm::vec3 cross = glm::cross(previousUpVector, currentUpVector);
+		if (cross == glm::vec3(0.0f))
+		{
+			// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
+			// TODO: WARNING! Find better soultion. Might be different result with a different compilator?
+			for (glm::vec3::length_type i = 0; i < 3; ++i)
+			{
+				if (std::signbit(cross[i]))
+				{
+					cross[i] = 1.0f;
+					break;
+				}
+			}
 
-	//		pendingRotationAngle = 180.0f;
-	//		
-	//	}
-	//	else
-	//	{
-	//		pendingRotationAngle = 90.0f;
-	//	}
+			pendingRotationAngle = 180.0f;
+		}
+		else
+		{
+			pendingRotationAngle = 90.0f;
+		}
 
-	//	//bool shouldEscape = false;
-	//	//if (transformComponent)
-	//	//{
-	//	//	if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
-	//	//	{
-	//	//		// Assume block grid are always cubical
-	//	//		const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
-	//	//		const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
-	//	//		const float escapeAltitude = bgSizeInBlocks;
-	//	//		if (distanceToBgCenter > escapeAltitude)
-	//	//		{
-	//	//			shouldEscape = true;
-	//	//		}
-	//	//	}
-	//	//}
+		//bool shouldEscape = false;
+		//if (transformComponent)
+		//{
+		//	if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
+		//	{
+		//		// Assume block grid are always cubical
+		//		const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
+		//		const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
+		//		const float escapeAltitude = bgSizeInBlocks;
+		//		if (distanceToBgCenter > escapeAltitude)
+		//		{
+		//			shouldEscape = true;
+		//		}
+		//	}
+		//}
 
-	//	if (!planeSideTransitionInProgress && !flightMode) //&& !shouldEscape)
-	//	{
-	//		const glm::quat originalOrientation = transformComponent->getLocalOrientation();
+		// Rotate collision box
+		if (!planeSideTransitionInProgress && !flightMode) //&& !shouldEscape)
+		{
+			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
 
-	//		// Rotate for test
-	//		transformComponent->rotateInWorldSpaceExclusive(pendingRotationAngle, cross);
+			// Rotate for test
+			transformComponent->rotateInWorldSpaceExclusive(pendingRotationAngle, cross);
 
-	//		if (physicsComponent)
-	//		{
-	//			const CollisionBox originalBox = physicsComponent->getCollisionBox();
+			if (physicsComponent)
+			{
+				const CollisionBox originalBox = physicsComponent->getCollisionBox();
 
-	//			// Set a new box for test
-	//			CollisionBox box = originalBox;
-	//			box.orient(orientationInfo);
-	//			physicsComponent->setCollisionBox(std::move(box));
+				// Set a new box for test
+				CollisionBox box = originalBox;
 
-	//			// Test resolve
-	//			CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
+				if (auto cameraComponent = entity->findComponent<CameraComponent>())
+				{
+					box.orient(currentUpVector, utils::alightVectorToAxis(transformComponent->getForwardVector()), utils::alightVectorToAxis(glm::cross(transformComponent->getForwardVector(), currentUpVector)));
+				}
+				
+				physicsComponent->setCollisionBox(std::move(box));
 
-	//			// TODO: Add another collision box to prevent colliding camera with world during side transition
-	//			if (!collisionResult.collidedAxis[orientationInfo.sideAxis] &&
-	//				!collisionResult.collidedAxis[orientationInfo.frontAxis] &&
-	//				!collisionResult.collidedAxis[orientationInfo.heightAxis])
-	//			{
-	//				// Didn't collide with anything. Test successful
-	//				sideRotationAxis = cross;
-	//				shouldRotate = true;
-	//				previousOrientationInfo = orientationInfo;
-	//			}
-	//			else
-	//			{
-	//				physicsComponent->setCollisionBox(originalBox);
-	//			}
-	//			
-	//			transformComponent->setLocalOrientation(originalOrientation);
-	//		}
-	//	}
-	//}
+				// Test resolve
+				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
 
-	//if (shouldRotate && !flightMode)
-	//{
-	//	planeSideTransitionInProgress = true;
+				// TODO: Add another collision box to prevent colliding camera with world during side transition
+				if (collisionResult.collidedAxis == glm::bvec3(false))
+				{
+					// Didn't collide with anything. Test successful
+					sideRotationAxis = cross;
+					shouldRotate = true;
+					previousUpVector = currentUpVector;
+				}
+				else
+				{
+					physicsComponent->setCollisionBox(originalBox);
+				}
+				
+				transformComponent->setLocalOrientation(originalOrientation);
+			}
+		}
+	}
 
-	//	const float rotationStep = 300.0f * dt;
+	if (shouldRotate && !flightMode)
+	{
+		planeSideTransitionInProgress = true;
 
-	//	if (currentRotationAngle < pendingRotationAngle)
-	//	{
-	//		transformComponent->rotate(rotationStep, sideRotationAxis);
-	//		currentRotationAngle += rotationStep;
-	//	}
-	//	else
-	//	{
-	//		const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
-	//		transformComponent->rotate(remainingRotationStep, sideRotationAxis, CoordinateSystem::Planetary);
+		const float rotationStep = 300.0f * dt;
 
-	//		currentRotationAngle = 0.0f;
-	//		shouldRotate = false;
-	//		planeSideTransitionInProgress = false;
-	//	}
-	//}
+		if (currentRotationAngle < pendingRotationAngle)
+		{
+			currentRotationAngle += rotationStep;
+
+			if (currentRotationAngle > pendingRotationAngle)
+			{
+				currentRotationAngle = pendingRotationAngle;
+			}
+
+			transformComponent->rotate(rotationStep, sideRotationAxis);
+		}
+		else
+		{
+			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
+			//std::cout << remainingRotationStep << std::endl;
+			transformComponent->rotate(remainingRotationStep, sideRotationAxis);
+			// transformComponent->setRotation(pendingRotationAngle, sideRotationAxis);
+
+			currentRotationAngle = 0.0f;
+			shouldRotate = false;
+			planeSideTransitionInProgress = false;
+		}
+	}
 }
 
 std::unique_ptr<Component> MovementComponent::clone() const
@@ -352,6 +363,10 @@ void MovementComponent::handleInput(float dt)
 		headDirection = glm::normalize(cameraComponent->getForwardVector());
 
 		cameraComponent->setRotation(headRotation);
+
+		drawDebugLine(transformComponent->getDerivedPosition(), transformComponent->getDerivedPosition() + utils::alightVectorToAxis(transformComponent->getForwardVector()), { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
+		/*drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getRightVector()), { 1.0f, 0.0f, 0.0f, 1.0f }, 5.0f, false);
+		drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getUpVector()), { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f, false);*/
 
 		if (walkDirection != glm::vec3(0.0f))
 		{

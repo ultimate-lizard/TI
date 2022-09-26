@@ -181,7 +181,7 @@ glm::vec3 BlockGrid::getSideNormal(const glm::vec3& inPosition)
 		{
 			glm::vec3 normal;
 			normal[i] = 1.0f;
-			std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
+			// std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
 			return normal;
 		}
 	}
@@ -194,7 +194,7 @@ glm::vec3 BlockGrid::getSideNormal(const glm::vec3& inPosition)
 		{
 			glm::vec3 normal;
 			normal[i] = -1.0f;
-			std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
+			//std::cout << normal.x << " " << normal.y << " " << normal.z << std::endl;
 			return normal;
 		}
 	}

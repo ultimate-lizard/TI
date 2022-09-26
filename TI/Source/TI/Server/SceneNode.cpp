@@ -182,6 +182,14 @@ void SceneMultiNode::SceneNode::setRotation(const glm::vec3& rotation)
 	updateTransform();
 }
 
+void SceneMultiNode::SceneNode::setRotation(float angle, const glm::vec3& axis)
+{
+	glm::quat rotationQuat = glm::angleAxis(glm::radians(angle), axis);
+	localOrientation = rotationQuat;
+
+	updateTransform();
+}
+
 //void SceneMultiNode::SceneNode::setRotationInWorldSpace(const glm::vec3& rotation)
 //{
 //	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
@@ -317,6 +325,14 @@ void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
 	for (size_t i = 0; i < coordinateSystems.size(); ++i)
 	{
 		coordinateSystems[i].setRotation(rotation);
+	}
+}
+
+void SceneMultiNode::setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs)
+{
+	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	{
+		coordinateSystems[i].setRotation(angle, axis);
 	}
 }
 

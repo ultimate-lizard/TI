@@ -6,7 +6,7 @@
 #include <TI/Server/SceneNode.h>
 
 class TransformComponent;
-class PhysicsComponent;
+class CollisionComponent;
 class CelestialBody;
 
 class MovementComponent : public Component
@@ -79,7 +79,7 @@ private:
 
 private:
 	TransformComponent* transformComponent;
-	PhysicsComponent* physicsComponent;
+	CollisionComponent* physicsComponent;
 
 	glm::vec3 headPosition;
 	glm::vec3 headRotation;

@@ -7,6 +7,8 @@
 class PhysicsComponent : public Component
 {
 public:
+	PhysicsComponent();
+
 	void tick(float dt) override;
 
 	std::unique_ptr<Component> clone() const override;
@@ -25,4 +27,6 @@ private:
 	bool planeSideTransitionInProgress;
 	float currentRotationAngle;
 	glm::vec3 sideRotationAxis;
+
+	float friction;
 };

@@ -12,6 +12,7 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/PhysicsComponent.h>
+#include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
 #include <TI/Server/BlockGrid.h>
 #include <TI/Server/CelestialBody.h>
@@ -54,7 +55,7 @@ void MovementComponent::init()
 	if (entity)
 	{
 		transformComponent = entity->findComponent<TransformComponent>();
-		physicsComponent = entity->findComponent<PhysicsComponent>();
+		physicsComponent = entity->findComponent<CollisionComponent>();
 	}
 }
 
@@ -364,10 +365,6 @@ void MovementComponent::handleInput(float dt)
 		headDirection = glm::normalize(cameraComponent->getForwardVector());
 
 		cameraComponent->setRotation(headRotation);
-
-		drawDebugLine(transformComponent->getDerivedPosition(), transformComponent->getDerivedPosition() + utils::alightVectorToAxis(transformComponent->getForwardVector()), { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
-		/*drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getRightVector()), { 1.0f, 0.0f, 0.0f, 1.0f }, 5.0f, false);
-		drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + utils::alightVectorToAxis(cameraComponent->getUpVector()), { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f, false);*/
 
 		if (walkDirection != glm::vec3(0.0f))
 		{

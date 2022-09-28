@@ -7,6 +7,17 @@
 #include <TI/Util/Math.h>
 #include <TI/Util/Utils.h>
 
+PhysicsComponent::PhysicsComponent() :
+	Component(),
+	pendingRotationAngle(0.0f),
+	shouldRotate(false),
+	planeSideTransitionInProgress(false),
+	currentRotationAngle(0.0f),
+	friction(0.95f)
+{
+
+}
+
 void PhysicsComponent::tick(float dt)
 {
 	updatePlaneSideRotation(dt);
@@ -46,19 +57,20 @@ void PhysicsComponent::tick(float dt)
 
 		//glm::vec3 upVector = transformComponent->getLocalOrientation() * bg->getSideNormal(position);
 
-		//if (collisionResult.collidedAxis != glm::bvec3(0.0f))
-		//{
-		//	glm::vec3 orientedVelocity = transformComponent->getLocalOrientation() * velocity;
-		//	if ((orientedVelocity.y < 0.0f && upVector.y > 0.0f) || (orientedVelocity.y > 0.0f && upVector.y < 0.0f))
-		//	{
-		//		// On land
-		//		/*movementState = MovementState::Walk;
-		//		velocity = clampVectorMagnitude(velocity, walkMaxSpeed);*/
-		//	}
-		//}
-
 		position = collisionResult.adjustedPosition;
 		velocity = collisionResult.adjustedVelocity;
+
+		if (collisionResult.collidedAxis != glm::bvec3(0.0f))
+		{
+			//glm::vec3 orientedVelocity = transformComponent->getLocalOrientation() * velocity;
+			//if ((orientedVelocity.y < 0.0f && upVector.y > 0.0f) || (orientedVelocity.y > 0.0f && upVector.y < 0.0f))
+			//{
+			//	// On land
+			//	/*movementState = MovementState::Walk;
+			//	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);*/
+			//}
+			velocity *= friction;
+		}
 	}
 
 	transformComponent->setLocalPosition(position);

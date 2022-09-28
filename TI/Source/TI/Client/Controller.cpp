@@ -10,6 +10,7 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
+#include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Application.h>
 #include <TI/Server/BlockGrid.h>
 #include <TI/Server/Star.h>
@@ -162,7 +163,7 @@ void PlayerController::placeBlock()
 {
 	if (entity)
 	{
-		if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+		if (auto physicsComponent = entity->findComponent<CollisionComponent>())
 		{
 			if (movementComponent)
 			{
@@ -181,7 +182,7 @@ void PlayerController::placeBlock()
 								glm::ivec3 blockPosition = headPosition + movementComponent->getHeadDirection() * raycastResult->near + raycastResult->normal * 0.5f;
 								if (plane->getBlock(blockPosition) == 0)
 								{
-									if (auto physicsComponent = entity->findComponent<PhysicsComponent>())
+									if (auto physicsComponent = entity->findComponent<CollisionComponent>())
 									{
 										glm::vec3 blockCenterPosition {blockPosition.x + 0.5f, blockPosition.y + 0.5f, blockPosition.z + 0.5f};
 
@@ -249,7 +250,7 @@ void PlayerController::toggleCollisionInfo()
 		const std::map<std::string, std::unique_ptr<Entity>>& entities = client->getApplication()->getCurrentServer()->getEntities();
 		for (const auto& pair : entities)
 		{
-			if (PhysicsComponent* physicsComponent = pair.second->findComponent<PhysicsComponent>())
+			if (CollisionComponent* physicsComponent = pair.second->findComponent<CollisionComponent>())
 			{
 				physicsComponent->setRenderCollisionBoxEnabled(!physicsComponent->isRenderCollisiobBoxEnabled());
 				physicsComponent->setRenderCollisions(!physicsComponent->isRenderCollisionsEnabled());
@@ -362,6 +363,25 @@ void PlayerController::togglePlanetRelativeMovement()
 {
 }
 
+void PlayerController::shoot()
+{
+	if (auto transformComponent = entity->findComponent<TransformComponent>())
+	{
+		BlockGrid* bg = transformComponent->getCurrentBlockGrid();
+
+		if (auto cameraComponent = entity->findComponent<CameraComponent>())
+		{
+			glm::vec3 spawnLocation = cameraComponent->getDerivedPosition() + cameraComponent->getForwardVector();
+			Entity* cube = client->getApplication()->getCurrentServer()->spawnEntity("Cube", "cube-" + std::to_string(SDL_GetTicks()), bg, spawnLocation);
+			
+			if (auto physicsComponent = cube->findComponent<PhysicsComponent>())
+			{
+				physicsComponent->addForce(cameraComponent->getForwardVector() * 30.0f);
+			}
+		}
+	}
+}
+
 void PlayerController::setupInputHandler()
 {
 	if (inputHandler)
@@ -379,6 +399,8 @@ void PlayerController::setupInputHandler()
 
 		inputHandler->bindKey("SpawnBlock", ActionInputType::Press, std::bind(&PlayerController::placeBlock, this));
 		inputHandler->bindKey("DestroyBlock", ActionInputType::Press, std::bind(&PlayerController::destroyBlock, this));
+
+		inputHandler->bindKey("Shoot", ActionInputType::Press, std::bind(&PlayerController::shoot, this));
 
 		inputHandler->bindKey("TogglePolygonMode", ActionInputType::Press, std::bind(&PlayerController::togglePolygonMode, this));
 		inputHandler->bindKey("ToggleFlyMode", ActionInputType::Press, std::bind(&PlayerController::toggleFlyMode, this));

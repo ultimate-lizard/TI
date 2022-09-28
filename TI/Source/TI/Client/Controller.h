@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <TI/Server/Entity.h>
-#include <TI/Server/Component/PhysicsComponent.h>
+#include <TI/Server/Component/CollisionComponent.h>
 
 class InputHandler;
 class MovementComponent;
@@ -59,6 +59,8 @@ private:
 
 	void teleportHome();
 	void togglePlanetRelativeMovement();
+
+	void shoot();
 
 	InputHandler* inputHandler;
 	MovementComponent* movementComponent;

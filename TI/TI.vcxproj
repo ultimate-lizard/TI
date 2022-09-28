@@ -203,6 +203,7 @@
     <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MovementComponent.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\CollisionComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\PhysicsComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\TransformComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Entity.cpp" />
@@ -255,6 +256,7 @@
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
     <ClInclude Include="Source\TI\Server\Component\MeshComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\MovementComponent.h" />
+    <ClInclude Include="Source\TI\Server\Component\CollisionComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\PhysicsComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\TransformComponent.h" />
     <ClInclude Include="Source\TI\Server\Entity.h" />

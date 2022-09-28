@@ -6,6 +6,7 @@
 #include <TI/Server/Component/MovementComponent.h>
 #include <TI/Server/Component/CameraComponent.h>
 #include <TI/Server/Component/TransformComponent.h>
+#include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
@@ -26,8 +27,8 @@ void Server::initEntityTemplates()
 	meshComponent->setLocalScale({ 0.6f, 0.6f, 1.0f });
 	meshComponent->setVisibleForParentEntity(true);
 
-	auto physicsComponent = playerEntity->addComponent<PhysicsComponent>();
-	physicsComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
+	auto collisionComponent = playerEntity->addComponent<CollisionComponent>();
+	collisionComponent->setCollisionBox({ { 0.6f, 1.9f, 0.6f }, { 0.0f, 0.85f, 0.0f } });
 
 	auto movementComponent = playerEntity->addComponent<MovementComponent>();
 
@@ -45,8 +46,9 @@ void Server::initEntityTemplates()
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
+	auto cubeCollisionComponent = cubeEntity->addComponent<CollisionComponent>();
+	cubeCollisionComponent->setCollisionBox({ glm::vec3(1.0f), glm::vec3(0.0f) });
 	auto cubePhysicsComponent = cubeEntity->addComponent<PhysicsComponent>();
-	cubePhysicsComponent->setCollisionBox({ glm::vec3(1.0f), glm::vec3(0.0f) });
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 

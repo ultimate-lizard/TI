@@ -192,6 +192,10 @@ Key Config::stringToKey(const std::string& string)
 	if (string == "MouseRight") return Key::MouseRight;
 	if (string == "ScrollUp") return Key::ScrollUp;
 	if (string == "ScrollDown") return Key::ScrollDown;
+	if (string == "ControllerTriggerLeft") return Key::ControllerTriggerLeft;
+	if (string == "ControllerTriggerRight") return Key::ControllerTriggerRight;
+	if (string == "ControllerBumperLeft") return Key::ControllerBumperLeft;
+	if (string == "ControllerBumperRight") return Key::ControllerBumperRight;
 
 	return Key::UnknownKey;
 }
@@ -252,6 +256,10 @@ std::string Config::keyToString(Key key)
 	if (key == Key::MouseRight) return "MouseRight";
 	if (key == Key::ScrollUp) return "ScrollUp";
 	if (key == Key::ScrollDown) return "ScrollDown";
+	if (key == Key::ControllerTriggerLeft) return "ControllerTriggerLeft";
+	if (key == Key::ControllerTriggerRight) return "ControllerTriggerRight";
+	if (key == Key::ControllerBumperLeft) return "ControllerBumperLeft";
+	if (key == Key::ControllerBumperRight) return "ControllerBumperRight";
 
 	return "UnknownKey";
 }

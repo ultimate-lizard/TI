@@ -189,6 +189,12 @@ void Input::handleControllerAxisMotion(InputHandler* inputHandler)
 	case SDL_CONTROLLER_AXIS_RIGHTY:
 		inputHandler->onAxisInput(Axis::ControllerRightStickY, normalizedMotion);
 		break;
+	case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+		inputHandler->onKeyInput(Key::ControllerTriggerLeft, ActionInputType::Press);
+		break;
+	case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+		inputHandler->onKeyInput(Key::ControllerTriggerRight, ActionInputType::Press);
+		break;
 	}
 }
 

@@ -53,6 +53,8 @@ enum Key
 	ControllerButtonB = SDL_CONTROLLER_BUTTON_B,
 	ControllerButtonX = SDL_CONTROLLER_BUTTON_X,
 	ControllerButtonY = SDL_CONTROLLER_BUTTON_Y,
+	ControllerBumperLeft = SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+	ControllerBumperRight = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
 	Right = SDL_SCANCODE_RIGHT,
 	Left,
 	Down,
@@ -60,7 +62,9 @@ enum Key
 	MouseLeft = SDL_NUM_SCANCODES,
 	MouseRight,
 	ScrollUp,
-	ScrollDown
+	ScrollDown,
+	ControllerTriggerLeft,
+	ControllerTriggerRight
 };
 
 enum Axis

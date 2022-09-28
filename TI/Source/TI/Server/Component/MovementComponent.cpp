@@ -42,6 +42,7 @@ MovementComponent::MovementComponent() :
 	movementState(MovementState::Fall),
 	primaryBody(nullptr)
 {
+
 }
 
 static const float headPositionCrouching = 0.575f;
@@ -239,9 +240,13 @@ void MovementComponent::handleInput(float dt)
 		walkDirection += right * input.x;
 		walkDirection.y = 0.0f;
 
-		headDirection = glm::normalize(cameraComponent->getForwardVector());
+		headDirection = glm::normalize(cameraComponent->getLocalForwardVector());
 
 		cameraComponent->setRotation(headRotation);
+		
+		//drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + cameraComponent->getLocalForwardVector(), { 0.0f, 0.0f, 1.0f, 1.0f }, 5.0f, false);
+		//drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + cameraComponent->getLocalRightVector(), { 1.0f, 0.0f, 0.0f, 1.0f }, 5.0f, false);
+		//drawDebugLine(cameraComponent->getDerivedPosition(), cameraComponent->getDerivedPosition() + cameraComponent->getLocalUpVector(), { 0.0f, 1.0f, 0.0f, 1.0f }, 5.0f, false);
 
 		if (walkDirection != glm::vec3(0.0f))
 		{
@@ -415,7 +420,7 @@ void MovementComponent::handleFlight(float dt)
 
 	if (auto cameraComp = entity->findComponent<CameraComponent>())
 	{
-		glm::vec3 right = cameraComp->getRightVector();
+		glm::vec3 right = cameraComp->getLocalRightVector();
 
 		glm::vec3 flightDirection = headDirection * input.z;
 		flightDirection += right * input.x;
@@ -438,7 +443,9 @@ void MovementComponent::handleFlight(float dt)
 			//	position = collisionResult.adjustedPosition;
 			//}
 
-			transformComponent->offset(velocity * dt);
+			// CoordinateSystem::Interplanetary is a hack. Originally it was CoordinateSystem::Planetary, but we lose it
+			// because we may leave the planetary coordinate system
+			transformComponent->offset((transformComponent->getLocalOrientation() * velocity) * dt);
 		}
 	}
 }

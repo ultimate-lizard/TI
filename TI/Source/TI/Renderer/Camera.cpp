@@ -24,15 +24,14 @@ void Camera::setPerspective(float fov, float aspect, float near, float far)
 
 void Camera::updateView(CoordinateSystem cs)
 {
-	glm::vec3 absolutePosition;
-	glm::quat absoluteRotation;
-	glm::vec3 scale;
-	glm::vec3 scew;
-	glm::vec4 perspective;
+	glm::vec3 absolutePosition = getDerivedPosition(cs);
+	glm::quat absoluteRotation = getDerivedOrientation(cs);
 
-	glm::decompose(getTransform(cs), scale, absoluteRotation, absolutePosition, scew, perspective);
+	// glm::decompose(getTransform(cs), scale, absoluteRotation, absolutePosition, scew, perspective);
 	
-	absoluteRotation = glm::conjugate(absoluteRotation);
+	// absoluteRotation = glm::conjugate(absoluteRotation);
+
+	//std::cout << absoluteRotation.x << " " << absoluteRotation.y << " " << absoluteRotation.z << std::endl;
 
 	glm::vec3 forward = absoluteRotation * glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::vec3 up = absoluteRotation * glm::vec3(0.0f, 1.0f, 0.0f);

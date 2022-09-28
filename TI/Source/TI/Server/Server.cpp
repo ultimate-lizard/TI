@@ -14,14 +14,15 @@
 #include <TI/Renderer/Camera.h>
 #include <TI/Server/BlockGrid.h>
 #include <TI/Server/Star.h>
-#include <TI/Server/SolarSystem.h>
+#include <TI/Server/Planet.h>
 
 void Server::initEntityTemplates()
 {
 	auto playerEntity = std::make_unique<Entity>();
 	playerEntity->setName("Player");
 
-	auto transformComponent = playerEntity->addComponent<TransformComponent>();
+	auto transformComponent = playerEntity->addComponent<TransformComponent>(this);
+
 
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
 	meshComponent->loadModel("Player");
@@ -35,7 +36,8 @@ void Server::initEntityTemplates()
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setParent(transformComponent);
-	cameraComponent->setLocalPosition({ 0.0f, 1.75f, 0.0f });
+	cameraComponent->setLocalPosition({ 0.0f, 1.75f, 0.0f }, CoordinateSystem::Planetary);
+	cameraComponent->setLocalPosition({ 0.0f, 0.00175f, 0.0f }, CoordinateSystem::Interplanetary);
 
 	meshComponent->setParent(cameraComponent);
 
@@ -45,7 +47,8 @@ void Server::initEntityTemplates()
 
 	auto cubeEntity = std::make_unique<Entity>();
 	cubeEntity->setName("Cube");
-	auto cubeTransformComponent = cubeEntity->addComponent<TransformComponent>();
+	auto cubeTransformComponent = cubeEntity->addComponent<TransformComponent>(this);
+
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
@@ -58,18 +61,17 @@ void Server::initEntityTemplates()
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 
-	auto planetEntity = std::make_unique<Entity>();
-	auto planetTransformComponent = planetEntity->addComponent<TransformComponent>();
-	auto planetMeshComponent = planetEntity->addComponent<MeshComponent>(app->getResourceManager());
+	// auto planetEntity = std::make_unique<Entity>();
+	// auto planetTransformComponent = planetEntity->addComponent<TransformComponent>(this);
+	// auto planetMeshComponent = planetEntity->addComponent<MeshComponent>(app->getResourceManager());
 
-	planetEntity->setName("PlanetEntity");
+	// planetEntity->setName("PlanetEntity");
 
-	planetTransformComponent->setLocalScale(glm::vec3(55.0f));
-	planetMeshComponent->setParent(planetTransformComponent);
-	planetMeshComponent->loadModel("Planet");
+	//planetTransformComponent->setLocalScale(glm::vec3(55.0f));
+	//planetMeshComponent->setParent(planetTransformComponent);
+	//planetMeshComponent->loadModel("Planet");
 
-	entityTemplates.emplace(planetEntity->getName(), std::move(planetEntity));
-
+	// entityTemplates.emplace(planetEntity->getName(), std::move(planetEntity));
 }
 
 Server::Server(Application* app) :
@@ -165,6 +167,35 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 const std::vector<std::unique_ptr<CelestialBody>>& Server::getCelestialBodies()
 {
 	return celestialBodies;
+}
+
+const std::vector<std::unique_ptr<Star>>& Server::getStars()
+{
+	return starSystems;
+}
+
+Planet* Server::findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const
+{
+	if (cs == CoordinateSystem::Interplanetary)
+	{
+		float minDistance = std::numeric_limits<float>::max();
+		CelestialBody* closestBody = nullptr;
+
+		for (auto& body : celestialBodies)
+		{
+			float distance = glm::distance(position, body->getDerivedPosition(cs, false));
+
+			if (distance <= minDistance)
+			{
+				minDistance = distance;
+				closestBody = body.get();
+			}
+		}
+
+		return dynamic_cast<Planet*>(closestBody);
+	}
+
+	return nullptr;
 }
 
 void Server::possesEntity(const std::string& entityName, Client* const client)

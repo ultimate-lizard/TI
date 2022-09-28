@@ -21,7 +21,7 @@ class DebugInformation;
 class BlockGrid;
 class Camera;
 class AstroBodyMesh;
-class OrbitalSystem;
+class Star;
 
 class LocalClient : public Client
 {
@@ -55,7 +55,7 @@ private:
 	void loadConfig();
 	void loadMappings();
 
-	void initSolarSystemVisuals(OrbitalSystem* solarSystem);
+	void initSolarSystemVisuals(Star* star);
 
 	void updatePlaneVisuals(BlockGrid* blockGrid);
 

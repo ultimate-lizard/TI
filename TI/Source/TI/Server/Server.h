@@ -11,7 +11,8 @@
 class Application;
 class BlockGrid;
 class CelestialBody;
-class OrbitalSystem;
+class Star;
+class Planet;
 
 class Server
 {
@@ -35,6 +36,9 @@ public:
 
 	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
 	const std::vector<std::unique_ptr<CelestialBody>>& getCelestialBodies();
+	const std::vector<std::unique_ptr<Star>>& getStars();
+
+	Planet* findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const;
 
 protected:
 	void initEntityTemplates();
@@ -49,5 +53,5 @@ protected:
 
 	std::vector<std::unique_ptr<BlockGrid>> blockGrids;
 	std::vector<std::unique_ptr<CelestialBody>> celestialBodies;
-	std::vector<std::unique_ptr<OrbitalSystem>> orbitalSystems;
+	std::vector<std::unique_ptr<Star>> starSystems;
 };

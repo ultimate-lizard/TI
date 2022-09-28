@@ -61,8 +61,8 @@ std::unique_ptr<Entity> Entity::clone() const
 						}
 
 						auto clonedChildSceneNode = dynamic_cast<SceneMultiNode*>(clonedChild.get());
-						clonedSceneNode->addChild(clonedChildSceneNode);
-
+						// clonedSceneNode->addChild(clonedChildSceneNode);
+						clonedChildSceneNode->setParent(clonedSceneNode);
 						clonedComponents[checkedInnerComponent.get()] = std::move(clonedChild);
 					}
 				}

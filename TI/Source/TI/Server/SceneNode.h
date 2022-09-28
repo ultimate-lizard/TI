@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
-#include <array>
+#include <optional>
+#include <string>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -10,7 +12,8 @@ enum CoordinateSystem
 {
 	Planetary = 0,
 	Interplanetary,
-	Interstellar
+	Interstellar,
+	COUNT = 2
 };
 
 class SceneMultiNode
@@ -19,9 +22,11 @@ class SceneMultiNode
 	{
 	public:
 		SceneNode();
+		SceneNode(CoordinateSystem cs);
 
-		SceneNode(const SceneNode&);
-		SceneNode(SceneNode&&) = delete;
+		SceneNode(const SceneNode& other);
+		SceneNode& operator=(const SceneNode& other) = delete;
+		SceneNode(SceneNode&&) noexcept = default;
 
 		glm::mat4 getTransform() const;
 		glm::mat4 getLocalTransform() const;
@@ -32,25 +37,20 @@ class SceneMultiNode
 		void setScale(const glm::vec3& scale);
 		void setRotation(const glm::vec3& rotation);
 		void setRotation(float angle, const glm::vec3& axis);
-		// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 		void rotateInWorldSpace(float angle, const glm::vec3& axis);
 		void rotate(float angle, const glm::vec3& axis);
 
 		glm::vec3 getLocalPosition() const;
-		glm::vec3 getDerivedPosition() const;
+		glm::vec3 getDerivedPosition(bool inheritOrientation = true) const;
 
 		glm::quat getLocalOrientation() const;
 		glm::quat getDerivedOrientation() const;
 
 		glm::vec3 getScale() const;
-		// glm::vec3 getRotation() const;
 
 		void setParent(SceneNode* parent);
 		void removeParent();
-
-		void addChild(SceneNode* child);
-		void removeChild(SceneNode* child);
 
 		bool isChildOf(SceneNode* node);
 
@@ -61,6 +61,8 @@ class SceneMultiNode
 		glm::vec3 getLocalForwardVector();
 		glm::vec3 getLocalUpVector();
 		glm::vec3 getLocalRightVector();
+
+		CoordinateSystem type;
 
 	protected:
 		void updateTransform();
@@ -75,6 +77,8 @@ class SceneMultiNode
 		glm::vec3 localPosition;
 		glm::quat localOrientation;
 		glm::vec3 localScale;
+
+		std::string _id;
 	};
 
 public:
@@ -86,25 +90,24 @@ public:
 	glm::mat4 getTransform(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
 	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToChildren = false);
+	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToUpperCoordinateSystems = false);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(const glm::vec3& rotation, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
-	// void setRotationInWorldSpace(const glm::vec3& rotation);
 
 	void rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void rotateInWorldSpaceExclusive(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void rotate(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	glm::vec3 getLocalPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
-	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
+	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary, bool inheritOrientation = true) const;
 
 	glm::quat getLocalOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	glm::quat getDerivedOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
 	glm::vec3 getScale(CoordinateSystem cs = CoordinateSystem::Planetary) const;
-	// glm::vec3 getRotation() const;
 
 	glm::vec3 getForwardVector(CoordinateSystem cs = CoordinateSystem::Planetary);
 	glm::vec3 getUpVector(CoordinateSystem cs = CoordinateSystem::Planetary);
@@ -117,15 +120,17 @@ public:
 	void setParent(SceneMultiNode* parent, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void removeParent(CoordinateSystem cs = CoordinateSystem::Planetary);
 
-	void addChild(SceneMultiNode* child, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void removeChild(SceneMultiNode* child, CoordinateSystem cs = CoordinateSystem::Planetary);
-
 	bool isChildOf(SceneMultiNode* node, CoordinateSystem cs = CoordinateSystem::Planetary);
 
-// protected:
-	// void updateTransform();
-	// glm::quat getOrientationInWorldSpace() const;
+	void leaveNode(CoordinateSystem cs);
+	void enterNode(CoordinateSystem cs);
+
+	std::optional<const SceneMultiNode::SceneNode*> getCoordinateSystem(CoordinateSystem cs) const;
+	std::optional<SceneMultiNode::SceneNode*> getCoordinateSystem(CoordinateSystem cs);
 
 private:
-	std::array<SceneNode, 3> coordinateSystems;
+	std::vector<std::unique_ptr<SceneMultiNode::SceneNode>> coordinateSystems;
+	std::vector<std::unique_ptr<SceneMultiNode::SceneNode>> inactiveCoordinateSystems;
+	SceneMultiNode* parent;
+	std::vector<SceneMultiNode*> children;
 };

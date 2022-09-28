@@ -11,4 +11,8 @@ class Star : public CelestialBody
 public:
 	Star();
 	~Star();
+
+	virtual void tick(float dt) override;
+
+	void initRandomStarSystem();
 };

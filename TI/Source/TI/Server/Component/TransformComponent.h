@@ -7,11 +7,14 @@
 #include <TI/Server/SceneNode.h>
 
 class BlockGrid;
+class Server;
+class LocalServer;
+class CelestialBody;
 
 class TransformComponent : public Component, public SceneMultiNode
 {
 public:
-	TransformComponent();
+	TransformComponent(Server* server);
 	TransformComponent(const TransformComponent& other);
 	TransformComponent(TransformComponent&&) = delete;
 
@@ -26,10 +29,17 @@ public:
 
 	glm::quat lastOrientation;
 
+	void setPrimaryBody(CelestialBody* body);
+	CelestialBody* getPrimaryBody() const;
+
 private:
+	LocalServer* server;
+
 	BlockGrid* blockGrid;
 
 	bool orientationInProgress = false;
 	glm::quat targetOrientation;
 	CoordinateSystem targetCs = CoordinateSystem::Planetary;
+
+	CelestialBody* currentPrimaryBody;
 };

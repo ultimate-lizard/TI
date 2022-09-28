@@ -14,4 +14,6 @@ public:
 
 	Planet(const Planet&) = delete;
 	Planet(Planet&&) = delete;
+
+	virtual void tick(float dt) override;
 };

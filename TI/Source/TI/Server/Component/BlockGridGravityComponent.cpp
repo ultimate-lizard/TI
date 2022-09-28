@@ -63,6 +63,11 @@ bool BlockGridGravityComponent::isRotationEnabled() const
 
 void BlockGridGravityComponent::updateSideRotation(float dt)
 {
+	if (!isRotationEnabled())
+	{
+		return;
+	}
+
 	auto transformComponent = entity->findComponent<TransformComponent>();
 	if (!transformComponent)
 	{
@@ -75,7 +80,7 @@ void BlockGridGravityComponent::updateSideRotation(float dt)
 		return;
 	}
 
-	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition());
+	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition(CoordinateSystem::Planetary, false));
 	if (previousUpVector == glm::vec3(0.0f))
 	{
 		previousUpVector = currentUpVector;
@@ -105,24 +110,8 @@ void BlockGridGravityComponent::updateSideRotation(float dt)
 			pendingRotationAngle = 90.0f;
 		}
 
-		//bool shouldEscape = false;
-		//if (transformComponent)
-		//{
-		//	if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
-		//	{
-		//		// Assume block grid are always cubical
-		//		const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
-		//		const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
-		//		const float escapeAltitude = bgSizeInBlocks;
-		//		if (distanceToBgCenter > escapeAltitude)
-		//		{
-		//			shouldEscape = true;
-		//		}
-		//	}
-		//}
-
 		// Rotate collision box
-		if (!planeSideTransitionInProgress && isRotationEnabled()) //&& !shouldEscape)
+		if (!planeSideTransitionInProgress) //&& !shouldEscape)
 		{
 			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
 

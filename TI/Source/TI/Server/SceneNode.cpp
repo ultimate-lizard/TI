@@ -6,29 +6,46 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <SDL.h>
+
+static unsigned long long ids = 0;
 
 SceneMultiNode::SceneNode::SceneNode() :
 	parent(nullptr),
 	transform(glm::mat4(1.0f)),
-	localScale(glm::vec3(1.0f))
+	localScale(glm::vec3(1.0f)),
+	type(CoordinateSystem::Planetary)
+{
+}
+
+SceneMultiNode::SceneNode::SceneNode(CoordinateSystem cs) :
+	parent(nullptr),
+	transform(glm::mat4(1.0f)),
+	localScale(glm::vec3(1.0f)),
+	type(cs)
 {
 }
 
 SceneMultiNode::SceneNode::SceneNode(const SceneNode& other) :
-	parent(nullptr),
+	parent(other.parent),
 	transform(other.transform),
 	localPosition(other.localPosition),
 	localOrientation(other.localOrientation),
-	localScale(other.localScale)
+	localScale(other.localScale),
+	type(other.type)
 {
 }
 
 void SceneMultiNode::SceneNode::setParent(SceneNode* parent)
 {
 	this->parent = parent;
+
 	if (parent)
 	{
-		parent->addChild(this);
+		if (auto foundIter = std::find(parent->children.begin(), parent->children.end(), this); foundIter == parent->children.end())
+		{
+			parent->children.push_back(this);
+		}
 	}
 
 	updateTransform();
@@ -38,26 +55,13 @@ void SceneMultiNode::SceneNode::removeParent()
 {
 	if (parent)
 	{
-		parent->removeChild(this);
-		parent = nullptr;
+		if (auto foundIter = std::find(parent->children.begin(), parent->children.end(), this); foundIter != parent->children.end())
+		{
+			parent->children.erase(foundIter);
+		}
 	}
 
-	updateTransform();
-}
-
-void SceneMultiNode::SceneNode::addChild(SceneNode* child)
-{
-	children.push_back(child);
-	child->parent = this;
-	updateTransform();
-}
-
-void SceneMultiNode::SceneNode::removeChild(SceneNode* child)
-{
-	if (auto foundIter = std::find(children.begin(), children.end(), child); foundIter != children.end())
-	{
-		children.erase(foundIter);
-	}
+	parent = nullptr;
 
 	updateTransform();
 }
@@ -125,7 +129,7 @@ void SceneMultiNode::SceneNode::updateTransform()
 
 		parentOrientation = glm::conjugate(parentOrientation);
 
-		// derivedPosition = parentOrientation * (parentScale * localPosition); // AKNOWLEDGE PARENT'S SCALE
+		derivedPosition = parentScale * localPosition; // AKNOWLEDGE PARENT'S SCALE
 		derivedPosition = parentOrientation * localPosition;
 		derivedPosition += parentPosition;
 
@@ -190,19 +194,6 @@ void SceneMultiNode::SceneNode::setRotation(float angle, const glm::vec3& axis)
 	updateTransform();
 }
 
-//void SceneMultiNode::SceneNode::setRotationInWorldSpace(const glm::vec3& rotation)
-//{
-//	const glm::vec3 rotationRadians{ glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z) };
-//	glm::quat rotationQuat = glm::toQuat(glm::eulerAngleYXZ(rotationRadians.y, rotationRadians.x, rotationRadians.z));
-//
-//	for (int i = 0; i < static_cast<int>(CoordinateSystemScale::COUNT); ++i)
-//	{
-//		coordinateSystems[i].orientation = coordinateSystems[i].orientation * glm::inverse(getOrientationInWorldSpace(CoordinateSystemScale::Planetary)) * rotationQuat * getOrientationInWorldSpace(CoordinateSystemScale::Planetary);
-//	}
-//
-//	updateTransform();
-//}
-
 void SceneMultiNode::SceneNode::rotateInWorldSpace(float angle, const glm::vec3& axis)
 {
 	glm::quat rotationQuat = glm::angleAxis(glm::radians(angle), axis);
@@ -230,9 +221,21 @@ glm::vec3 SceneMultiNode::SceneNode::getLocalPosition() const
 	return localPosition;
 }
 
-glm::vec3 SceneMultiNode::SceneNode::getDerivedPosition() const
+glm::vec3 SceneMultiNode::SceneNode::getDerivedPosition(bool inheritOrientation) const
 {
-	return parent ? parent->getDerivedOrientation() * getLocalPosition() + parent->getDerivedPosition() : getLocalPosition();
+	if (parent)
+	{
+		glm::vec3 derivedPosition = getLocalPosition();
+
+		if (inheritOrientation)
+		{
+			derivedPosition = parent->getDerivedOrientation() * derivedPosition;
+		}
+
+		return derivedPosition + parent->getDerivedPosition();
+	}
+
+	return getLocalPosition();
 }
 
 glm::quat SceneMultiNode::SceneNode::getLocalOrientation() const
@@ -242,15 +245,18 @@ glm::quat SceneMultiNode::SceneNode::getLocalOrientation() const
 
 glm::quat SceneMultiNode::SceneNode::getDerivedOrientation() const
 {
-	return parent ? parent->getDerivedOrientation() * getLocalOrientation() : getLocalOrientation();
+	if (parent)
+	{
+		glm::quat parentDerivedOrientation = parent->getDerivedOrientation();
+		glm::quat localOrientation = getLocalOrientation();
+		glm::quat result = parentDerivedOrientation * localOrientation;
+		return result;
+	}
+	else
+	{
+		return getLocalOrientation();
+	}
 }
-
-//glm::vec3 SceneMultiNode::SceneNode::getRotation() const
-//{
-//	// Warning! Suppose the rotation is the same for all coordinate systems
-//	glm::vec3 rot = glm::eulerAngles(coordinateSystems[0].orientation);
-//	return rot;
-//}
 
 glm::vec3 SceneMultiNode::SceneNode::getScale() const
 {
@@ -268,189 +274,465 @@ glm::quat SceneMultiNode::SceneNode::getOrientationInWorldSpace() const
 }
 
 SceneMultiNode::SceneMultiNode() :
-	coordinateSystems({SceneNode(), SceneNode()})
+	parent(nullptr)
 {
-
+	coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(CoordinateSystem::Planetary));
+	coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(CoordinateSystem::Interplanetary));
 }
 
-SceneMultiNode::SceneMultiNode(const SceneMultiNode& other) :
-	coordinateSystems(other.coordinateSystems)
+SceneMultiNode::SceneMultiNode(const SceneMultiNode& other)
 {
+	for (size_t i = 0; i < other.coordinateSystems.size(); ++i)
+	{
+		coordinateSystems.emplace_back(std::unique_ptr<SceneMultiNode::SceneNode>(new SceneMultiNode::SceneNode(*other.coordinateSystems[i].get())));
+	}
+
+	parent = other.parent;
 }
 
 glm::mat4 SceneMultiNode::getTransform(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getTransform();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getTransform();
+		}
+	}
+	
+	throw std::exception();
 }
 
 void SceneMultiNode::setLocalPosition(const glm::vec3& position, CoordinateSystem cs)
 {
-	coordinateSystems[cs].setPosition(position);
+	float factor = 1.0f;
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setPosition(position / factor);
+			return;
+		}
+
+		factor *= 1000.0f;
+	}
+
+	throw std::exception();
+}
+
+void SceneMultiNode::setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs)
+{
+	if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+	{
+		coordinateSystem.value()->setPosition(position);
+	}
 }
 
 void SceneMultiNode::offset(const glm::vec3& position, CoordinateSystem cs)
 {
 	float factor = 1.0f;
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].offset(position / factor);
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->offset(position / factor);
+		}
+		
 		factor *= 1000.0f;
 	}
-
-	//coordinateSystems[cs].offset(position);
 }
 
-void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs, bool propagateToChildren)
+void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs, bool propagateToUpperCoordinateSystems)
 {
-	if (propagateToChildren)
+	if (propagateToUpperCoordinateSystems)
 	{
-		for (size_t i = cs; i < coordinateSystems.size(); ++i)
+		for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 		{
-			coordinateSystems[i].setLocalOrientation(orientation);
+			if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+			{
+				coordinateSystem.value()->setLocalOrientation(orientation);
+			}
 		}
 	}
 	else
 	{
-		coordinateSystems[cs].setLocalOrientation(orientation);
+		if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setLocalOrientation(orientation);
+		}
 	}
 }
 
 void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)
 {
-	coordinateSystems[cs].setScale(scale);
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setScale(scale);
+			return;
+		}
+	}
+
+	throw std::exception();
 }
 
 void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
 {
-	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].setRotation(rotation);
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setRotation(rotation);
+		}
 	}
 }
 
 void SceneMultiNode::setRotation(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].setRotation(angle, axis);
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setRotation(angle, axis);
+		}
 	}
 }
 
 void SceneMultiNode::rotateInWorldSpace(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].rotateInWorldSpace(angle, axis);
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->rotateInWorldSpace(angle, axis);
+		}
 	}
 }
 
 void SceneMultiNode::rotateInWorldSpaceExclusive(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	coordinateSystems[cs].rotateInWorldSpace(angle, axis);
+	if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+	{
+		coordinateSystem.value()->rotateInWorldSpace(angle, axis);
+	}
 }
 
 void SceneMultiNode::rotate(float angle, const glm::vec3& axis, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].rotate(angle, axis);
+		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->rotate(angle, axis);
+		}
 	}
 }
 
 glm::vec3 SceneMultiNode::getLocalPosition(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getLocalPosition();
+	float factor = 1.0f;
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getLocalPosition() * factor;
+		}
+		else
+		{
+			return {};
+		}
+
+		factor *= 1000.0f;
+	}
+
+	throw std::exception();
 }
 
-glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs) const
+glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs, bool inheritOrientation) const
 {
-	return coordinateSystems[cs].getDerivedPosition();
+	float factor = 1.0f;
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getDerivedPosition(inheritOrientation) * factor;
+		}
+		else
+		{
+			return {};
+		}
+
+		factor *= 1000.0f;
+	}
+
+	throw std::exception();
 }
 
 glm::quat SceneMultiNode::getLocalOrientation(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getLocalOrientation();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getLocalOrientation();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::quat SceneMultiNode::getDerivedOrientation(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getDerivedOrientation();
+	if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(cs)); coordinateSystem.has_value())
+	{
+		return coordinateSystem.value()->getDerivedOrientation();
+	}
+	else
+	{
+		return {};
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getScale(CoordinateSystem cs) const
 {
-	return coordinateSystems[cs].getScale();
+	float factor = 1.0f;
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getScale() / factor;
+		}
+
+		factor *= 1000.0f;
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getForwardVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getForwardVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getForwardVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getUpVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getUpVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getUpVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getRightVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getRightVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getRightVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getLocalForwardVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getLocalForwardVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getLocalForwardVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getLocalUpVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getLocalUpVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getLocalUpVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 glm::vec3 SceneMultiNode::getLocalRightVector(CoordinateSystem cs)
 {
-	return coordinateSystems[cs].getLocalRightVector();
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	{
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			return coordinateSystem.value()->getLocalRightVector();
+		}
+	}
+
+	throw std::exception();
 }
 
 void SceneMultiNode::setParent(SceneMultiNode* parent, CoordinateSystem cs)
 {
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].setParent(&parent->coordinateSystems[i]);
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			if (const auto parentCoordinateSystem = parent->getCoordinateSystem(static_cast<CoordinateSystem>(i)); parentCoordinateSystem.has_value())
+			{
+				coordinateSystem.value()->setParent(parentCoordinateSystem.value());
+			}
+		}
 	}
+
+	if (parent)
+	{
+		parent->children.push_back(this);
+	}
+
+	this->parent = parent;
 }
 
 void SceneMultiNode::removeParent(CoordinateSystem cs)
 {
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		coordinateSystems[i].removeParent();
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->removeParent();
+		}
 	}
-}
 
-void SceneMultiNode::addChild(SceneMultiNode* child, CoordinateSystem cs)
-{
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+	if (parent)
 	{
-		coordinateSystems[i].addChild(&child->coordinateSystems[i]);
+		if (auto foundIter = std::find(parent->children.begin(), parent->children.end(), this); foundIter != parent->children.end())
+		{
+			parent->children.erase(foundIter);
+		}
 	}
-}
 
-void SceneMultiNode::removeChild(SceneMultiNode* child, CoordinateSystem cs)
-{
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
-	{
-		coordinateSystems[i].removeChild(&child->coordinateSystems[i]);
-	}
+	parent = nullptr;
 }
 
 bool SceneMultiNode::isChildOf(SceneMultiNode* node, CoordinateSystem cs)
 {
 	bool isChild = true;
-	for (size_t i = cs; i < coordinateSystems.size(); ++i)
+
+	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
-		isChild &= coordinateSystems[i].isChildOf(&node->coordinateSystems[i]);
+		if (const auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		{
+			if (const auto parentCoordinateSystem = node->getCoordinateSystem(static_cast<CoordinateSystem>(i)); parentCoordinateSystem.has_value())
+			{
+				isChild &= coordinateSystem.value()->isChildOf(parentCoordinateSystem.value());
+			}
+		}
 	}
 
 	return isChild;
+}
+
+void SceneMultiNode::leaveNode(CoordinateSystem cs)
+{
+	for (auto& child : children)
+	{
+		child->leaveNode(cs);
+	}
+
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	{
+		if (coordinateSystems[i]->type == cs)
+		{
+			coordinateSystems[i]->removeParent();
+
+			inactiveCoordinateSystems.push_back(std::move(coordinateSystems[i]));
+
+			coordinateSystems.erase(coordinateSystems.begin() + i);
+		}
+	}
+}
+
+void SceneMultiNode::enterNode(CoordinateSystem cs)
+{
+	auto newCoordinateSystem = std::make_unique<SceneMultiNode::SceneNode>(cs);
+
+	/*If we don't restore parent and children, the entered node won't act properly. It will just exist by itself, not connected to its parent and children*/
+
+	// Restore parent
+	if (parent)
+	{
+		if (auto parentCoordinateSystem = parent->getCoordinateSystem(cs); parentCoordinateSystem.has_value())
+		{
+			newCoordinateSystem->setParent(parentCoordinateSystem.value());
+		}
+	}
+
+	auto previouslyDeletedCsIter = std::find_if(inactiveCoordinateSystems.begin(), inactiveCoordinateSystems.end(), [&](const std::unique_ptr<SceneMultiNode::SceneNode>& ics) {
+		return ics->type == cs;
+	});
+
+	if (previouslyDeletedCsIter != inactiveCoordinateSystems.end())
+	{
+		newCoordinateSystem->setPosition(previouslyDeletedCsIter->get()->getLocalPosition());
+		newCoordinateSystem->setLocalOrientation(previouslyDeletedCsIter->get()->getLocalOrientation());
+		newCoordinateSystem->setScale(previouslyDeletedCsIter->get()->getScale());
+	}
+
+	inactiveCoordinateSystems.erase(previouslyDeletedCsIter);
+
+	coordinateSystems.push_back(std::move(newCoordinateSystem));
+
+	for (auto& child : children)
+	{
+		child->enterNode(cs);
+	}
+}
+
+std::optional<const SceneMultiNode::SceneNode*> SceneMultiNode::getCoordinateSystem(CoordinateSystem cs) const
+{
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	{
+		if (coordinateSystems[i]->type == cs)
+		{
+			return coordinateSystems[i].get();
+		}
+	}
+
+	return {};
+}
+
+std::optional<SceneMultiNode::SceneNode*> SceneMultiNode::getCoordinateSystem(CoordinateSystem cs)
+{
+	for (size_t i = 0; i < coordinateSystems.size(); ++i)
+	{
+		if (coordinateSystems[i]->type == cs)
+		{
+			return coordinateSystems[i].get();
+		}
+	}
+
+	return {};
 }

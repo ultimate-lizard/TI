@@ -53,22 +53,12 @@ void PhysicsComponent::tick(float dt)
 	if (collisionComponent)
 	{
 		CollisionResult collisionResult = collisionComponent->resolveCollision(position, velocity, dt);
-		//collisionResult.collidedAxis = transformComponent->getLocalOrientation() * utils::alightVectorToAxis(glm::vec3(collisionResult.collidedAxis));
-
-		//glm::vec3 upVector = transformComponent->getLocalOrientation() * bg->getSideNormal(position);
 
 		position = collisionResult.adjustedPosition;
 		velocity = collisionResult.adjustedVelocity;
 
 		if (collisionResult.collidedAxis != glm::bvec3(0.0f))
 		{
-			//glm::vec3 orientedVelocity = transformComponent->getLocalOrientation() * velocity;
-			//if ((orientedVelocity.y < 0.0f && upVector.y > 0.0f) || (orientedVelocity.y > 0.0f && upVector.y < 0.0f))
-			//{
-			//	// On land
-			//	/*movementState = MovementState::Walk;
-			//	velocity = clampVectorMagnitude(velocity, walkMaxSpeed);*/
-			//}
 			velocity *= friction;
 		}
 	}
@@ -151,7 +141,6 @@ void PhysicsComponent::updatePlaneSideRotation(float dt)
 
 				// Set a new box for test
 				CollisionBox box = originalBox;
-
 				box.orient(currentUpVector, utils::alightVectorToAxis(transformComponent->getForwardVector()), utils::alightVectorToAxis(glm::cross(transformComponent->getForwardVector(), currentUpVector)));
 
 				collisionComponent->setCollisionBox(std::move(box));

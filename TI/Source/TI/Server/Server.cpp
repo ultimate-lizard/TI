@@ -46,8 +46,10 @@ void Server::initEntityTemplates()
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
+	// cubeMeshComponent->setLocalScale({ 1.0f, 2.0f, 1.0f });
 	auto cubeCollisionComponent = cubeEntity->addComponent<CollisionComponent>();
-	cubeCollisionComponent->setCollisionBox({ glm::vec3(1.0f), glm::vec3(0.0f) });
+	// cubeCollisionComponent->setCollisionBox({ {1.0f, 2.0f, 1.0f}, glm::vec3(0.0f) });
+	cubeCollisionComponent->setCollisionBox({ {1.0f, 1.0f, 1.0f}, glm::vec3(0.0f) });
 	auto cubePhysicsComponent = cubeEntity->addComponent<PhysicsComponent>();
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));

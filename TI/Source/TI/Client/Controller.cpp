@@ -228,14 +228,6 @@ void PlayerController::toggleFlyMode()
 {
 	if (entity)
 	{
-		if (auto transformComponent = entity->findComponent<TransformComponent>())
-		{
-			if (BlockGrid* const plane = transformComponent->getCurrentBlockGrid())
-			{
-				plane->setGravityEnabled(!plane->isGravityEnabled());
-			}
-		}
-
 		if (movementComponent)
 		{
 			movementComponent->setFlyModeEnabled(!movementComponent->isFlightModeEnabled());

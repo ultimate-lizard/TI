@@ -73,11 +73,6 @@ private:
 	void handleFall(float dt);
 	void handleFlight(float dt);
 
-	glm::vec3 getGravityVector() const;
-
-	void updatePlaneSideRotation(float dt);
-
-private:
 	TransformComponent* transformComponent;
 	CollisionComponent* physicsComponent;
 
@@ -104,16 +99,6 @@ private:
 	bool flightMode;
 
 	MovementState movementState;
-
-	glm::vec3 previousUpVector;
-
-	bool shouldRotate;
-	bool planeSideTransitionInProgress;
-	float currentRotationAngle;
-	glm::vec3 sideRotationAxis;
-
-	float rotationStartHeight = 0.0f;
-	float pendingRotationAngle;
 
 	CelestialBody* primaryBody;
 };

@@ -199,6 +199,7 @@
     <ClCompile Include="Source\TI\Renderer\Viewport.cpp" />
     <ClCompile Include="Source\TI\Server\CelestialBody.cpp" />
     <ClCompile Include="Source\TI\Server\Chunk.cpp" />
+    <ClCompile Include="Source\TI\Server\Component\BlockGridGravityComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\CameraComponent.cpp" />
     <ClCompile Include="Source\TI\Server\Component\Component.cpp" />
     <ClCompile Include="Source\TI\Server\Component\MeshComponent.cpp" />
@@ -252,6 +253,7 @@
     <ClInclude Include="Source\TI\Server\CelestialBody.h" />
     <ClInclude Include="Source\TI\Server\Block.h" />
     <ClInclude Include="Source\TI\Server\Chunk.h" />
+    <ClInclude Include="Source\TI\Server\Component\BlockGridGravityComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\CameraComponent.h" />
     <ClInclude Include="Source\TI\Server\Component\Component.h" />
     <ClInclude Include="Source\TI\Server\Component\MeshComponent.h" />

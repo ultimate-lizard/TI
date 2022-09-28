@@ -8,6 +8,7 @@
 #include <TI/Server/Component/TransformComponent.h>
 #include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Server/Component/PhysicsComponent.h>
+#include <TI/Server/Component/BlockGridGravityComponent.h>
 #include <TI/Application.h>
 #include <TI/Client/LocalClient.h>
 #include <TI/Renderer/Camera.h>
@@ -38,6 +39,8 @@ void Server::initEntityTemplates()
 
 	meshComponent->setParent(cameraComponent);
 
+	playerEntity->addComponent<BlockGridGravityComponent>();
+
 	entityTemplates.emplace(playerEntity->getName(), std::move(playerEntity));
 
 	auto cubeEntity = std::make_unique<Entity>();
@@ -51,6 +54,7 @@ void Server::initEntityTemplates()
 	// cubeCollisionComponent->setCollisionBox({ {1.0f, 2.0f, 1.0f}, glm::vec3(0.0f) });
 	cubeCollisionComponent->setCollisionBox({ {1.0f, 1.0f, 1.0f}, glm::vec3(0.0f) });
 	auto cubePhysicsComponent = cubeEntity->addComponent<PhysicsComponent>();
+	cubeEntity->addComponent<BlockGridGravityComponent>();
 
 	entityTemplates.emplace(cubeEntity->getName(), std::move(cubeEntity));
 

@@ -16,17 +16,9 @@ public:
 	void addForce(const glm::vec3& force);
 
 private:
-	glm::vec3 getGravityVector() const;
-	void updatePlaneSideRotation(float dt);
+	
 
 	glm::vec3 velocity;
-
-	glm::vec3 previousUpVector;
-	float pendingRotationAngle;
-	bool shouldRotate;
-	bool planeSideTransitionInProgress;
-	float currentRotationAngle;
-	glm::vec3 sideRotationAxis;
 
 	float friction;
 };

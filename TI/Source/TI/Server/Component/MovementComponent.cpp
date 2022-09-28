@@ -14,6 +14,7 @@
 #include <TI/Server/Component/PhysicsComponent.h>
 #include <TI/Server/Component/CollisionComponent.h>
 #include <TI/Server/Component/MeshComponent.h>
+#include <TI/Server/Component/BlockGridGravityComponent.h>
 #include <TI/Server/BlockGrid.h>
 #include <TI/Server/CelestialBody.h>
 #include <TI/Client/ChunkMesh.h>
@@ -39,10 +40,6 @@ MovementComponent::MovementComponent() :
 	jumpVelocity(8.5f),
 	flightMode(false),
 	movementState(MovementState::Fall),
-	shouldRotate(false),
-	planeSideTransitionInProgress(false),
-	currentRotationAngle(0.0f),
-	pendingRotationAngle(90.0f),
 	primaryBody(nullptr)
 {
 }
@@ -63,8 +60,6 @@ void MovementComponent::tick(float dt)
 {
 	handleInput(dt);
 
-	updatePlaneSideRotation(dt);
-
 	switch (movementState)
 	{
 	case MovementState::Walk:
@@ -76,136 +71,6 @@ void MovementComponent::tick(float dt)
 	case MovementState::Fly:
 		handleFlight(dt);
 		break;
-	}
-}
-
-void MovementComponent::updatePlaneSideRotation(float dt)
-{
-	if (!transformComponent)
-	{
-		return;
-	}
-
-	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
-	if (!bg)
-	{
-		return;
-	}
-
-	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition());
-	if (previousUpVector == glm::vec3(0.0f))
-	{
-		previousUpVector = currentUpVector;
-	}
-
-	// This check is only for not executing this logic every frame
-	if (previousUpVector != currentUpVector)
-	{
-		glm::vec3 cross = glm::cross(previousUpVector, currentUpVector);
-		if (cross == glm::vec3(0.0f))
-		{
-			// Find a negative 0 from the cross product 0, 0, 0. Axis with negative 0 is the correct rotation axis
-			// TODO: WARNING! Find better soultion. Might be different result with a different compilator?
-			for (glm::vec3::length_type i = 0; i < 3; ++i)
-			{
-				if (std::signbit(cross[i]))
-				{
-					cross[i] = 1.0f;
-					break;
-				}
-			}
-
-			pendingRotationAngle = 180.0f;
-		}
-		else
-		{
-			pendingRotationAngle = 90.0f;
-		}
-
-		//bool shouldEscape = false;
-		//if (transformComponent)
-		//{
-		//	if (BlockGrid* bg = transformComponent->getCurrentBlockGrid())
-		//	{
-		//		// Assume block grid are always cubical
-		//		const float bgSizeInBlocks = bg->getBlockGridSize().x * bg->getChunkSize();
-		//		const float distanceToBgCenter = glm::distance(transformComponent->getLocalPosition(), glm::vec3(bgSizeInBlocks / 2.0f));
-		//		const float escapeAltitude = bgSizeInBlocks;
-		//		if (distanceToBgCenter > escapeAltitude)
-		//		{
-		//			shouldEscape = true;
-		//		}
-		//	}
-		//}
-
-		// Rotate collision box
-		if (!planeSideTransitionInProgress && !flightMode) //&& !shouldEscape)
-		{
-			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
-
-			// Rotate for test
-			transformComponent->rotateInWorldSpaceExclusive(pendingRotationAngle, cross);
-
-			if (physicsComponent)
-			{
-				const CollisionBox originalBox = physicsComponent->getCollisionBox();
-
-				// Set a new box for test
-				CollisionBox box = originalBox;
-
-				if (auto cameraComponent = entity->findComponent<CameraComponent>())
-				{
-					box.orient(currentUpVector, utils::alightVectorToAxis(transformComponent->getForwardVector()), utils::alightVectorToAxis(glm::cross(transformComponent->getForwardVector(), currentUpVector)));
-				}
-				
-				physicsComponent->setCollisionBox(std::move(box));
-
-				// Test resolve
-				CollisionResult collisionResult = physicsComponent->resolveCollision(transformComponent->getLocalPosition(), {}, dt);
-
-				// TODO: Add another collision box to prevent colliding camera with world during side transition
-				if (collisionResult.collidedAxis == glm::bvec3(false))
-				{
-					// Didn't collide with anything. Test successful
-					sideRotationAxis = cross;
-					shouldRotate = true;
-					previousUpVector = currentUpVector;
-				}
-				else
-				{
-					physicsComponent->setCollisionBox(originalBox);
-				}
-				
-				transformComponent->setLocalOrientation(originalOrientation);
-			}
-		}
-	}
-
-	if (shouldRotate)
-	{
-		planeSideTransitionInProgress = true;
-
-		const float rotationStep = 300.0f * dt;
-
-		if (currentRotationAngle < pendingRotationAngle)
-		{
-			//if (currentRotationAngle > pendingRotationAngle)
-			//{
-			//	currentRotationAngle = pendingRotationAngle;
-			//}
-
-			transformComponent->rotate(rotationStep, sideRotationAxis);
-			currentRotationAngle += rotationStep;
-		}
-		else
-		{
-			const float remainingRotationStep = pendingRotationAngle - currentRotationAngle;
-			transformComponent->rotate(remainingRotationStep, sideRotationAxis);
-
-			currentRotationAngle = 0.0f;
-			shouldRotate = false;
-			planeSideTransitionInProgress = false;
-		}
 	}
 }
 
@@ -298,7 +163,11 @@ void MovementComponent::jump()
 {
 	if (movementState == MovementState::Walk)
 	{
-		velocity += -getGravityVector() * jumpVelocity;
+		if (auto blockGridGravityComponent = entity->findComponent<BlockGridGravityComponent>())
+		{
+			velocity += -blockGridGravityComponent->getGravityVector() * jumpVelocity;
+		}
+		
 		movementState = MovementState::Fall;
 	}
 }
@@ -307,6 +176,14 @@ void MovementComponent::setFlyModeEnabled(bool flightMode)
 {
 	movementState = flightMode ? MovementState::Fly : MovementState::Fall;
 	this->flightMode = flightMode;
+	
+	if (entity)
+	{
+		if (auto blockGridGravityComponent = entity->findComponent<BlockGridGravityComponent>())
+		{
+			blockGridGravityComponent->setRotationEnabled(!flightMode);
+		}
+	}
 }
 
 bool MovementComponent::isFlightModeEnabled() const
@@ -391,6 +268,12 @@ void MovementComponent::handleWalk(float dt)
 		return;
 	}
 
+	auto blockGridGravityComponent = entity->findComponent<BlockGridGravityComponent>();
+	if (!blockGridGravityComponent)
+	{
+		return;
+	}
+
 	// Acceleration
 	if (walkDirection != glm::vec3(0.0f))
 	{
@@ -426,7 +309,7 @@ void MovementComponent::handleWalk(float dt)
 		}
 
 		// Check if no longer on ground
-		glm::vec3 groundTestVelocity = velocity + getGravityVector() * 30.0f * dt;
+		glm::vec3 groundTestVelocity = velocity + blockGridGravityComponent->getGravityVector() * 30.0f * dt;
 		CollisionResult groundTestResult = physicsComponent->resolveCollision(position, groundTestVelocity, dt);
 
 		glm::vec3 upVector = bg->getSideNormal(position);
@@ -468,6 +351,12 @@ void MovementComponent::handleFall(float dt)
 		return;
 	}
 
+	auto blockGridGravityComponent = entity->findComponent<BlockGridGravityComponent>();
+	if (!blockGridGravityComponent)
+	{
+		return;
+	}
+
 	bool gravityEnabled = transformComponent->getCurrentBlockGrid()->isGravityEnabled();
 
 	// In air control
@@ -479,7 +368,7 @@ void MovementComponent::handleFall(float dt)
 	// Apply gravity
 	if (gravityEnabled)
 	{
-		velocity += getGravityVector() * 30.0f * dt;
+		velocity += blockGridGravityComponent->getGravityVector() * 30.0f * dt;
 	}
 
 	glm::vec3 position = transformComponent->getLocalPosition();
@@ -552,24 +441,6 @@ void MovementComponent::handleFlight(float dt)
 			transformComponent->offset(velocity * dt);
 		}
 	}
-}
-
-glm::vec3 MovementComponent::getGravityVector() const
-{
-	if (!transformComponent)
-	{
-		return {};
-	}
-
-	BlockGrid* bg = transformComponent->getCurrentBlockGrid();
-	if (!bg)
-	{
-		return {};
-	}
-
-	glm::vec3 result = -bg->getSideNormal(transformComponent->getDerivedPosition());
-
-	return result;
 }
 
 void MovementComponent::addHorizontalLook(float value)

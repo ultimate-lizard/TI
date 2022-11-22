@@ -309,46 +309,7 @@ void PlayerController::decreaseFlightSpeed()
 
 void PlayerController::teleportHome()
 {
-	//if (Server* server = client->getApplication()->getCurrentServer())
-	//{
-	//	// TODO: Very badly hardcoded. Fix it
-	//	if (Entity* player = server->findEntity("Player"))
-	//	{
-	//		if (auto playerTransform = player->findComponent<TransformComponent>())
-	//		{
-	//			Planet* planet = server->getStars()[0]->getPlanets()[0].get();
-	//			BlockGrid* bg = planet->getBlockGrid();
 
-	//			glm::ivec3 planeSize = bg->getBlockGridSize();
-	//			glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
-
-	//			if (auto playerMovement = player->findComponent<MovementComponent>())
-	//			{
-	//				playerMovement->setVelocity({});
-	//				movementComponent->setFlightSpeed(25.0f);
-	//				// playerTransform->setTargetLocalOrientation(playerTransform->lastOrientation, CoordinateSystem::Planetary);
-	//			}
-
-	//			playerTransform->setLocalPosition(glm::uvec3(0.0f));
-
-	//			playerTransform->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
-	//			playerTransform->setLocalPosition({ }, CoordinateSystem::Interstellar);
-
-	//			playerTransform->setLocalPosition(spawnLocation, CoordinateSystem::Planetary);
-
-	//			playerTransform->setLocalOrientation({}, CoordinateSystem::Interplanetary);
-	//			playerTransform->setLocalOrientation({}, CoordinateSystem::Interstellar);
-
-	//			playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interplanetary);
-	//			playerTransform->setLocalOrientation(playerTransform->getLocalOrientation(CoordinateSystem::Planetary), CoordinateSystem::Interstellar);
-
-	//			if (!playerTransform->isChildOf(planet, CoordinateSystem::Planetary))
-	//			{
-	//				playerTransform->setParent(planet, CoordinateSystem::Planetary);
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void PlayerController::togglePlanetRelativeMovement()

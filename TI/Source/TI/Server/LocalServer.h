@@ -10,7 +10,7 @@ class LocalServer : public Server
 {
 public:
 	LocalServer(Application* app);
-	~LocalServer();
+	virtual ~LocalServer();
 
 	void update(float dt) override;
 

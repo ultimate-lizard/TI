@@ -110,7 +110,6 @@ void LocalClient::update(float dt)
 				if (celestialBody->getBlockGrid() != blockGridToRender)
 				{
 					blockGridToRender = celestialBody->getBlockGrid();
-					updateAllBlocks(blockGridToRender);
 				}
 			}
 			else
@@ -331,8 +330,8 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 				const int VIEW_DISTANCE = 32;
 				cachedVisibleChunksPositions = getSurroundingChunksPositions(blockGrid, playerPosition, VIEW_DISTANCE);
 
-				//std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
-				//std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
+				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
+				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
 			}
 
 			if (cachedEntityCamera)
@@ -447,6 +446,11 @@ void LocalClient::renderEntities()
 			auto& entity = entityPair.second;
 			if (auto meshComp = entity->findComponent<MeshComponent>(); meshComp)
 			{
+				if (!meshComp->isVisible())
+				{
+					continue;
+				}
+
 				// Don't render your entity as we play in first person
 				if (possessedEntity->getId() == meshComp->getParentEntity()->getId() && meshComp->isVisibleForParentEntity())
 				{

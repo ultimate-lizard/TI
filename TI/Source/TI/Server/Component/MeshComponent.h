@@ -25,9 +25,13 @@ public:
 	void setVisibleForParentEntity(bool newVisibility);
 	bool isVisibleForParentEntity() const;
 
+	void setVisibility(bool newVisibility);
+	bool isVisible() const;
+
 private:
 	ResourceManager* modelManager;
 	Model* model;
 
 	bool visibleForParentEntity;
+	bool visible;
 };

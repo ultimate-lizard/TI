@@ -51,6 +51,7 @@ protected:
 
 	std::atomic<bool> shuttingDown;
 
+	// Block grids array is only to store unique_ptrs
 	std::vector<std::unique_ptr<BlockGrid>> blockGrids;
 	std::vector<std::unique_ptr<CelestialBody>> celestialBodies;
 	std::vector<std::unique_ptr<Star>> starSystems;

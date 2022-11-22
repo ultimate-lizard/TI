@@ -60,19 +60,7 @@ void LocalServer::update(float dt)
 
 bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 {
-	if (homePlanet)
-	{
-		if (BlockGrid* bg = homePlanet->getBlockGrid())
-		{
-			glm::ivec3 planeSize = bg->getBlockGridSize();
-			glm::vec3 spawnLocation{ planeSize.x * bg->getChunkSize() / 2.0f, planeSize.y * bg->getChunkSize() + 3.0f, planeSize.z * bg->getChunkSize() / 2.0f };
-			spawnPlayer(client, nullptr, spawnLocation);
-		}
-	}
-	else
-	{
-		spawnPlayer(client, nullptr, {});
-	}
+	spawnPlayer(client, nullptr, {});
 
 	return true;
 }
@@ -88,8 +76,8 @@ void LocalServer::initHomeSolarSystem()
 	star->setLocalScale(glm::vec3(100.0f), CoordinateSystem::Interplanetary);
 	// star->setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar);
 
-	auto blockGrid = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
-	auto planet = std::make_unique<Planet>(blockGrid.get());
+	auto planetBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	auto planet = std::make_unique<Planet>(planetBg.get());
 
 	planet->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
 
@@ -99,13 +87,13 @@ void LocalServer::initHomeSolarSystem()
 	planetProperties.equatorialVelocity = 0.5f;
 
 	planet->setOrbitalProperties(std::move(planetProperties));
-	homePlanet = planet.get();
 
 	// --- Sattelite ---
 
-	auto sattelite = std::make_unique<Planet>();
+	auto satteliteBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	auto sattelite = std::make_unique<Planet>(satteliteBg.get());
 
-	sattelite->setLocalScale(glm::vec3(0.05f), CoordinateSystem::Interplanetary);
+	sattelite->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
 
 	OrbitalProperties satteliteProperties;
 
@@ -119,7 +107,8 @@ void LocalServer::initHomeSolarSystem()
 	planet->addSattelite(sattelite.get());
 	star->addSattelite(planet.get());
 	
-	blockGrids.push_back(std::move(blockGrid));
+	blockGrids.push_back(std::move(planetBg));
+	blockGrids.push_back(std::move(satteliteBg));
 	starSystems.push_back(std::move(star));
 	celestialBodies.push_back(std::move(sattelite));
 	celestialBodies.push_back(std::move(planet));

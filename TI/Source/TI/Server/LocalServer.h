@@ -18,9 +18,6 @@ public:
 
 	void ejectClient(Client* client) override;
 
-	// TODO: This is temporary. Remove this
-	Planet* homePlanet{ nullptr };
-
 protected:
 	void initHomeSolarSystem();
 

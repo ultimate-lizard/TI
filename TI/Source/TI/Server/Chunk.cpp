@@ -13,7 +13,7 @@ const float planetSize = 10.0f * chunkSize;
 const float core = 2.0f * chunkSize;
 const float crust = 2.0f * chunkSize;
 const float atmosphere = 2.0f * chunkSize;
-const float total = core + crust + atmosphere;
+// const float total = core + crust + atmosphere;
 
 Chunk::Chunk(size_t size, const glm::vec3& position) :
 	size(size),

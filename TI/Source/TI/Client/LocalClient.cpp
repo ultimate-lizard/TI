@@ -33,7 +33,8 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 	// plane(nullptr),
 	pool(1'500'000'000, 500'000'000),
 	frustumCullingEnabled(true),
-	cachedEntityCamera(nullptr)
+	cachedEntityCamera(nullptr),
+	blockGridToRender(nullptr)
 {
 	// TODO: assert(app);
 	DebugInformation* debugInfoPtr = new DebugInformation(app->getResourceManager(), renderer);
@@ -67,46 +68,9 @@ void LocalClient::connect(const std::string& ip, int port)
 				initSolarSystemVisuals(homeStar);
 			}
 
-			if (Planet* homePlanet = server->homePlanet)
-			{
-				BlockGrid* plane = homePlanet->getBlockGrid();
-				activeBlockGrids.push_back(plane);
-
-				ResourceManager* rm = app->getResourceManager();
-			}
-			
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 1.0f);
-
-			if (app)
-			{
-				
-
-				//if (Model* model = rm->getModel("Star"))
-				//{
-				//	auto planetMesh = std::make_unique<PlanetMesh>(model);
-				//	planetMesh->setPosition({ 0.0f, 0.0f, 0.0f }, CoordinateSystemScale::Interstellar);
-				//	planetMesh->setScale(glm::vec3(0.0139f), CoordinateSystemScale::Interstellar);
-				//	// planetMesh->rotateInWorldSpace(45.0f, {0.0f, 1.0f, 1.0f});
-
-				//	stars.push_back(std::move(planetMesh));
-				//}
-
-				//if (auto localServer = dynamic_cast<LocalServer*>(server))
-				//{
-				//	// localServer->star
-				//	if (Model* model = rm->getModel("Star"))
-				//	{
-				//		auto planetMesh = std::make_unique<AstroBodyMesh>(localServer->star.get(), model);
-				//		planets.push_back(std::move(planetMesh));
-				//	}
-				//}
-			}
-
-			//Model* planetModel = app->getResourceManager()->getModel("Planet");
-			//planetMesh = std::make_unique<PlanetMesh>(planetModel);
-			//planetMesh->setPosition({ 0.0f, 0.0f, -2.0f });
 		}
 	}
 }
@@ -137,9 +101,28 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	for (BlockGrid* plane : activeBlockGrids)
+	if (possessedEntity)
 	{
-		updatePlaneVisuals(plane);
+		if (auto playerTransform = possessedEntity->findComponent<TransformComponent>())
+		{
+			if (CelestialBody* celestialBody = playerTransform->getPrimaryBody())
+			{
+				if (celestialBody->getBlockGrid() != blockGridToRender)
+				{
+					blockGridToRender = celestialBody->getBlockGrid();
+					updateAllBlocks(blockGridToRender);
+				}
+			}
+			else
+			{
+				blockGridToRender = nullptr;
+			}
+		}
+	}
+
+	if (blockGridToRender)
+	{
+		updatePlaneVisuals(blockGridToRender);
 	}
 
 	renderDebugMeshes();
@@ -262,13 +245,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 			if (Model* model = rm->getModel("Star"))
 			{
 				auto planetMesh = std::make_unique<AstroBodyMesh>(star, model);
-				planets.push_back(std::move(planetMesh));
-
-				//for (const auto& starPtr : localServer->getStars())
-				//{
-				//	auto starMesh = std::make_unique<AstroBodyMesh>(starPtr.get(), model);
-				//	stars.push_back(std::move(starMesh));
-				//}
+				astroBodiesMeshes.push_back(std::move(planetMesh));
 			}
 
 			for (CelestialBody* planet : star->getSattelites())
@@ -276,7 +253,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 				if (Model* model = rm->getModel("Planet"))
 				{
 					auto planetMesh = std::make_unique<AstroBodyMesh>(planet, model);
-					planets.push_back(std::move(planetMesh));
+					astroBodiesMeshes.push_back(std::move(planetMesh));
 				}
 
 				for (CelestialBody* sattelite : planet->getSattelites())
@@ -284,7 +261,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 					if (Model* model = rm->getModel("Planet"))
 					{
 						auto satteliteMesh = std::make_unique<AstroBodyMesh>(sattelite, model);
-						planets.push_back(std::move(satteliteMesh));
+						astroBodiesMeshes.push_back(std::move(satteliteMesh));
 					}
 				}
 			}
@@ -337,14 +314,6 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 	{
 		if (auto transformComponent = possessedEntity->findComponent<TransformComponent>())
 		{
-			/*if (chunkMaterial)
-			{
-				if (Shader* shader = chunkMaterial->getShader())
-				{
-					shader->setVector3("lightPos", transformComponent->getPosition());
-				}
-			}*/
-
 			// TODO: Find a way to get the chunk an entity stands on
 			glm::vec3 playerPosition = transformComponent->getLocalPosition();
 			playerPosition.y -= 3.0f;
@@ -431,111 +400,40 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 
 void LocalClient::renderWorld()
 {
-	//float dist = 0.0f;
-	//if (const Server* server = app->getCurrentServer())
-	//{
-	//	if (auto result = server->getEntities().find("planet_entity"); result != server->getEntities().end())
-	//	{
-	//		if (auto mesh = result->second.get()->findComponent<MeshComponent>())
-	//		{
-	//			if (Model* model = mesh->getModel())
-	//			{
-	//				if (Material* mat = model->getMaterial())
-	//				{
-	//					if (Shader* shader = mat->getShader())
-	//					{
-	//						if (possessedEntity)
-	//						{
-	//							if (auto trans = possessedEntity->findComponent<TransformComponent>())
-	//							{
-	//								if (plane)
-	//								{
-	//									glm::vec3 center = { plane->getSize().x * plane->getChunkSize() / 2.0f, plane->getSize().y * plane->getChunkSize() / 2.0f, plane->getSize().z * plane->getChunkSize() / 2.0f };
-	//									glm::vec3 playerPosition = trans->getPosition();
-	//									dist = glm::distance(center, playerPosition);
-	//									shader->setFloat("playerDistance", dist);
-	//								}
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-
-	//chunkMaterial->getShader()->use();
-	//chunkMaterial->getShader()->setFloat("playerDistanceChunk", dist);
-
-	RenderCommand cmd;
-	cmd.mesh = cachedPoolData.poolMesh;
-	cmd.material = chunkMaterial;
-
-	if (!activeBlockGrids.empty())
-	{
-		if (BlockGrid* bg = activeBlockGrids[0])
-		{
-			cmd.transform = bg->getTransform(CoordinateSystem::Planetary);
-		}
-	}
-	
-	cmd.viewportId = getViewportId();
-	cmd.counts = cachedPoolData.sizes.data();
-	cmd.indices = cachedPoolData.offsets.data();
-	cmd.multiDrawCount = cachedPoolData.drawCount;
-
-	if (possessedEntity)
+	if (BlockGrid* bg = blockGridToRender)
 	{
 		if (auto playerTransform = possessedEntity->findComponent<TransformComponent>())
 		{
 			if (auto result = playerTransform->getCoordinateSystem(CoordinateSystem::Planetary); result.has_value())
 			{
+				RenderCommand cmd;
+				cmd.mesh = cachedPoolData.poolMesh;
+				cmd.material = chunkMaterial;
+				cmd.transform = bg->getTransform(CoordinateSystem::Planetary);
+				cmd.viewportId = getViewportId();
+				cmd.counts = cachedPoolData.sizes.data();
+				cmd.indices = cachedPoolData.offsets.data();
+				cmd.multiDrawCount = cachedPoolData.drawCount;
+
 				renderer->pushRender(cmd, CoordinateSystem::Planetary);
 			}
 		}
 	}
-	
-	//for (auto& planetMesh : stars)
-	//{
-	//	if (planetMesh)
-	//	{
-	//		RenderCommand cmd2;
-	//		cmd2.mesh = planetMesh->getModel()->getMesh();
-	//		cmd2.material = planetMesh->getModel()->getMaterial();
-	//		cmd2.transform = planetMesh->getAstroBody()->getTransform(CoordinateSystemScale::Interstellar);
-	//		cmd2.viewportId = getViewportId();
-	//		cmd2.cullFaces = false;
-	//		renderer->pushRender(cmd2, 0);
-	//	}
-	//}
-	
-	for (auto& planetMesh : planets)
+
+	for (auto& astroMesh : astroBodiesMeshes)
 	{
-		if (planetMesh)
+		if (astroMesh)
 		{
 			RenderCommand cmd2;
-			cmd2.mesh = planetMesh->getModel()->getMesh();
-			cmd2.material = planetMesh->getModel()->getMaterial();
-			cmd2.transform = planetMesh->getAstroBody()->getTransform(CoordinateSystem::Interplanetary);
+			cmd2.mesh = astroMesh->getModel()->getMesh();
+			cmd2.material = astroMesh->getModel()->getMaterial();
+			cmd2.transform = astroMesh->getAstroBody()->getTransform(CoordinateSystem::Interplanetary);
 			cmd2.viewportId = getViewportId();
 			cmd2.cullFaces = false;
+
 			renderer->pushRender(cmd2, CoordinateSystem::Interplanetary);
 		}
 	}
-
-	//for (auto& starMesh : stars)
-	//{
-	//	if (starMesh)
-	//	{
-	//		RenderCommand cmd2;
-	//		cmd2.mesh = starMesh->getModel()->getMesh();
-	//		cmd2.material = starMesh->getModel()->getMaterial();
-	//		cmd2.transform = starMesh->getAstroBody()->getTransform(CoordinateSystem::Interstellar);
-	//		cmd2.viewportId = getViewportId();
-	//		cmd2.cullFaces = false;
-	//		renderer->pushRender(cmd2, CoordinateSystem::Interstellar);
-	//	}
-	//}
 }
 
 void LocalClient::renderEntities()

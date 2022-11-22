@@ -85,8 +85,7 @@ private:
 
 	static std::unique_ptr<DebugInformation> debugInformation;
 
-	// const Plane* plane;
-	std::vector<BlockGrid*> activeBlockGrids;
+	BlockGrid* blockGridToRender;
 
 	glm::ivec3 playerLastChunkPosition;
 
@@ -97,7 +96,7 @@ private:
 
 	Camera* cachedEntityCamera;
 
-	std::vector<std::unique_ptr<AstroBodyMesh>> planets;
+	std::vector<std::unique_ptr<AstroBodyMesh>> astroBodiesMeshes;
 	std::vector<std::unique_ptr<AstroBodyMesh>> stars;
 
 	// std::unique_ptr<PlanetMesh> planetLod;

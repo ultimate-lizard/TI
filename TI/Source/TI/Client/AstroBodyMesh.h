@@ -3,13 +3,13 @@
 class Model;
 class CelestialBody;
 
-class AstroBodyMesh
+class CelestialBodyMesh
 {
 public:
-	AstroBodyMesh(CelestialBody* astroBody, Model* model);
+	CelestialBodyMesh(CelestialBody* astroBody, Model* model);
 
 	Model* getModel();
-	inline CelestialBody* getAstroBody()
+	inline CelestialBody* getCelestialBody()
 	{
 		return astroBody;
 	}

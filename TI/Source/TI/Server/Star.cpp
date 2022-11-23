@@ -3,21 +3,8 @@
 #include <iostream>
 
 Star::Star() :
-	CelestialBody(nullptr)
+	CelestialBody(CoordinateSystem::Interstellar)
 {
-}
-
-Star::~Star()
-{
-}
-
-void Star::tick(float dt)
-{
-	CelestialBody::tick(dt);
-
-	// offset({ 0.0f, 1.0f * dt, 0.0f }, CoordinateSystem::Interplanetary);
-
-	// std::cout << "Star position: " << getLocalPosition(CoordinateSystem::Interplanetary).x << " " << getLocalPosition(CoordinateSystem::Interplanetary).y << " " << getLocalPosition(CoordinateSystem::Interplanetary).z << std::endl;
 }
 
 void Star::initRandomStarSystem()

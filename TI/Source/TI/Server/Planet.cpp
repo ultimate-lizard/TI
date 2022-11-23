@@ -3,12 +3,12 @@
 #include <iostream>
 
 Planet::Planet() :
-	CelestialBody(nullptr)
+	CelestialBody(CoordinateSystem::Interplanetary, nullptr)
 {
 }
 
 Planet::Planet(BlockGrid* blockGrid) :
-	CelestialBody(blockGrid)
+	CelestialBody(CoordinateSystem::Interplanetary, blockGrid)
 {
 }
 

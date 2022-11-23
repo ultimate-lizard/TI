@@ -41,5 +41,5 @@ private:
 	glm::quat targetOrientation;
 	CoordinateSystem targetCs = CoordinateSystem::Planetary;
 
-	CelestialBody* currentPrimaryBody;
+	CelestialBody* primaryBody;
 };

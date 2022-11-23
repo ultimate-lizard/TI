@@ -18,8 +18,6 @@ struct OrbitalProperties
 class CelestialBody : public SceneMultiNode
 {
 public:
-	CelestialBody();
-	CelestialBody(BlockGrid* blockGrid = nullptr);
 	virtual ~CelestialBody() = default;
 
 	virtual void tick(float dt);
@@ -32,9 +30,13 @@ public:
 	void addSattelite(CelestialBody* orbitalSystem);
 	const std::vector<CelestialBody*>& getSattelites() const;
 
+	CelestialBody* getParentCelestialBody() const;
+
 protected:
+	CelestialBody(CoordinateSystem minimalCs, BlockGrid* blockGrid = nullptr);
+
 	BlockGrid* blockGrid;
 	OrbitalProperties orbitalProperties;
 	std::vector<CelestialBody*> sattelites;
-	CelestialBody* primaryBody;
+	CelestialBody* parentCelestialBody;
 };

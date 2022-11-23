@@ -20,7 +20,7 @@ class Renderer;
 class DebugInformation;
 class BlockGrid;
 class Camera;
-class AstroBodyMesh;
+class CelestialBodyMesh;
 class Star;
 
 class LocalClient : public Client
@@ -96,8 +96,8 @@ private:
 
 	Camera* cachedEntityCamera;
 
-	std::vector<std::unique_ptr<AstroBodyMesh>> astroBodiesMeshes;
-	std::vector<std::unique_ptr<AstroBodyMesh>> stars;
+	std::vector<std::unique_ptr<CelestialBodyMesh>> astroBodiesMeshes;
+	std::vector<std::unique_ptr<CelestialBodyMesh>> stars;
 
 	// std::unique_ptr<PlanetMesh> planetLod;
 };

@@ -334,7 +334,7 @@ void MovementComponent::handleWalk(float dt)
 		}
 	}
 
-	transformComponent->setLocalPosition(position);
+	transformComponent->setLocalPosition(position, CoordinateSystem::Planetary, false);
 	transformComponent->offset(velocity * dt);
 }
 
@@ -407,7 +407,7 @@ void MovementComponent::handleFall(float dt)
 		velocity = collisionResult.adjustedVelocity;
 	}
 
-	transformComponent->setLocalPosition(position);
+	transformComponent->setLocalPosition(position, CoordinateSystem::Planetary, false);
 	transformComponent->offset(velocity * dt);
 }
 

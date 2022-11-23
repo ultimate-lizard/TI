@@ -243,7 +243,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 			ResourceManager* rm = app->getResourceManager();
 			if (Model* model = rm->getModel("Star"))
 			{
-				auto planetMesh = std::make_unique<AstroBodyMesh>(star, model);
+				auto planetMesh = std::make_unique<CelestialBodyMesh>(star, model);
 				astroBodiesMeshes.push_back(std::move(planetMesh));
 			}
 
@@ -251,7 +251,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 			{
 				if (Model* model = rm->getModel("Planet"))
 				{
-					auto planetMesh = std::make_unique<AstroBodyMesh>(planet, model);
+					auto planetMesh = std::make_unique<CelestialBodyMesh>(planet, model);
 					astroBodiesMeshes.push_back(std::move(planetMesh));
 				}
 
@@ -259,7 +259,7 @@ void LocalClient::initSolarSystemVisuals(Star* star)
 				{
 					if (Model* model = rm->getModel("Planet"))
 					{
-						auto satteliteMesh = std::make_unique<AstroBodyMesh>(sattelite, model);
+						auto satteliteMesh = std::make_unique<CelestialBodyMesh>(sattelite, model);
 						astroBodiesMeshes.push_back(std::move(satteliteMesh));
 					}
 				}
@@ -408,7 +408,7 @@ void LocalClient::renderWorld()
 				RenderCommand cmd;
 				cmd.mesh = cachedPoolData.poolMesh;
 				cmd.material = chunkMaterial;
-				cmd.transform = bg->getTransform(CoordinateSystem::Planetary);
+				cmd.transform = bg->getTransform();
 				cmd.viewportId = getViewportId();
 				cmd.counts = cachedPoolData.sizes.data();
 				cmd.indices = cachedPoolData.offsets.data();
@@ -426,11 +426,21 @@ void LocalClient::renderWorld()
 			RenderCommand cmd2;
 			cmd2.mesh = astroMesh->getModel()->getMesh();
 			cmd2.material = astroMesh->getModel()->getMaterial();
-			cmd2.transform = astroMesh->getAstroBody()->getTransform(CoordinateSystem::Interplanetary);
+			cmd2.transform = astroMesh->getCelestialBody()->getTransform();
 			cmd2.viewportId = getViewportId();
 			cmd2.cullFaces = false;
 
-			renderer->pushRender(cmd2, CoordinateSystem::Interplanetary);
+			CoordinateSystem cs;
+			if (dynamic_cast<Star*>(astroMesh->getCelestialBody()))
+			{
+				cs = CoordinateSystem::Interstellar;
+			}
+			else if (dynamic_cast<Planet*>(astroMesh->getCelestialBody()))
+			{
+				cs = CoordinateSystem::Interplanetary;
+			}
+
+			renderer->pushRender(cmd2, cs);
 		}
 	}
 }

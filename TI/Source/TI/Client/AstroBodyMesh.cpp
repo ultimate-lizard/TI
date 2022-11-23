@@ -2,13 +2,13 @@
 
 #include <TI/Server/CelestialBody.h>
 
-AstroBodyMesh::AstroBodyMesh(CelestialBody* astroBody, Model* model) :
+CelestialBodyMesh::CelestialBodyMesh(CelestialBody* astroBody, Model* model) :
 	astroBody(astroBody),
 	model(model)
 {
 }
 
-Model* AstroBodyMesh::getModel()
+Model* CelestialBodyMesh::getModel()
 {
 	return model;
 }

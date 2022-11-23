@@ -13,7 +13,6 @@
 #include <TI/Renderer/Texture.h>
 #include <TI/Renderer/Material.h>
 #include <TI/Window.h>
-#include <TI/Server/SceneNode.h>
 
 Renderer::Renderer(Window* window) :
 	glContext(nullptr),
@@ -75,7 +74,7 @@ void Renderer::render()
 			continue;
 		}
 
-		for (int i = 2; i >= 0; --i) // coordinate systems
+		for (int i = CoordinateSystem::COUNT - 1; i >= 0; --i) // coordinate systems
 		{
 			CoordinateSystem currentSystem = static_cast<CoordinateSystem>(i);
 

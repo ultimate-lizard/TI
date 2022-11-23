@@ -4,6 +4,7 @@
 #include <array>
 
 #include <TI/Renderer/RenderCommand.h>
+#include <TI/Server/SceneNode.h>
 
 class Camera;
 
@@ -25,7 +26,7 @@ public:
 	void setEnabled(bool enabled);
 	bool isEnabled() const;
 
-	std::array<std::list<RenderCommand>, 3> passes;
+	std::array<std::list<RenderCommand>, CoordinateSystem::COUNT> passes;
 	// std::list<RenderCommand> renderCommands;
 
 private:

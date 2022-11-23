@@ -73,8 +73,7 @@ void LocalServer::ejectClient(Client* client)
 void LocalServer::initHomeSolarSystem()
 {
 	auto star = std::make_unique<Star>();
-	star->setLocalScale(glm::vec3(100.0f), CoordinateSystem::Interplanetary);
-	// star->setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar);
+	star->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interstellar);
 
 	auto planetBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 	auto planet = std::make_unique<Planet>(planetBg.get());
@@ -98,7 +97,7 @@ void LocalServer::initHomeSolarSystem()
 	OrbitalProperties satteliteProperties;
 
 	satteliteProperties.radius = 2.0f;
-	satteliteProperties.orbitalVelocity = 10.0f;
+	satteliteProperties.orbitalVelocity = 2.0f;
 	satteliteProperties.equatorialVelocity = 2.5f;
 	sattelite->setOrbitalProperties(std::move(satteliteProperties));
 
@@ -128,12 +127,6 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 
 	if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
 	{
-		// TODO: Find a better way to init the missing node
-		transformComponent->leaveNode(CoordinateSystem::Planetary);
 		transformComponent->setLocalPosition({ 760.0f, 0.0f, 0.0f }, CoordinateSystem::Interplanetary);
-		// TODO: This adjustment must be implicit
-		//transformComponent->setLocalPosition({ 0.0f, 0.085f, 0.0f }, CoordinateSystem::Interplanetary);
-		//transformComponent->setParent(planet, CoordinateSystem::Interplanetary);
-		//transformComponent->setPrimaryBody(planet);
 	}
 }

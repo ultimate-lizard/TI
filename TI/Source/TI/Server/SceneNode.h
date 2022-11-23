@@ -13,7 +13,8 @@ enum CoordinateSystem
 	Planetary = 0,
 	Interplanetary,
 	Interstellar,
-	COUNT = 2
+	Intergalactical,
+	COUNT = 4
 };
 
 class SceneMultiNode
@@ -62,13 +63,12 @@ class SceneMultiNode
 		glm::vec3 getLocalUpVector();
 		glm::vec3 getLocalRightVector();
 
-		CoordinateSystem type;
+		CoordinateSystem getType() const;
 
 	protected:
 		void updateTransform();
 		glm::quat getOrientationInWorldSpace() const;
 
-	protected:
 		SceneNode* parent;
 		std::vector<SceneNode*> children;
 
@@ -78,19 +78,20 @@ class SceneMultiNode
 		glm::quat localOrientation;
 		glm::vec3 localScale;
 
-		std::string _id;
+		CoordinateSystem type;
 	};
 
 public:
 	SceneMultiNode();
+	SceneMultiNode(CoordinateSystem minimalCoordinateSystem);
 
 	SceneMultiNode(const SceneMultiNode&);
 	SceneMultiNode(SceneMultiNode&&) = delete;
 
 	glm::mat4 getTransform(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 
-	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
-	void setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
+	void setLocalPosition(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToUpperCoordinateSystems = true);
+	// void setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void offset(const glm::vec3& position, CoordinateSystem cs = CoordinateSystem::Planetary);
 	void setLocalOrientation(const glm::quat& orientation, CoordinateSystem cs = CoordinateSystem::Planetary, bool propagateToUpperCoordinateSystems = false);
 	void setLocalScale(const glm::vec3& scale, CoordinateSystem cs = CoordinateSystem::Planetary);
@@ -127,6 +128,8 @@ public:
 
 	std::optional<const SceneMultiNode::SceneNode*> getCoordinateSystem(CoordinateSystem cs) const;
 	std::optional<SceneMultiNode::SceneNode*> getCoordinateSystem(CoordinateSystem cs);
+
+	CoordinateSystem getCurrentCoordinateSystem() const;
 
 private:
 	std::vector<std::unique_ptr<SceneMultiNode::SceneNode>> coordinateSystems;

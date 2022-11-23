@@ -112,6 +112,11 @@ glm::vec3 SceneMultiNode::SceneNode::getLocalRightVector()
 	return -normalize(glm::vec3(getLocalTransform()[0]));
 }
 
+CoordinateSystem SceneMultiNode::SceneNode::getType() const
+{
+	return type;
+}
+
 void SceneMultiNode::SceneNode::updateTransform()
 {
 	glm::vec3 derivedPosition = localPosition;
@@ -276,8 +281,19 @@ glm::quat SceneMultiNode::SceneNode::getOrientationInWorldSpace() const
 SceneMultiNode::SceneMultiNode() :
 	parent(nullptr)
 {
-	coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(CoordinateSystem::Planetary));
-	coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(CoordinateSystem::Interplanetary));
+	for (size_t i = CoordinateSystem::Planetary; i < CoordinateSystem::COUNT; ++i)
+	{
+		coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(static_cast<CoordinateSystem>(i)));
+	}
+}
+
+SceneMultiNode::SceneMultiNode(CoordinateSystem minimalCoordinateSystem) :
+	parent(nullptr)
+{
+	for (size_t i = minimalCoordinateSystem; i < CoordinateSystem::COUNT; ++i)
+	{
+		coordinateSystems.emplace_back(std::make_unique<SceneMultiNode::SceneNode>(static_cast<CoordinateSystem>(i)));
+	}
 }
 
 SceneMultiNode::SceneMultiNode(const SceneMultiNode& other)
@@ -303,31 +319,42 @@ glm::mat4 SceneMultiNode::getTransform(CoordinateSystem cs) const
 	throw std::exception();
 }
 
-void SceneMultiNode::setLocalPosition(const glm::vec3& position, CoordinateSystem cs)
+void SceneMultiNode::setLocalPosition(const glm::vec3& position, CoordinateSystem cs, bool propagateToUpperCoordinateSystems)
 {
-	float factor = 1.0f;
-
-	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
+	if (propagateToUpperCoordinateSystems)
 	{
-		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+		float factor = 1.0f;
+
+		for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 		{
-			coordinateSystem.value()->setPosition(position / factor);
-			return;
+			if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
+			{
+				coordinateSystem.value()->setPosition(position / factor);
+			}
+
+			factor *= 1000.0f;
 		}
-
-		factor *= 1000.0f;
 	}
-
-	throw std::exception();
-}
-
-void SceneMultiNode::setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs)
-{
-	if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+	else
 	{
-		coordinateSystem.value()->setPosition(position);
+		if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+		{
+			coordinateSystem.value()->setPosition(position);
+		}
+		else
+		{
+			throw std::runtime_error("Tried to set exclusive position for unexisting coordinate system");
+		}
 	}
 }
+
+//void SceneMultiNode::setLocalPositionExclusive(const glm::vec3& position, CoordinateSystem cs)
+//{
+//	if (auto coordinateSystem = getCoordinateSystem(cs); coordinateSystem.has_value())
+//	{
+//		coordinateSystem.value()->setPosition(position);
+//	}
+//}
 
 void SceneMultiNode::offset(const glm::vec3& position, CoordinateSystem cs)
 {
@@ -367,16 +394,17 @@ void SceneMultiNode::setLocalOrientation(const glm::quat& orientation, Coordinat
 
 void SceneMultiNode::setLocalScale(const glm::vec3& scale, CoordinateSystem cs)
 {
+	float factor = 1.0f;
+
 	for (size_t i = cs; i < CoordinateSystem::COUNT; ++i)
 	{
 		if (auto coordinateSystem = getCoordinateSystem(static_cast<CoordinateSystem>(i)); coordinateSystem.has_value())
 		{
-			coordinateSystem.value()->setScale(scale);
-			return;
+			coordinateSystem.value()->setScale(scale / factor);
 		}
-	}
 
-	throw std::exception();
+		factor *= 1000.0f;
+	}
 }
 
 void SceneMultiNode::setRotation(const glm::vec3& rotation, CoordinateSystem cs)
@@ -664,7 +692,7 @@ void SceneMultiNode::leaveNode(CoordinateSystem cs)
 
 	for (size_t i = 0; i < coordinateSystems.size(); ++i)
 	{
-		if (coordinateSystems[i]->type == cs)
+		if (coordinateSystems[i]->getType() == cs)
 		{
 			coordinateSystems[i]->removeParent();
 
@@ -691,7 +719,7 @@ void SceneMultiNode::enterNode(CoordinateSystem cs)
 	}
 
 	auto previouslyDeletedCsIter = std::find_if(inactiveCoordinateSystems.begin(), inactiveCoordinateSystems.end(), [&](const std::unique_ptr<SceneMultiNode::SceneNode>& ics) {
-		return ics->type == cs;
+		return ics->getType() == cs;
 	});
 
 	if (previouslyDeletedCsIter != inactiveCoordinateSystems.end())
@@ -715,7 +743,7 @@ std::optional<const SceneMultiNode::SceneNode*> SceneMultiNode::getCoordinateSys
 {
 	for (size_t i = 0; i < coordinateSystems.size(); ++i)
 	{
-		if (coordinateSystems[i]->type == cs)
+		if (coordinateSystems[i]->getType() == cs)
 		{
 			return coordinateSystems[i].get();
 		}
@@ -728,11 +756,21 @@ std::optional<SceneMultiNode::SceneNode*> SceneMultiNode::getCoordinateSystem(Co
 {
 	for (size_t i = 0; i < coordinateSystems.size(); ++i)
 	{
-		if (coordinateSystems[i]->type == cs)
+		if (coordinateSystems[i]->getType() == cs)
 		{
 			return coordinateSystems[i].get();
 		}
 	}
 
 	return {};
+}
+
+CoordinateSystem SceneMultiNode::getCurrentCoordinateSystem() const
+{
+	if (!coordinateSystems.empty())
+	{
+		return coordinateSystems[0]->getType();
+	}
+
+	throw std::runtime_error("There are no coordinate systems in the scene node");
 }

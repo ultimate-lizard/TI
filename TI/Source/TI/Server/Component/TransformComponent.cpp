@@ -38,10 +38,29 @@ void TransformComponent::tick(float dt)
 		}
 	}
 
-	//std::cout << "Derived position: " << getDerivedPosition(CoordinateSystem::Interplanetary).x << " " <<
-	//	getDerivedPosition(CoordinateSystem::Interplanetary).y << " " << getDerivedPosition(CoordinateSystem::Interplanetary).z << std::endl;
+	static const float INTERPLANETARY_LEAVE_DISTANCE = 1.0f;
+	static const float INTERSTELLAR_LEAVE_DISTANCE = 1.0f;
+	static const float INTERGALACTICAL_LEAVE_DISTANCE = 1.0f;
+
+	// Variant 1:
+	// if (farther than getLeaveDistance(currentCoordinateSystem))
+	// {
+	//		leave
+	// }
+	// else if (closer than enter distance of findNearestObject(currentCooridnateSystem))
+	// {
+	// }
 
 	const CoordinateSystem planetaryCs = CoordinateSystem::Planetary;
+
+	// Delete Planetary CS if there is no currentPrimaryBody
+	if (auto coordinateSystem = getCoordinateSystem(CoordinateSystem::Planetary); coordinateSystem.has_value())
+	{
+		if (!primaryBody)
+		{
+			leaveNode(planetaryCs);
+		}
+	}
 
 	if (CelestialBody* primaryBody = getPrimaryBody())
 	{
@@ -60,7 +79,7 @@ void TransformComponent::tick(float dt)
 				removeParent(CoordinateSystem::Interplanetary);
 
 				setLocalPosition(pos, CoordinateSystem::Interplanetary);
-				setLocalOrientation(rot, CoordinateSystem::Interplanetary);
+				setLocalOrientation(rot, CoordinateSystem::Interplanetary, true);
 
 				setCurrentBlockGrid(nullptr);
 			}
@@ -70,9 +89,6 @@ void TransformComponent::tick(float dt)
 	{
 		if (Planet* closestPlanet = server->findClosestPlanet(getDerivedPosition(CoordinateSystem::Interplanetary, false), CoordinateSystem::Interplanetary))
 		{
-			/*std::cout << "Closest planet: " << (closestPlanet->getSattelites().empty() ? "sattelite. " : "planet. ") << "Distance: " <<
-				glm::distance(getDerivedPosition(CoordinateSystem::Interplanetary, false), closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false)) << std::endl;*/
-
 			if (auto coordinateSystem = getCoordinateSystem(planetaryCs); !coordinateSystem.has_value())
 			{
 				if (glm::distance(getDerivedPosition(CoordinateSystem::Interplanetary, false), closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false)) <= 1.0f)
@@ -109,10 +125,10 @@ void TransformComponent::tick(float dt)
 
 					const glm::vec3 offset = blockGridSize / 2.0f;
 
-					setLocalPositionExclusive(
+					setLocalPosition(
 						((getDerivedPosition(CoordinateSystem::Interplanetary, false) * 1000.0f)
 							-
-							closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false) * 1000.0f + offset), planetaryCs);
+							closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false) * 1000.0f + offset), planetaryCs, false);
 				}
 			}
 		}
@@ -147,10 +163,10 @@ void TransformComponent::setTargetLocalOrientation(const glm::quat& orientation,
 
 void TransformComponent::setPrimaryBody(CelestialBody* body)
 {
-	currentPrimaryBody = body;
+	primaryBody = body;
 }
 
 CelestialBody* TransformComponent::getPrimaryBody() const
 {
-	return currentPrimaryBody;
+	return primaryBody;
 }

@@ -22,6 +22,7 @@ public:
 
 protected:
 	void initHomeSolarSystem();
+	void initRandomSolarSystem();
 
 	void spawnPlayer(Client* const client, Planet* plane, const glm::vec3& position);
 };

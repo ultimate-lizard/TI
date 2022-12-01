@@ -14,5 +14,5 @@ public:
 
 	virtual CoordinateSystem getContainedCoordinateSystem() const override;
 
-	void initRandomStarSystem();
+	// void initRandomStarSystem();
 };

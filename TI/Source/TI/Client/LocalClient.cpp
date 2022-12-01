@@ -63,9 +63,19 @@ void LocalClient::connect(const std::string& ip, int port)
 		if (server->connectClient(this, ip, port))
 		{
 			// TODO: Fix hardcode
-			if (CelestialBody* homeStar = server->getStars()[0].get())
+			//if (CelestialBody* homeStar = server->getStars()[0].get())
+			//{
+			//	initSolarSystemVisuals(homeStar);
+			//}
+
+			for (const auto& star : server->getStars())
 			{
-				initSolarSystemVisuals(homeStar);
+				if (!star)
+				{
+					continue;
+				}
+
+				initSolarSystemVisuals(star.get());
 			}
 
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
@@ -430,7 +440,8 @@ void LocalClient::renderWorld()
 			cmd2.viewportId = getViewportId();
 			cmd2.cullFaces = false;
 
-			CoordinateSystem cs;
+			CoordinateSystem cs = CoordinateSystem::Planetary;
+
 			if (dynamic_cast<Star*>(astroMesh->getCelestialBody()))
 			{
 				cs = CoordinateSystem::Interstellar;

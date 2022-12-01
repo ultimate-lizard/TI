@@ -18,6 +18,11 @@ LocalServer::LocalServer(Application* app) :
 {
 	initHomeSolarSystem();
 
+	for (size_t i = 0; i < 100; ++i)
+	{
+		initRandomSolarSystem();
+	}
+
 	// TODO: Remove this
 	if (app)
 	{
@@ -147,6 +152,40 @@ void LocalServer::initHomeSolarSystem()
 	blockGrids.push_back(std::move(satteliteBg));
 	starSystems.push_back(std::move(star));
 	celestialBodies.push_back(std::move(sattelite));
+	celestialBodies.push_back(std::move(planet));
+}
+
+void LocalServer::initRandomSolarSystem()
+{
+	auto star = std::make_unique<Star>();
+
+	star->setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar); // 100 km in size
+
+	const float low = -100.0f;
+	const float high = 100.0f;
+
+	float x = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+	float y = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+	float z = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
+
+	star->setLocalPosition({ x, y, z }, CoordinateSystem::Interstellar);
+
+	// --- Planet ---
+
+	auto planet = std::make_unique<Planet>();
+
+	planet->setLocalScale(glm::vec3(20.0f), CoordinateSystem::Interplanetary);
+
+	OrbitalProperties planetProperties;
+	planetProperties.radius = 750.0f;
+	planetProperties.orbitalVelocity = 1.0f;
+	planetProperties.equatorialVelocity = 1.5f;
+
+	planet->setOrbitalProperties(std::move(planetProperties));
+
+	star->addSattelite(planet.get());
+
+	starSystems.push_back(std::move(star));
 	celestialBodies.push_back(std::move(planet));
 }
 

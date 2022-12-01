@@ -727,9 +727,9 @@ void SceneMultiNode::enterNode(CoordinateSystem cs)
 		newCoordinateSystem->setPosition(previouslyDeletedCsIter->get()->getLocalPosition());
 		newCoordinateSystem->setLocalOrientation(previouslyDeletedCsIter->get()->getLocalOrientation());
 		newCoordinateSystem->setScale(previouslyDeletedCsIter->get()->getScale());
-	}
 
-	inactiveCoordinateSystems.erase(previouslyDeletedCsIter);
+		inactiveCoordinateSystems.erase(previouslyDeletedCsIter);
+	}
 
 	coordinateSystems.push_back(std::move(newCoordinateSystem));
 
@@ -769,7 +769,17 @@ CoordinateSystem SceneMultiNode::getCurrentCoordinateSystem() const
 {
 	if (!coordinateSystems.empty())
 	{
-		return coordinateSystems[0]->getType();
+		int minimalCs = CoordinateSystem::Intergalactical;
+
+		for (const auto& cs : coordinateSystems)
+		{
+			if (cs->getType() < minimalCs)
+			{
+				minimalCs = cs->getType();
+			}
+		}
+
+		return static_cast<CoordinateSystem>(minimalCs);
 	}
 
 	throw std::runtime_error("There are no coordinate systems in the scene node");

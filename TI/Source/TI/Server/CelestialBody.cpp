@@ -5,7 +5,7 @@
 CelestialBody::CelestialBody(CoordinateSystem minimalCs, BlockGrid* blockGrid) :
 	SceneMultiNode(minimalCs),
     blockGrid(blockGrid),
-	parentCelestialBody(nullptr)
+	orbitalParent(nullptr)
 {
 
 }
@@ -14,7 +14,7 @@ void CelestialBody::tick(float dt)
 {
 	OrbitalProperties orbitalProperties = getOrbitalProperties();
 
-	if (parentCelestialBody)
+	if (orbitalParent)
 	{
 		const float radius = orbitalProperties.radius;
 		const float orbitalSpeed = orbitalProperties.orbitalVelocity;
@@ -22,7 +22,7 @@ void CelestialBody::tick(float dt)
 		float angles = SDL_GetTicks() / 1000.0f * orbitalSpeed;
 
 		glm::vec3 newPosition(glm::cos(glm::radians(angles)) * radius, 0.0f, glm::sin(glm::radians(angles)) * radius);
-		newPosition += parentCelestialBody->getDerivedPosition(CoordinateSystem::Interplanetary, false);
+		newPosition += orbitalParent->getDerivedPosition(CoordinateSystem::Interplanetary, false);
 
 		glm::vec3 newOffset = newPosition - getLocalPosition(CoordinateSystem::Interplanetary);
 		offset(newOffset, CoordinateSystem::Interplanetary);
@@ -49,7 +49,7 @@ const OrbitalProperties& CelestialBody::getOrbitalProperties() const
 
 void CelestialBody::addSattelite(CelestialBody* sattelite)
 {
-	sattelite->parentCelestialBody = this;
+	sattelite->orbitalParent = this;
 
     sattelites.push_back(sattelite);
 }
@@ -59,7 +59,19 @@ const std::vector<CelestialBody*>& CelestialBody::getSattelites() const
 	return sattelites;
 }
 
-CelestialBody* CelestialBody::getParentCelestialBody() const
+CelestialBody* CelestialBody::getOrbitalParent() const
 {
-	return parentCelestialBody;
+	return orbitalParent;
+}
+
+CelestialBody* CelestialBody::getHierarchicalParent() const
+{
+	CelestialBody* parentBody = getOrbitalParent();
+	
+	while (parentBody && parentBody->getContainedCoordinateSystem() == getContainedCoordinateSystem())
+	{
+		parentBody = parentBody->getOrbitalParent();
+	}
+
+	return parentBody;
 }

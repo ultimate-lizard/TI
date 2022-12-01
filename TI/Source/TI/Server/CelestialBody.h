@@ -30,7 +30,10 @@ public:
 	void addSattelite(CelestialBody* orbitalSystem);
 	const std::vector<CelestialBody*>& getSattelites() const;
 
-	CelestialBody* getParentCelestialBody() const;
+	CelestialBody* getOrbitalParent() const;
+	CelestialBody* getHierarchicalParent() const;
+
+	virtual CoordinateSystem getContainedCoordinateSystem() const = 0;
 
 protected:
 	CelestialBody(CoordinateSystem minimalCs, BlockGrid* blockGrid = nullptr);
@@ -38,5 +41,5 @@ protected:
 	BlockGrid* blockGrid;
 	OrbitalProperties orbitalProperties;
 	std::vector<CelestialBody*> sattelites;
-	CelestialBody* parentCelestialBody;
+	CelestialBody* orbitalParent;
 };

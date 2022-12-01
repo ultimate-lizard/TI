@@ -25,7 +25,6 @@ void Server::initEntityTemplates()
 
 	auto transformComponent = playerEntity->addComponent<TransformComponent>(this);
 
-
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
 	meshComponent->loadModel("Player");
 	meshComponent->setLocalScale({ 0.6f, 0.6f, 1.0f });
@@ -172,34 +171,34 @@ const std::vector<std::unique_ptr<CelestialBody>>& Server::getCelestialBodies()
 	return celestialBodies;
 }
 
-const std::vector<std::unique_ptr<Star>>& Server::getStars()
+const std::vector<std::unique_ptr<CelestialBody>>& Server::getStars()
 {
 	return starSystems;
 }
 
-Planet* Server::findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const
-{
-	if (cs == CoordinateSystem::Interplanetary)
-	{
-		float minDistance = std::numeric_limits<float>::max();
-		CelestialBody* closestBody = nullptr;
-
-		for (auto& body : celestialBodies)
-		{
-			float distance = glm::distance(position, body->getDerivedPosition(cs, false));
-
-			if (distance <= minDistance)
-			{
-				minDistance = distance;
-				closestBody = body.get();
-			}
-		}
-
-		return dynamic_cast<Planet*>(closestBody);
-	}
-
-	return nullptr;
-}
+//Planet* Server::findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const
+//{
+//	if (cs == CoordinateSystem::Interplanetary)
+//	{
+//		float minDistance = std::numeric_limits<float>::max();
+//		CelestialBody* closestBody = nullptr;
+//
+//		for (auto& body : celestialBodies)
+//		{
+//			float distance = glm::distance(position, body->getDerivedPosition(cs, false));
+//
+//			if (distance <= minDistance)
+//			{
+//				minDistance = distance;
+//				closestBody = body.get();
+//			}
+//		}
+//
+//		return dynamic_cast<Planet*>(closestBody);
+//	}
+//
+//	return nullptr;
+//}
 
 void Server::possesEntity(const std::string& entityName, Client* const client)
 {

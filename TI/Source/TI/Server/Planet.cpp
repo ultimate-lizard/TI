@@ -12,7 +12,7 @@ Planet::Planet(BlockGrid* blockGrid) :
 {
 }
 
-void Planet::tick(float dt)
+CoordinateSystem Planet::getContainedCoordinateSystem() const
 {
-	CelestialBody::tick(dt);
+	return CoordinateSystem::Planetary;
 }

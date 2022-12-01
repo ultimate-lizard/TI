@@ -7,6 +7,11 @@ Star::Star() :
 {
 }
 
+CoordinateSystem Star::getContainedCoordinateSystem() const
+{
+	return CoordinateSystem::Interplanetary;
+}
+
 void Star::initRandomStarSystem()
 {
 	setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar); // 100 km in size

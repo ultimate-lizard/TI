@@ -63,7 +63,7 @@ void LocalClient::connect(const std::string& ip, int port)
 		if (server->connectClient(this, ip, port))
 		{
 			// TODO: Fix hardcode
-			if (Star* homeStar = server->getStars()[0].get())
+			if (CelestialBody* homeStar = server->getStars()[0].get())
 			{
 				initSolarSystemVisuals(homeStar);
 			}
@@ -229,7 +229,7 @@ bool LocalClient::isFrustumCullingEnabled() const
 	return frustumCullingEnabled;
 }
 
-void LocalClient::initSolarSystemVisuals(Star* star)
+void LocalClient::initSolarSystemVisuals(CelestialBody* star)
 {
 	if (!star)
 	{
@@ -330,8 +330,8 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 				const int VIEW_DISTANCE = 32;
 				cachedVisibleChunksPositions = getSurroundingChunksPositions(blockGrid, playerPosition, VIEW_DISTANCE);
 
-				std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
-				std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
+				//std::cout << "EBO size: " << pool.analyticEboSize / 1024 / 1024 << " MB" << std::endl;
+				//std::cout << "VBO size: " << pool.analyticVboSize / 1024 / 1024 << " MB" << std::endl;
 			}
 
 			if (cachedEntityCamera)

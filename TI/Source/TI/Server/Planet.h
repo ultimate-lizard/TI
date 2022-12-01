@@ -15,5 +15,5 @@ public:
 	Planet(const Planet&) = delete;
 	Planet(Planet&&) = delete;
 
-	virtual void tick(float dt) override;
+	virtual CoordinateSystem getContainedCoordinateSystem() const override;
 };

@@ -12,5 +12,7 @@ public:
 	Star();
 	virtual ~Star() = default;
 
+	virtual CoordinateSystem getContainedCoordinateSystem() const override;
+
 	void initRandomStarSystem();
 };

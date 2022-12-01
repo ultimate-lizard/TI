@@ -36,7 +36,7 @@ void LocalServer::update(float dt)
 {
 	Server::update(dt);
 
-	for (const std::unique_ptr<Star>& star : starSystems)
+	for (const std::unique_ptr<CelestialBody>& star : starSystems)
 	{
 		if (star)
 		{
@@ -68,6 +68,43 @@ bool LocalServer::connectClient(Client* client, const std::string& ip, int port)
 void LocalServer::ejectClient(Client* client)
 {
 	spawnedEntities.erase(client->getName());
+}
+
+CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const glm::vec3& position)
+{
+	const std::vector<std::unique_ptr<CelestialBody>>* bodiesVector = nullptr;
+
+	switch (cs)
+	{
+	case CoordinateSystem::Interstellar:
+		bodiesVector = &starSystems;
+		break;
+
+	case CoordinateSystem::Interplanetary:
+		bodiesVector = &celestialBodies;
+		break;
+
+	// TODO: Intergalactical
+
+	default:
+		return nullptr;
+	}
+
+	float minDistance = std::numeric_limits<float>::max();
+	CelestialBody* closestBody = nullptr;
+
+	for (auto& body : *bodiesVector)
+	{
+		float distance = glm::distance(position, body->getDerivedPosition(cs, false));
+
+		if (distance <= minDistance)
+		{
+			minDistance = distance;
+			closestBody = body.get();
+		}
+	}
+
+	return closestBody;
 }
 
 void LocalServer::initHomeSolarSystem()

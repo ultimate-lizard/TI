@@ -51,73 +51,90 @@ void TransformComponent::tick(float dt)
 	// {
 	// }
 
-	const CoordinateSystem planetaryCs = CoordinateSystem::Planetary;
+	//const CoordinateSystem planetaryCs = CoordinateSystem::Planetary;
 
-	// Delete Planetary CS if there is no currentPrimaryBody
-	if (auto coordinateSystem = getCoordinateSystem(CoordinateSystem::Planetary); coordinateSystem.has_value())
+	//// Delete Planetary CS if there is no currentPrimaryBody
+	//if (auto coordinateSystem = getCoordinateSystem(CoordinateSystem::Planetary); coordinateSystem.has_value())
+	//{
+	//	if (!primaryBody)
+	//	{
+	//		leaveNode(planetaryCs);
+	//	}
+	//}
+
+	if (!primaryBody)
 	{
-		if (!primaryBody)
+		while (getCurrentCoordinateSystem() != CoordinateSystem::Interstellar)
 		{
-			leaveNode(planetaryCs);
+			leaveNode(getCurrentCoordinateSystem());
 		}
 	}
+
+	// TODO: This code should be in the current state until all CSs are implemented
+
+	const CoordinateSystem currentCoordinateSystem = getCurrentCoordinateSystem();
 
 	if (CelestialBody* primaryBody = getPrimaryBody())
 	{
-		if (auto coordinateSystem = getCoordinateSystem(planetaryCs); coordinateSystem.has_value())
+		const CoordinateSystem csToEnter = primaryBody->getCurrentCoordinateSystem();
+		const CoordinateSystem currentCs = getCurrentCoordinateSystem(); // or primaryBody->getContainedCoordinateSystem();
+
+		// We're in Planetary coordinate system. We can now leave this system
+		if (float dist = glm::distance(getDerivedPosition(csToEnter, false), primaryBody->getDerivedPosition(csToEnter, false)); dist > 1.5f)
 		{
-			// We're in Planetary coordinate system. We can now leave this system
-			if (glm::distance(getDerivedPosition(CoordinateSystem::Interplanetary, false), primaryBody->getDerivedPosition(CoordinateSystem::Interplanetary, false)) > 1.0f)
-			{
-				setPrimaryBody(nullptr);
+			std::cout << "Dist was " << dist << ". Leaving " << currentCs << std::endl;
+			leaveNode(currentCoordinateSystem);
 
-				leaveNode(planetaryCs);
+			glm::vec3 pos = getDerivedPosition(csToEnter);
+			const glm::quat rot = getDerivedOrientation(csToEnter);
 
-				glm::vec3 pos = getDerivedPosition(CoordinateSystem::Interplanetary);
-				const glm::quat rot = getDerivedOrientation(CoordinateSystem::Interplanetary);
+			removeParent(csToEnter);
 
-				removeParent(CoordinateSystem::Interplanetary);
+			setLocalPosition(pos, csToEnter);
+			setLocalOrientation(rot, csToEnter, true);
 
-				setLocalPosition(pos, CoordinateSystem::Interplanetary);
-				setLocalOrientation(rot, CoordinateSystem::Interplanetary, true);
-
-				setCurrentBlockGrid(nullptr);
-			}
+			setPrimaryBody(primaryBody->getHierarchicalParent());
+			setCurrentBlockGrid(nullptr);
 		}
 	}
-	else
+
 	{
-		if (Planet* closestPlanet = server->findClosestPlanet(getDerivedPosition(CoordinateSystem::Interplanetary, false), CoordinateSystem::Interplanetary))
+		const CoordinateSystem currentCs = getCurrentCoordinateSystem(); // or primaryBody->getContainedCoordinateSystem();
+
+		if (CelestialBody* closestCelestialBody = server->findClosestCelestialBody(currentCs, getDerivedPosition(currentCs, false)))
 		{
-			if (auto coordinateSystem = getCoordinateSystem(planetaryCs); !coordinateSystem.has_value())
+			const CoordinateSystem csToEnter = closestCelestialBody->getContainedCoordinateSystem();
+
+			if (auto csToEnterOptional = getCoordinateSystem(csToEnter); !csToEnterOptional.has_value())
 			{
-				if (glm::distance(getDerivedPosition(CoordinateSystem::Interplanetary, false), closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false)) <= 1.0f)
+				if (float dist = glm::distance(getDerivedPosition(currentCs, false), closestCelestialBody->getDerivedPosition(currentCs, false)); dist <= 1.0f)
 				{
-					setPrimaryBody(closestPlanet);
+					std::cout << "Dist was " << dist << ". Entering " << csToEnter << std::endl;
+					setPrimaryBody(closestCelestialBody);
 
 					// We should preserve the player rotation, as they could've moved to a different planet side and rotated themselves
 					const glm::quat correctOrientation = getLocalOrientation();
 
-					enterNode(planetaryCs);
+					enterNode(csToEnter);
 
 					// The players planetary coordinate system is not a child of planet coordinate system. This is to keep the illusion working
-					if (auto coordSystem = getCoordinateSystem(planetaryCs); coordSystem.has_value())
+					if (auto csNodeToEnter = getCoordinateSystem(csToEnter); csNodeToEnter.has_value())
 					{
-						coordSystem.value()->removeParent();
+						csNodeToEnter.value()->removeParent();
 					}
 
 					// This is probably correct logic. Checked in ogre3d
-					const glm::vec3 newPosition = glm::inverse(closestPlanet->getLocalOrientation(CoordinateSystem::Interplanetary)) * (getLocalPosition(CoordinateSystem::Interplanetary) - closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false));
+					const glm::vec3 newPosition = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * (getLocalPosition(currentCs) - closestCelestialBody->getDerivedPosition(currentCs, false));
 
-					setParent(closestPlanet, CoordinateSystem::Interplanetary);
+					setParent(closestCelestialBody, currentCs);
 
-					setLocalPosition(newPosition, CoordinateSystem::Interplanetary);
+					setLocalPosition(newPosition, currentCs);
 
-					const glm::quat newRotation = glm::inverse(closestPlanet->getLocalOrientation(CoordinateSystem::Interplanetary)) * getLocalOrientation(CoordinateSystem::Interplanetary);
-					setLocalOrientation(newRotation, CoordinateSystem::Planetary, true);
+					const glm::quat newRotation = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * getLocalOrientation(currentCs);
+					setLocalOrientation(newRotation, csToEnter, true);
 
 					glm::vec3 blockGridSize(0.0f);
-					if (BlockGrid* bg = closestPlanet->getBlockGrid())
+					if (BlockGrid* bg = closestCelestialBody->getBlockGrid())
 					{
 						blockGridSize = { bg->getBlockGridSize().x * bg->getChunkSize(), bg->getBlockGridSize().y * bg->getChunkSize(), bg->getBlockGridSize().z * bg->getChunkSize() };
 						setCurrentBlockGrid(bg);
@@ -126,9 +143,9 @@ void TransformComponent::tick(float dt)
 					const glm::vec3 offset = blockGridSize / 2.0f;
 
 					setLocalPosition(
-						((getDerivedPosition(CoordinateSystem::Interplanetary, false) * 1000.0f)
+						((getDerivedPosition(currentCs, false) * 1000.0f)
 							-
-							closestPlanet->getDerivedPosition(CoordinateSystem::Interplanetary, false) * 1000.0f + offset), planetaryCs, false);
+							closestCelestialBody->getDerivedPosition(currentCs, false) * 1000.0f + offset), csToEnter, false);
 				}
 			}
 		}

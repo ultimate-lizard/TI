@@ -409,49 +409,58 @@ void LocalClient::updatePlaneVisuals(BlockGrid* blockGrid)
 
 void LocalClient::renderWorld()
 {
-	if (BlockGrid* bg = blockGridToRender)
-	{
-		if (auto playerTransform = possessedEntity->findComponent<TransformComponent>())
-		{
-			if (auto result = playerTransform->getCoordinateSystem(CoordinateSystem::Planetary); result.has_value())
-			{
-				RenderCommand cmd;
-				cmd.mesh = cachedPoolData.poolMesh;
-				cmd.material = chunkMaterial;
-				cmd.transform = bg->getTransform();
-				cmd.viewportId = getViewportId();
-				cmd.counts = cachedPoolData.sizes.data();
-				cmd.indices = cachedPoolData.offsets.data();
-				cmd.multiDrawCount = cachedPoolData.drawCount;
-
-				renderer->pushRender(cmd, CoordinateSystem::Planetary);
-			}
-		}
-	}
+	auto playerTransform = possessedEntity->findComponent<TransformComponent>();
 
 	for (auto& astroMesh : astroBodiesMeshes)
 	{
 		if (astroMesh)
 		{
-			RenderCommand cmd2;
-			cmd2.mesh = astroMesh->getModel()->getMesh();
-			cmd2.material = astroMesh->getModel()->getMaterial();
-			cmd2.transform = astroMesh->getCelestialBody()->getTransform();
-			cmd2.viewportId = getViewportId();
-			cmd2.cullFaces = false;
-
-			CoordinateSystem cs = CoordinateSystem::Planetary;
-
-			if (dynamic_cast<Star*>(astroMesh->getCelestialBody()))
+			if (playerTransform)
 			{
-				cs = CoordinateSystem::Interstellar;
-			}
-			else if (dynamic_cast<Planet*>(astroMesh->getCelestialBody()))
-			{
-				cs = CoordinateSystem::Interplanetary;
-			}
+				if (BlockGrid* bg = blockGridToRender)
+				{
+					if (auto result = playerTransform->getCoordinateSystem(CoordinateSystem::Planetary); result.has_value())
+					{
+						RenderCommand cmd;
+						cmd.mesh = cachedPoolData.poolMesh;
+						cmd.material = chunkMaterial;
+						cmd.transform = bg->getTransform();
+						cmd.viewportId = getViewportId();
+						cmd.counts = cachedPoolData.sizes.data();
+						cmd.indices = cachedPoolData.offsets.data();
+						cmd.multiDrawCount = cachedPoolData.drawCount;
 
-			renderer->pushRender(cmd2, cs);
+						renderer->pushRender(cmd, CoordinateSystem::Planetary);
+					}
+				}
+
+				if (!astroMesh->getCelestialBody()->getHierarchicalParent() ||
+					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getHierarchicalParent() ||
+					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getOrbitalParent() ||
+					playerTransform->getPrimaryBody() && playerTransform->getPrimaryBody()->getHierarchicalParent() == astroMesh->getCelestialBody()->getHierarchicalParent() ||
+					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody())
+				{
+					RenderCommand cmd2;
+					cmd2.mesh = astroMesh->getModel()->getMesh();
+					cmd2.material = astroMesh->getModel()->getMaterial();
+					cmd2.transform = astroMesh->getCelestialBody()->getTransform();
+					cmd2.viewportId = getViewportId();
+					cmd2.cullFaces = false;
+
+					CoordinateSystem cs = CoordinateSystem::Planetary;
+
+					if (dynamic_cast<Star*>(astroMesh->getCelestialBody()))
+					{
+						cs = CoordinateSystem::Interstellar;
+					}
+					else if (dynamic_cast<Planet*>(astroMesh->getCelestialBody()))
+					{
+						cs = CoordinateSystem::Interplanetary;
+					}
+
+					renderer->pushRender(cmd2, cs);
+				}
+			}
 		}
 	}
 }

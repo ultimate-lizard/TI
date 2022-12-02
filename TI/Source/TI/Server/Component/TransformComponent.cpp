@@ -79,8 +79,9 @@ void TransformComponent::tick(float dt)
 		const CoordinateSystem csToEnter = primaryBody->getCurrentCoordinateSystem();
 		const CoordinateSystem currentCs = getCurrentCoordinateSystem(); // or primaryBody->getContainedCoordinateSystem();
 
+		const float scale = primaryBody->getScale(csToEnter).x;
 		// We're in Planetary coordinate system. We can now leave this system
-		if (float dist = glm::distance(getDerivedPosition(csToEnter, false), primaryBody->getDerivedPosition(csToEnter, false)); dist > 1.5f)
+		if (float dist = glm::distance(getDerivedPosition(csToEnter, false), primaryBody->getDerivedPosition(csToEnter, false)); dist > 10.0f * scale + 1.0f)
 		{
 			std::cout << "Dist was " << dist << ". Leaving " << currentCs << std::endl;
 			leaveNode(currentCoordinateSystem);
@@ -107,7 +108,8 @@ void TransformComponent::tick(float dt)
 
 			if (auto csToEnterOptional = getCoordinateSystem(csToEnter); !csToEnterOptional.has_value())
 			{
-				if (float dist = glm::distance(getDerivedPosition(currentCs, false), closestCelestialBody->getDerivedPosition(currentCs, false)); dist <= 1.0f)
+				const float scale = closestCelestialBody->getScale(currentCs).x;
+				if (float dist = glm::distance(getDerivedPosition(currentCs, false), closestCelestialBody->getDerivedPosition(currentCs, false)); dist <= 5.0f * scale + 1.0f)
 				{
 					std::cout << "Dist was " << dist << ". Entering " << csToEnter << std::endl;
 					setPrimaryBody(closestCelestialBody);

@@ -50,8 +50,10 @@ void TransformComponent::tick(float dt)
 		}
 	}
 
-	// TODO: This code should be in the current state until all CSs are implemented
+	glm::vec3 playerPos = getDerivedPosition(CoordinateSystem::Interstellar);
+	std::cout << playerPos.x << " " << playerPos.y << " " << playerPos.z << std::endl;
 
+	// TODO: This code should be in the current state until all CSs are implemented
 	const CoordinateSystem currentCoordinateSystem = getCurrentCoordinateSystem();
 
 	if (CelestialBody* primaryBody = getPrimaryBody())
@@ -98,19 +100,22 @@ void TransformComponent::tick(float dt)
 					const glm::quat correctOrientation = getLocalOrientation();
 
 					enterNode(csToEnter);
-
+					glm::vec3 playerPos1 = getDerivedPosition(CoordinateSystem::Interstellar);
 					// The players planetary coordinate system is not a child of planet coordinate system. This is to keep the illusion working
 					if (auto csNodeToEnter = getCoordinateSystem(csToEnter); csNodeToEnter.has_value())
 					{
 						csNodeToEnter.value()->removeParent();
 					}
-
+					glm::vec3 playerPos2 = getDerivedPosition(CoordinateSystem::Interstellar);
 					// This is probably correct logic. Checked in ogre3d
-					const glm::vec3 newPosition = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * (getLocalPosition(currentCs) - closestCelestialBody->getDerivedPosition(currentCs, false));
+					const glm::vec3 newPosition = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * (getDerivedPosition(currentCs) - closestCelestialBody->getDerivedPosition(currentCs, false));
 
 					setParent(closestCelestialBody, currentCs);
 
+					glm::vec3 playerPos3 = getDerivedPosition(CoordinateSystem::Interstellar);
+					glm::vec3 plaanetPos = closestCelestialBody->getDerivedPosition(CoordinateSystem::Interstellar);
 					setLocalPosition(newPosition, currentCs);
+					glm::vec3 playerPos4 = getDerivedPosition(CoordinateSystem::Interstellar);
 
 					const glm::quat newRotation = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * getLocalOrientation(currentCs);
 					setLocalOrientation(newRotation, csToEnter, true);

@@ -437,7 +437,7 @@ void LocalClient::renderWorld()
 				if (!astroMesh->getCelestialBody()->getHierarchicalParent() ||
 					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getHierarchicalParent() ||
 					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getOrbitalParent() ||
-					playerTransform->getPrimaryBody() && playerTransform->getPrimaryBody()->getHierarchicalParent() == astroMesh->getCelestialBody()->getHierarchicalParent() ||
+					(playerTransform->getPrimaryBody() && playerTransform->getPrimaryBody()->getHierarchicalParent() == astroMesh->getCelestialBody()->getHierarchicalParent()) ||
 					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody())
 				{
 					RenderCommand cmd2;

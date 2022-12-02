@@ -42,26 +42,6 @@ void TransformComponent::tick(float dt)
 	static const float INTERSTELLAR_LEAVE_DISTANCE = 1.0f;
 	static const float INTERGALACTICAL_LEAVE_DISTANCE = 1.0f;
 
-	// Variant 1:
-	// if (farther than getLeaveDistance(currentCoordinateSystem))
-	// {
-	//		leave
-	// }
-	// else if (closer than enter distance of findNearestObject(currentCooridnateSystem))
-	// {
-	// }
-
-	//const CoordinateSystem planetaryCs = CoordinateSystem::Planetary;
-
-	//// Delete Planetary CS if there is no currentPrimaryBody
-	//if (auto coordinateSystem = getCoordinateSystem(CoordinateSystem::Planetary); coordinateSystem.has_value())
-	//{
-	//	if (!primaryBody)
-	//	{
-	//		leaveNode(planetaryCs);
-	//	}
-	//}
-
 	if (!primaryBody)
 	{
 		while (getCurrentCoordinateSystem() != CoordinateSystem::Interstellar)

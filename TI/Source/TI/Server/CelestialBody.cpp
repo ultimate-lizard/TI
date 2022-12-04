@@ -25,6 +25,12 @@ void CelestialBody::tick(float dt)
 		newPosition += orbitalParent->getDerivedPosition(CoordinateSystem::Interplanetary, false);
 
 		glm::vec3 newOffset = newPosition - getLocalPosition(CoordinateSystem::Interplanetary);
+
+		if (_name == "playerhere")
+		{
+			std::string a;
+		}
+
 		offset(newOffset, CoordinateSystem::Interplanetary);
 	}
 

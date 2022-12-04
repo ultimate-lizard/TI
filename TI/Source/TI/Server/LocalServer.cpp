@@ -75,7 +75,7 @@ void LocalServer::ejectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const glm::vec3& position)
+CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const TransformComponent& transform) const
 {
 	const std::vector<std::unique_ptr<CelestialBody>>* bodiesVector = nullptr;
 
@@ -100,12 +100,16 @@ CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const 
 
 	for (auto& body : *bodiesVector)
 	{
-		float distance = glm::distance(position, body->getDerivedPosition(cs, false));
+		float distance = glm::distance(transform.getDerivedPosition(cs), body->getDerivedPosition(cs, false));
 
-		if (distance <= minDistance)
+		// Make sure we are in the same coordinate system space
+		if (body->getHierarchicalParent() == transform.getPrimaryBody())
 		{
-			minDistance = distance;
-			closestBody = body.get();
+			if (distance <= minDistance)
+			{
+				minDistance = distance;
+				closestBody = body.get();
+			}
 		}
 	}
 
@@ -116,6 +120,7 @@ void LocalServer::initHomeSolarSystem()
 {
 	auto star = std::make_unique<Star>();
 	star->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interstellar);
+	star->setLocalPosition(glm::vec3({-10.0f, 0.0f, 0.0f}), CoordinateSystem::Interstellar);
 
 	auto planetBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 	auto planet = std::make_unique<Planet>(planetBg.get());
@@ -131,27 +136,27 @@ void LocalServer::initHomeSolarSystem()
 
 	// --- Sattelite ---
 
-	auto satteliteBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
-	auto sattelite = std::make_unique<Planet>(satteliteBg.get());
+	//auto satteliteBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	//auto sattelite = std::make_unique<Planet>(satteliteBg.get());
 
-	sattelite->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
+	//sattelite->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
 
-	OrbitalProperties satteliteProperties;
+	//OrbitalProperties satteliteProperties;
 
-	satteliteProperties.radius = 2.0f;
-	satteliteProperties.orbitalVelocity = 2.0f;
-	satteliteProperties.equatorialVelocity = 2.5f;
-	sattelite->setOrbitalProperties(std::move(satteliteProperties));
+	//satteliteProperties.radius = 2.0f;
+	//satteliteProperties.orbitalVelocity = 2.0f;
+	//satteliteProperties.equatorialVelocity = 2.5f;
+	//sattelite->setOrbitalProperties(std::move(satteliteProperties));
 
 	// -----------------
 
-	planet->addSattelite(sattelite.get());
+	//planet->addSattelite(sattelite.get());
 	star->addSattelite(planet.get());
 	
 	blockGrids.push_back(std::move(planetBg));
-	blockGrids.push_back(std::move(satteliteBg));
+	// blockGrids.push_back(std::move(satteliteBg));
 	starSystems.push_back(std::move(star));
-	celestialBodies.push_back(std::move(sattelite));
+	//celestialBodies.push_back(std::move(sattelite));
 	celestialBodies.push_back(std::move(planet));
 }
 

@@ -103,7 +103,7 @@ public:
 	void rotate(float angle, const glm::vec3& axis, CoordinateSystem cs = CoordinateSystem::Planetary);
 
 	glm::vec3 getLocalPosition(CoordinateSystem cs = CoordinateSystem::Planetary) const;
-	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary, bool inheritOrientation = true) const;
+	glm::vec3 getDerivedPosition(CoordinateSystem cs = CoordinateSystem::Planetary, bool inheritOrientation = true, bool returnNextCsWhenPossible = false) const;
 
 	glm::quat getLocalOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
 	glm::quat getDerivedOrientation(CoordinateSystem cs = CoordinateSystem::Planetary) const;
@@ -130,6 +130,8 @@ public:
 	std::optional<SceneMultiNode::SceneNode*> getCoordinateSystem(CoordinateSystem cs);
 
 	CoordinateSystem getCurrentCoordinateSystem() const;
+
+	std::string _name;
 
 private:
 	std::vector<std::unique_ptr<SceneMultiNode::SceneNode>> coordinateSystems;

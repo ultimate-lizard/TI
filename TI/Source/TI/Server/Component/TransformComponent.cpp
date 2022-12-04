@@ -50,8 +50,11 @@ void TransformComponent::tick(float dt)
 		}
 	}
 
-	glm::vec3 playerPos = getDerivedPosition(CoordinateSystem::Interstellar);
-	std::cout << playerPos.x << " " << playerPos.y << " " << playerPos.z << std::endl;
+	//glm::vec3 playerPos = getDerivedPosition(CoordinateSystem::Interstellar);
+	//std::cout << "Derived: " << playerPos.x << " " << playerPos.y << " " << playerPos.z << std::endl;
+
+	//glm::vec3 playerPosLocal = getLocalPosition(CoordinateSystem::Interstellar);
+	//std::cout << "  Local: " << playerPosLocal.x << " " << playerPosLocal.y << " " << playerPosLocal.z << std::endl;
 
 	// TODO: This code should be in the current state until all CSs are implemented
 	const CoordinateSystem currentCoordinateSystem = getCurrentCoordinateSystem();
@@ -84,7 +87,7 @@ void TransformComponent::tick(float dt)
 	{
 		const CoordinateSystem currentCs = getCurrentCoordinateSystem(); // or primaryBody->getContainedCoordinateSystem();
 
-		if (CelestialBody* closestCelestialBody = server->findClosestCelestialBody(currentCs, getDerivedPosition(currentCs, false)))
+		if (CelestialBody* closestCelestialBody = server->findClosestCelestialBody(currentCs, *this))
 		{
 			const CoordinateSystem csToEnter = closestCelestialBody->getContainedCoordinateSystem();
 
@@ -93,29 +96,31 @@ void TransformComponent::tick(float dt)
 				const float scale = closestCelestialBody->getScale(currentCs).x;
 				if (float dist = glm::distance(getDerivedPosition(currentCs, false), closestCelestialBody->getDerivedPosition(currentCs, false)); dist <= 5.0f * scale + 1.0f)
 				{
-					std::cout << "Dist was " << dist << ". Entering " << csToEnter << std::endl;
+					std::cout << "ENTERING!!!!!!" << std::endl;
+
 					setPrimaryBody(closestCelestialBody);
 
 					// We should preserve the player rotation, as they could've moved to a different planet side and rotated themselves
-					const glm::quat correctOrientation = getLocalOrientation();
+					// const glm::quat correctOrientation = getLocalOrientation();
 
 					enterNode(csToEnter);
-					glm::vec3 playerPos1 = getDerivedPosition(CoordinateSystem::Interstellar);
 					// The players planetary coordinate system is not a child of planet coordinate system. This is to keep the illusion working
 					if (auto csNodeToEnter = getCoordinateSystem(csToEnter); csNodeToEnter.has_value())
 					{
 						csNodeToEnter.value()->removeParent();
 					}
-					glm::vec3 playerPos2 = getDerivedPosition(CoordinateSystem::Interstellar);
+
 					// This is probably correct logic. Checked in ogre3d
-					const glm::vec3 newPosition = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * (getDerivedPosition(currentCs) - closestCelestialBody->getDerivedPosition(currentCs, false));
+					const glm::vec3 newPosition = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * (getLocalPosition(currentCs) - closestCelestialBody->getLocalPosition(currentCs));
 
 					setParent(closestCelestialBody, currentCs);
 
-					glm::vec3 playerPos3 = getDerivedPosition(CoordinateSystem::Interstellar);
-					glm::vec3 plaanetPos = closestCelestialBody->getDerivedPosition(CoordinateSystem::Interstellar);
 					setLocalPosition(newPosition, currentCs);
-					glm::vec3 playerPos4 = getDerivedPosition(CoordinateSystem::Interstellar);
+					if (const CelestialBody* hierarchicalParent = closestCelestialBody->getHierarchicalParent())
+					{
+						const CoordinateSystem parentCs = hierarchicalParent->getCurrentCoordinateSystem();
+						setLocalPosition(closestCelestialBody->getLocalOrientation(currentCs) * getLocalPosition(parentCs) + hierarchicalParent->getLocalPosition(parentCs), parentCs);
+					}
 
 					const glm::quat newRotation = glm::inverse(closestCelestialBody->getLocalOrientation(currentCs)) * getLocalOrientation(currentCs);
 					setLocalOrientation(newRotation, csToEnter, true);

@@ -134,8 +134,8 @@ void SceneMultiNode::SceneNode::updateTransform()
 
 		parentOrientation = glm::conjugate(parentOrientation);
 
-		derivedPosition = parentScale * localPosition; // AKNOWLEDGE PARENT'S SCALE
-		derivedPosition = parentOrientation * localPosition;
+		//derivedPosition = parentScale * localPosition; // AKNOWLEDGE PARENT'S SCALE
+		// derivedPosition = parentOrientation * localPosition;
 		derivedPosition += parentPosition;
 
 		derivedOrientation = parentOrientation * derivedOrientation;
@@ -480,7 +480,7 @@ glm::vec3 SceneMultiNode::getLocalPosition(CoordinateSystem cs) const
 	throw std::exception();
 }
 
-glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs, bool inheritOrientation) const
+glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs, bool inheritOrientation, bool returnNextCsWhenPossible) const
 {
 	float factor = 1.0f;
 
@@ -492,7 +492,10 @@ glm::vec3 SceneMultiNode::getDerivedPosition(CoordinateSystem cs, bool inheritOr
 		}
 		else
 		{
-			return {};
+			if (!returnNextCsWhenPossible)
+			{
+				return {};
+			}
 		}
 
 		factor *= 1000.0f;

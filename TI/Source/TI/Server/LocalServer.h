@@ -18,7 +18,7 @@ public:
 
 	void ejectClient(Client* client) override;
 
-	CelestialBody* findClosestCelestialBody(CoordinateSystem cs, const glm::vec3& position);
+	CelestialBody* findClosestCelestialBody(CoordinateSystem cs, const TransformComponent& transform) const;
 
 protected:
 	void initHomeSolarSystem();

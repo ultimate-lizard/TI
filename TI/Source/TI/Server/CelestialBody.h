@@ -35,6 +35,8 @@ public:
 
 	virtual CoordinateSystem getContainedCoordinateSystem() const = 0;
 
+	std::string _name;
+
 protected:
 	CelestialBody(CoordinateSystem minimalCs, BlockGrid* blockGrid = nullptr);
 

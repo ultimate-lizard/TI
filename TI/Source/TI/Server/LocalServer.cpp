@@ -16,12 +16,12 @@
 LocalServer::LocalServer(Application* app) :
 	Server(app)
 {
-	initHomeSolarSystem();
+	// initHomeSolarSystem();
 
-	for (size_t i = 0; i < 100; ++i)
-	{
-		initRandomSolarSystem();
-	}
+	//for (size_t i = 0; i < 100; ++i)
+	//{
+	//	initRandomSolarSystem();
+	//}
 
 	// TODO: Remove this
 	if (app)
@@ -100,7 +100,7 @@ CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const 
 
 	for (auto& body : *bodiesVector)
 	{
-		float distance = glm::distance(transform.getDerivedPosition(cs), body->getDerivedPosition(cs, false));
+		float distance = glm::distance(transform.getDerivedPosition(), body->getDerivedPosition(false));
 
 		// Make sure we are in the same coordinate system space
 		if (body->getHierarchicalParent() == transform.getPrimaryBody())
@@ -119,13 +119,12 @@ CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const 
 void LocalServer::initHomeSolarSystem()
 {
 	auto star = std::make_unique<Star>();
-	star->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interstellar);
-	star->setLocalPosition(glm::vec3({-10.0f, 0.0f, 0.0f}), CoordinateSystem::Interstellar);
+	star->setScale(glm::vec3(0.1f));
 
 	auto planetBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 	auto planet = std::make_unique<Planet>(planetBg.get());
 
-	planet->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
+	planet->setScale(glm::vec3(0.1f));
 
 	OrbitalProperties planetProperties;
 	planetProperties.radius = 750.0f;
@@ -139,7 +138,7 @@ void LocalServer::initHomeSolarSystem()
 	//auto satteliteBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 	//auto sattelite = std::make_unique<Planet>(satteliteBg.get());
 
-	//sattelite->setLocalScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
+	//sattelite->setScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
 
 	//OrbitalProperties satteliteProperties;
 
@@ -164,7 +163,7 @@ void LocalServer::initRandomSolarSystem()
 {
 	auto star = std::make_unique<Star>();
 
-	star->setLocalScale(glm::vec3(0.100f), CoordinateSystem::Interstellar); // 100 km in size
+	star->setScale(glm::vec3(0.100f)); // 100 km in size
 
 	const float low = -100.0f;
 	const float high = 100.0f;
@@ -173,13 +172,13 @@ void LocalServer::initRandomSolarSystem()
 	float y = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
 	float z = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
 
-	star->setLocalPosition({ x, y, z }, CoordinateSystem::Interstellar);
+	star->setPosition({ x, y, z });
 
 	// --- Planet ---
 
 	auto planet = std::make_unique<Planet>();
 
-	planet->setLocalScale(glm::vec3(20.0f), CoordinateSystem::Interplanetary);
+	planet->setScale(glm::vec3(20.0f));
 
 	OrbitalProperties planetProperties;
 	planetProperties.radius = 750.0f;
@@ -205,9 +204,4 @@ void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::v
 
 	Entity* playerEntity = spawnEntity("Player", client->getName(), blockGrid, position);
 	possesEntity(client->getName(), client);
-
-	if (auto transformComponent = playerEntity->findComponent<TransformComponent>())
-	{
-		transformComponent->setLocalPosition({ 760.0f, 0.0f, 0.0f }, CoordinateSystem::Interplanetary);
-	}
 }

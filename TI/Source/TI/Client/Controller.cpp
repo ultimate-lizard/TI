@@ -122,7 +122,7 @@ void PlayerController::destroyBlock()
 	{
 		if (auto transf = ent->findComponent<TransformComponent>())
 		{
-			transf->setLocalPosition(glm::vec3());
+			transf->setPosition(glm::vec3());
 			transf->setParent(entity->findComponent<TransformComponent>());
 		}
 	}
@@ -263,7 +263,7 @@ void PlayerController::toggleThirdperson()
 			{
 				glm::vec3 cameraPosition = camera->getLocalPosition();
 				cameraPosition.z = thirdperson ? -3.0f : 0.0f;
-				camera->setLocalPosition(cameraPosition);
+				camera->setPosition(cameraPosition);
 			}
 		}
 	}

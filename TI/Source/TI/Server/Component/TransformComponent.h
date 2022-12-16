@@ -11,7 +11,7 @@ class Server;
 class LocalServer;
 class CelestialBody;
 
-class TransformComponent : public Component, public SceneMultiNode
+class TransformComponent : public Component, public SceneNode
 {
 public:
 	TransformComponent(Server* server);

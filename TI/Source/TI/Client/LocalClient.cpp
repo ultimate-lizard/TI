@@ -45,6 +45,9 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 	this->name = name.empty() ? DEFAULT_PLAYER_NAME : name;
 
+	blockGridPtr = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
+	blockGridToRender = blockGridPtr.get();
+
 	loadConfig();
 	loadMappings();
 }
@@ -111,7 +114,7 @@ void LocalClient::setPossesedEntity(Entity* entity)
 
 void LocalClient::update(float dt)
 {
-	if (possessedEntity)
+	/*if (possessedEntity)
 	{
 		if (auto playerTransform = possessedEntity->findComponent<TransformComponent>())
 		{
@@ -127,7 +130,7 @@ void LocalClient::update(float dt)
 				blockGridToRender = nullptr;
 			}
 		}
-	}
+	}*/
 
 	if (blockGridToRender)
 	{
@@ -156,7 +159,7 @@ void LocalClient::shutdown()
 	Client::shutdown();
 }
 
-void LocalClient::setViewportId(unsigned int id)
+void LocalClient::setViewportId(size_t id)
 {
 	viewportId = id;
 }
@@ -419,19 +422,16 @@ void LocalClient::renderWorld()
 			{
 				if (BlockGrid* bg = blockGridToRender)
 				{
-					if (auto result = playerTransform->getCoordinateSystem(CoordinateSystem::Planetary); result.has_value())
-					{
-						RenderCommand cmd;
-						cmd.mesh = cachedPoolData.poolMesh;
-						cmd.material = chunkMaterial;
-						cmd.transform = bg->getTransform();
-						cmd.viewportId = getViewportId();
-						cmd.counts = cachedPoolData.sizes.data();
-						cmd.indices = cachedPoolData.offsets.data();
-						cmd.multiDrawCount = cachedPoolData.drawCount;
+					RenderCommand cmd;
+					cmd.mesh = cachedPoolData.poolMesh;
+					cmd.material = chunkMaterial;
+					cmd.transform = bg->getTransform();
+					cmd.viewportId = getViewportId();
+					cmd.counts = cachedPoolData.sizes.data();
+					cmd.indices = cachedPoolData.offsets.data();
+					cmd.multiDrawCount = cachedPoolData.drawCount;
 
-						renderer->pushRender(cmd, CoordinateSystem::Planetary);
-					}
+					renderer->pushRender(cmd, CoordinateSystem::Planetary);
 				}
 
 				if (!astroMesh->getCelestialBody()->getHierarchicalParent() ||
@@ -496,7 +496,7 @@ void LocalClient::renderEntities()
 
 				if (auto transformComponent = entity->findComponent<TransformComponent>())
 				{
-					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), viewportId }, 0);
+					renderer->pushRender({ meshComp->getModel()->getMesh(), meshComp->getModel()->getMaterial(), meshComp->getTransform(), static_cast<unsigned int>(viewportId) }, 0);
 				}
 			}
 		}
@@ -544,6 +544,6 @@ void LocalClient::renderDebugMeshes()
 {
 	for (const DebugMeshInfo& debugMeshInfo : debugInformation->getMeshes())
 	{
-		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), viewportId, debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false }, 0);
+		renderer->pushRender({ debugMeshInfo.mesh.get(), debugMeshInfo.material, glm::mat4(1.0f), static_cast<unsigned int>(viewportId), debugMeshInfo.renderMode, debugMeshInfo.lineWidth, true, false }, 0);
 	}
 }

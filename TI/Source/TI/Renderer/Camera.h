@@ -6,7 +6,7 @@
 
 #include <TI/Server/SceneNode.h>
 
-class Camera : public SceneMultiNode
+class Camera : public SceneNode
 {
 public:
 	Camera(const glm::vec3& position = { 0.0f, 0.0f, 0.0f });

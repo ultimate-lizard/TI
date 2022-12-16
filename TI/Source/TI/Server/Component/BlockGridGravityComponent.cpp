@@ -80,7 +80,7 @@ void BlockGridGravityComponent::updateSideRotation(float dt)
 		return;
 	}
 
-	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition(CoordinateSystem::Planetary, false));
+	const glm::vec3 currentUpVector = bg->getSideNormal(transformComponent->getDerivedPosition(false));
 	if (previousUpVector == glm::vec3(0.0f))
 	{
 		previousUpVector = currentUpVector;
@@ -116,7 +116,7 @@ void BlockGridGravityComponent::updateSideRotation(float dt)
 			const glm::quat originalOrientation = transformComponent->getLocalOrientation();
 
 			// Rotate for test
-			transformComponent->rotateInWorldSpaceExclusive(pendingRotationAngle, cross);
+			transformComponent->rotateInWorldSpace(pendingRotationAngle, cross);
 
 			if (auto collisionComponent = entity->findComponent<CollisionComponent>())
 			{

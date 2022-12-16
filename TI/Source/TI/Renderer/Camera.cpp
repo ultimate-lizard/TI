@@ -7,11 +7,10 @@
 
 Camera::Camera(const glm::vec3& position)
 {
-	setLocalPosition(position);
+	setPosition(position);
 }
 
 Camera::Camera(const Camera& other) :
-	SceneMultiNode(other),
 	projection(other.projection),
 	view(other.view)
 {
@@ -24,8 +23,8 @@ void Camera::setPerspective(float fov, float aspect, float near, float far)
 
 void Camera::updateView(CoordinateSystem cs)
 {
-	glm::vec3 absolutePosition = getDerivedPosition(cs);
-	glm::quat absoluteRotation = getDerivedOrientation(cs);
+	glm::vec3 absolutePosition = getDerivedPosition();
+	glm::quat absoluteRotation = getDerivedOrientation();
 
 	// glm::decompose(getTransform(cs), scale, absoluteRotation, absolutePosition, scew, perspective);
 	

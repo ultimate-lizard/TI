@@ -7,7 +7,7 @@
 
 class Camera;
 
-class CameraComponent : public Component, public SceneMultiNode
+class CameraComponent : public Component, public SceneNode
 {
 public:
 	CameraComponent();

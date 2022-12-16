@@ -6,7 +6,6 @@
 
 CameraComponent::CameraComponent() :
 	Component(),
-	SceneMultiNode(),
 	camera(std::make_unique<Camera>())
 {
 	camera->setParent(this);
@@ -14,7 +13,6 @@ CameraComponent::CameraComponent() :
 
 CameraComponent::CameraComponent(const CameraComponent& other) :
 	Component(other),
-	SceneMultiNode(other),
 	camera(std::make_unique<Camera>(*other.camera))
 {
 	camera->setParent(this);

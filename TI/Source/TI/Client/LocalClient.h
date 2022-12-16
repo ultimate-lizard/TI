@@ -40,7 +40,7 @@ public:
 
 	void shutdown() override;
 
-	void setViewportId(unsigned int id);
+	void setViewportId(size_t id);
 	unsigned int getViewportId() const;
 
 	static DebugInformation* getDebugInformation();
@@ -72,7 +72,7 @@ private:
 
 	Config config;
 
-	unsigned int viewportId;
+	size_t viewportId;
 
 	Renderer* renderer;
 
@@ -86,6 +86,8 @@ private:
 	static std::unique_ptr<DebugInformation> debugInformation;
 
 	BlockGrid* blockGridToRender;
+
+	std::unique_ptr<BlockGrid> blockGridPtr;
 
 	glm::ivec3 playerLastChunkPosition;
 

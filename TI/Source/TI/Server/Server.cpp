@@ -27,7 +27,7 @@ void Server::initEntityTemplates()
 
 	auto meshComponent = playerEntity->addComponent<MeshComponent>(app->getResourceManager());
 	meshComponent->loadModel("Player");
-	meshComponent->setLocalScale({ 0.6f, 0.6f, 1.0f });
+	meshComponent->setScale({ 0.6f, 0.6f, 1.0f });
 	meshComponent->setVisibleForParentEntity(true);
 
 	auto collisionComponent = playerEntity->addComponent<CollisionComponent>();
@@ -37,8 +37,8 @@ void Server::initEntityTemplates()
 
 	auto cameraComponent = playerEntity->addComponent<CameraComponent>();
 	cameraComponent->setParent(transformComponent);
-	cameraComponent->setLocalPosition({ 0.0f, 1.75f, 0.0f }, CoordinateSystem::Planetary);
-	cameraComponent->setLocalPosition({ 0.0f, 0.00175f, 0.0f }, CoordinateSystem::Interplanetary);
+	cameraComponent->setPosition({ 0.0f, 1.75f, 0.0f });
+	cameraComponent->setPosition({ 0.0f, 0.00175f, 0.0f });
 
 	meshComponent->setParent(cameraComponent);
 
@@ -53,7 +53,7 @@ void Server::initEntityTemplates()
 	auto cubeMeshComponent = cubeEntity->addComponent<MeshComponent>(app->getResourceManager());
 	cubeMeshComponent->setParent(cubeTransformComponent);
 	cubeMeshComponent->loadModel("Cube");
-	// cubeMeshComponent->setLocalScale({ 1.0f, 2.0f, 1.0f });
+	// cubeMeshComponent->setScale({ 1.0f, 2.0f, 1.0f });
 	auto cubeCollisionComponent = cubeEntity->addComponent<CollisionComponent>();
 	// cubeCollisionComponent->setCollisionBox({ {1.0f, 2.0f, 1.0f}, glm::vec3(0.0f) });
 	cubeCollisionComponent->setCollisionBox({ {1.0f, 1.0f, 1.0f}, glm::vec3(0.0f) });
@@ -69,7 +69,7 @@ void Server::initEntityTemplates()
 
 	// planetEntity->setName("PlanetEntity");
 
-	//planetTransformComponent->setLocalScale(glm::vec3(55.0f));
+	//planetTransformComponent->setScale(glm::vec3(55.0f));
 	//planetMeshComponent->setParent(planetTransformComponent);
 	//planetMeshComponent->loadModel("Planet");
 
@@ -154,7 +154,7 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 			if (auto transformComponent = result->findComponent<TransformComponent>())
 			{
 				transformComponent->setCurrentBlockGrid(blockGrid);
-				transformComponent->setLocalPosition(position);
+				transformComponent->setPosition(position);
 			}
 		}
 

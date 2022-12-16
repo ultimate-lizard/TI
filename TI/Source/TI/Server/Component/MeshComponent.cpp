@@ -6,7 +6,6 @@
 
 MeshComponent::MeshComponent(ResourceManager* modelManager) :
 	Component(),
-	SceneMultiNode(),
 	modelManager(modelManager),
 	model(nullptr),
 	visibleForParentEntity(true),
@@ -17,7 +16,6 @@ MeshComponent::MeshComponent(ResourceManager* modelManager) :
 
 MeshComponent::MeshComponent(const MeshComponent& other) :
 	Component(other),
-	SceneMultiNode(other),
 	modelManager(other.modelManager),
 	model(other.model),
 	visibleForParentEntity(other.visibleForParentEntity),

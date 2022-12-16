@@ -15,7 +15,7 @@ struct OrbitalProperties
 	float equatorialVelocity { 0.0f };
 };
 
-class CelestialBody : public SceneMultiNode
+class CelestialBody : public SceneNode
 {
 public:
 	virtual ~CelestialBody() = default;

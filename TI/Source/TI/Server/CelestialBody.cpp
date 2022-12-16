@@ -3,7 +3,6 @@
 #include <SDL.h>
 
 CelestialBody::CelestialBody(CoordinateSystem minimalCs, BlockGrid* blockGrid) :
-	SceneMultiNode(minimalCs),
     blockGrid(blockGrid),
 	orbitalParent(nullptr)
 {
@@ -22,16 +21,16 @@ void CelestialBody::tick(float dt)
 		float angles = SDL_GetTicks() / 1000.0f * orbitalSpeed;
 
 		glm::vec3 newPosition(glm::cos(glm::radians(angles)) * radius, 0.0f, glm::sin(glm::radians(angles)) * radius);
-		newPosition += orbitalParent->getDerivedPosition(CoordinateSystem::Interplanetary, false);
+		newPosition += orbitalParent->getDerivedPosition();
 
-		glm::vec3 newOffset = newPosition - getLocalPosition(CoordinateSystem::Interplanetary);
+		glm::vec3 newOffset = newPosition - getLocalPosition();
 
 		if (_name == "playerhere")
 		{
 			std::string a;
 		}
 
-		offset(newOffset, CoordinateSystem::Interplanetary);
+		offset(newOffset);
 	}
 
 	const float rotationVelocity = orbitalProperties.equatorialVelocity;

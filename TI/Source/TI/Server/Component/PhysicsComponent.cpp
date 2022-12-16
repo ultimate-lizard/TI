@@ -61,7 +61,7 @@ void PhysicsComponent::tick(float dt)
 		}
 	}
 
-	transformComponent->setLocalPosition(position);
+	transformComponent->setPosition(position);
 	transformComponent->offset(velocity * dt);
 }
 

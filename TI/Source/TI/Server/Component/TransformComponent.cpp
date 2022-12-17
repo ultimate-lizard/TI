@@ -60,13 +60,3 @@ void TransformComponent::setTargetLocalOrientation(const glm::quat& orientation,
 		targetCs = cs;
 	}
 }
-
-void TransformComponent::setPrimaryBody(CelestialBody* body)
-{
-	primaryBody = body;
-}
-
-CelestialBody* TransformComponent::getPrimaryBody() const
-{
-	return primaryBody;
-}

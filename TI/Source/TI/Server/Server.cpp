@@ -166,16 +166,6 @@ Entity* const Server::spawnEntity(const std::string& templateName, const std::st
 	return result;
 }
 
-const std::vector<std::unique_ptr<CelestialBody>>& Server::getCelestialBodies()
-{
-	return celestialBodies;
-}
-
-const std::vector<std::unique_ptr<CelestialBody>>& Server::getStars()
-{
-	return starSystems;
-}
-
 //Planet* Server::findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const
 //{
 //	if (cs == CoordinateSystem::Interplanetary)

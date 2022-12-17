@@ -31,6 +31,8 @@ LocalServer::LocalServer(Application* app) :
 	}
 
 	initEntityTemplates();
+
+	blockGridPtr = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
 }
 
 LocalServer::~LocalServer()
@@ -40,22 +42,6 @@ LocalServer::~LocalServer()
 void LocalServer::update(float dt)
 {
 	Server::update(dt);
-
-	for (const std::unique_ptr<CelestialBody>& star : starSystems)
-	{
-		if (star)
-		{
-			star->tick(dt);
-		}
-	}
-
-	for (const std::unique_ptr<CelestialBody>& body : celestialBodies)
-	{
-		if (body)
-		{
-			body->tick(dt);
-		}
-	}
 
 	for (auto& entityPair : spawnedEntities)
 	{
@@ -75,133 +61,14 @@ void LocalServer::ejectClient(Client* client)
 	spawnedEntities.erase(client->getName());
 }
 
-CelestialBody* LocalServer::findClosestCelestialBody(CoordinateSystem cs, const TransformComponent& transform) const
-{
-	const std::vector<std::unique_ptr<CelestialBody>>* bodiesVector = nullptr;
-
-	switch (cs)
-	{
-	case CoordinateSystem::Interstellar:
-		bodiesVector = &starSystems;
-		break;
-
-	case CoordinateSystem::Interplanetary:
-		bodiesVector = &celestialBodies;
-		break;
-
-	// TODO: Intergalactical
-
-	default:
-		return nullptr;
-	}
-
-	float minDistance = std::numeric_limits<float>::max();
-	CelestialBody* closestBody = nullptr;
-
-	for (auto& body : *bodiesVector)
-	{
-		float distance = glm::distance(transform.getDerivedPosition(), body->getDerivedPosition(false));
-
-		// Make sure we are in the same coordinate system space
-		if (body->getHierarchicalParent() == transform.getPrimaryBody())
-		{
-			if (distance <= minDistance)
-			{
-				minDistance = distance;
-				closestBody = body.get();
-			}
-		}
-	}
-
-	return closestBody;
-}
-
-void LocalServer::initHomeSolarSystem()
-{
-	auto star = std::make_unique<Star>();
-	star->setScale(glm::vec3(0.1f));
-
-	auto planetBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
-	auto planet = std::make_unique<Planet>(planetBg.get());
-
-	planet->setScale(glm::vec3(0.1f));
-
-	OrbitalProperties planetProperties;
-	planetProperties.radius = 750.0f;
-	planetProperties.orbitalVelocity = 0.1f;
-	planetProperties.equatorialVelocity = 0.5f;
-
-	planet->setOrbitalProperties(std::move(planetProperties));
-
-	// --- Sattelite ---
-
-	//auto satteliteBg = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
-	//auto sattelite = std::make_unique<Planet>(satteliteBg.get());
-
-	//sattelite->setScale(glm::vec3(0.1f), CoordinateSystem::Interplanetary);
-
-	//OrbitalProperties satteliteProperties;
-
-	//satteliteProperties.radius = 2.0f;
-	//satteliteProperties.orbitalVelocity = 2.0f;
-	//satteliteProperties.equatorialVelocity = 2.5f;
-	//sattelite->setOrbitalProperties(std::move(satteliteProperties));
-
-	// -----------------
-
-	//planet->addSattelite(sattelite.get());
-	star->addSattelite(planet.get());
-	
-	blockGrids.push_back(std::move(planetBg));
-	// blockGrids.push_back(std::move(satteliteBg));
-	starSystems.push_back(std::move(star));
-	//celestialBodies.push_back(std::move(sattelite));
-	celestialBodies.push_back(std::move(planet));
-}
-
-void LocalServer::initRandomSolarSystem()
-{
-	auto star = std::make_unique<Star>();
-
-	star->setScale(glm::vec3(0.100f)); // 100 km in size
-
-	const float low = -100.0f;
-	const float high = 100.0f;
-
-	float x = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
-	float y = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
-	float z = low + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (high - low)));
-
-	star->setPosition({ x, y, z });
-
-	// --- Planet ---
-
-	auto planet = std::make_unique<Planet>();
-
-	planet->setScale(glm::vec3(20.0f));
-
-	OrbitalProperties planetProperties;
-	planetProperties.radius = 750.0f;
-	planetProperties.orbitalVelocity = 1.0f;
-	planetProperties.equatorialVelocity = 1.5f;
-
-	planet->setOrbitalProperties(std::move(planetProperties));
-
-	star->addSattelite(planet.get());
-
-	starSystems.push_back(std::move(star));
-	celestialBodies.push_back(std::move(planet));
-}
-
 void LocalServer::spawnPlayer(Client* const client, Planet* planet, const glm::vec3& position)
 {
-	BlockGrid* blockGrid = nullptr;
-
-	if (planet)
-	{
-		blockGrid = planet->getBlockGrid();
-	}
-
-	Entity* playerEntity = spawnEntity("Player", client->getName(), blockGrid, position);
+	Entity* playerEntity = spawnEntity("Player", client->getName(), nullptr, position);
 	possesEntity(client->getName(), client);
+
+	if (auto transform = playerEntity->findComponent<TransformComponent>())
+	{
+		float pos = blockGridPtr.get()->getBlockGridSize().x * blockGridPtr.get()->getChunkSize();
+		transform->setPosition({ pos / 2.0f, pos + 5.0f, pos / 2.0f });
+	}
 }

@@ -35,8 +35,6 @@ public:
 	Entity* const spawnEntity(const std::string& templateName, const std::string& id, BlockGrid* blockGrid, const glm::vec3& position);
 
 	const std::map<std::string, std::unique_ptr<Entity>>& getEntities() const;
-	const std::vector<std::unique_ptr<CelestialBody>>& getCelestialBodies();
-	const std::vector<std::unique_ptr<CelestialBody>>& getStars();
 
 	// Planet* findClosestPlanet(const glm::vec3& position, CoordinateSystem cs) const;
 
@@ -50,8 +48,4 @@ protected:
 	std::map<std::string, std::unique_ptr<Entity>> entityTemplates;
 
 	std::atomic<bool> shuttingDown;
-
-	std::vector<std::unique_ptr<BlockGrid>> blockGrids;
-	std::vector<std::unique_ptr<CelestialBody>> celestialBodies;
-	std::vector<std::unique_ptr<CelestialBody>> starSystems;
 };

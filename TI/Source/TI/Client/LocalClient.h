@@ -87,8 +87,6 @@ private:
 
 	BlockGrid* blockGridToRender;
 
-	std::unique_ptr<BlockGrid> blockGridPtr;
-
 	glm::ivec3 playerLastChunkPosition;
 
 	ChunkPool pool;
@@ -97,9 +95,6 @@ private:
 	bool frustumCullingEnabled;
 
 	Camera* cachedEntityCamera;
-
-	std::vector<std::unique_ptr<CelestialBodyMesh>> astroBodiesMeshes;
-	std::vector<std::unique_ptr<CelestialBodyMesh>> stars;
 
 	// std::unique_ptr<PlanetMesh> planetLod;
 };

@@ -3,7 +3,7 @@
 #include <TI/Server/Server.h>
 
 class Star;
-// class BlockGrid;
+class BlockGrid;
 class Planet;
 
 class LocalServer : public Server
@@ -18,11 +18,8 @@ public:
 
 	void ejectClient(Client* client) override;
 
-	CelestialBody* findClosestCelestialBody(CoordinateSystem cs, const TransformComponent& transform) const;
+	std::unique_ptr<BlockGrid> blockGridPtr;
 
 protected:
-	void initHomeSolarSystem();
-	void initRandomSolarSystem();
-
 	void spawnPlayer(Client* const client, Planet* plane, const glm::vec3& position);
 };

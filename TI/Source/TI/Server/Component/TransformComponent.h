@@ -29,9 +29,6 @@ public:
 
 	glm::quat lastOrientation;
 
-	void setPrimaryBody(CelestialBody* body);
-	CelestialBody* getPrimaryBody() const;
-
 private:
 	LocalServer* server;
 
@@ -40,6 +37,4 @@ private:
 	bool orientationInProgress = false;
 	glm::quat targetOrientation;
 	CoordinateSystem targetCs = CoordinateSystem::Planetary;
-
-	CelestialBody* primaryBody;
 };

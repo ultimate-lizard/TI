@@ -45,9 +45,6 @@ LocalClient::LocalClient(Application* app, const std::string& name) :
 
 	this->name = name.empty() ? DEFAULT_PLAYER_NAME : name;
 
-	blockGridPtr = std::make_unique<BlockGrid>(glm::uvec3(10), 16);
-	blockGridToRender = blockGridPtr.get();
-
 	loadConfig();
 	loadMappings();
 }
@@ -71,15 +68,7 @@ void LocalClient::connect(const std::string& ip, int port)
 			//	initSolarSystemVisuals(homeStar);
 			//}
 
-			for (const auto& star : server->getStars())
-			{
-				if (!star)
-				{
-					continue;
-				}
-
-				initSolarSystemVisuals(star.get());
-			}
+			blockGridToRender = server->blockGridPtr.get();
 
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(5.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 1.0f);
 			drawDebugLine(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f);
@@ -106,6 +95,20 @@ void LocalClient::setPossesedEntity(Entity* entity)
 				if (viewport)
 				{
 					viewport->setActiveCamera(cameraComp->getCamera());
+				}
+			}
+		}
+
+		if (auto transform = entity->findComponent<TransformComponent>())
+		{
+			if (app)
+			{
+				if (Server* server = app->getCurrentServer())
+				{
+					if (LocalServer* localServer = dynamic_cast<LocalServer*>(server))
+					{
+						transform->setCurrentBlockGrid(localServer->blockGridPtr.get());
+					}
 				}
 			}
 		}
@@ -248,37 +251,6 @@ void LocalClient::initSolarSystemVisuals(CelestialBody* star)
 	{
 		return;
 	}
-
-	if (Server* server = app->getCurrentServer())
-	{
-		if (auto localServer = dynamic_cast<LocalServer*>(server))
-		{
-			ResourceManager* rm = app->getResourceManager();
-			if (Model* model = rm->getModel("Star"))
-			{
-				auto planetMesh = std::make_unique<CelestialBodyMesh>(star, model);
-				astroBodiesMeshes.push_back(std::move(planetMesh));
-			}
-
-			for (CelestialBody* planet : star->getSattelites())
-			{
-				if (Model* model = rm->getModel("Planet"))
-				{
-					auto planetMesh = std::make_unique<CelestialBodyMesh>(planet, model);
-					astroBodiesMeshes.push_back(std::move(planetMesh));
-				}
-
-				for (CelestialBody* sattelite : planet->getSattelites())
-				{
-					if (Model* model = rm->getModel("Planet"))
-					{
-						auto satteliteMesh = std::make_unique<CelestialBodyMesh>(sattelite, model);
-						astroBodiesMeshes.push_back(std::move(satteliteMesh));
-					}
-				}
-			}
-		}
-	}
 }
 
 void LocalClient::loadConfig()
@@ -414,54 +386,18 @@ void LocalClient::renderWorld()
 {
 	auto playerTransform = possessedEntity->findComponent<TransformComponent>();
 
-	for (auto& astroMesh : astroBodiesMeshes)
+	if (BlockGrid* bg = blockGridToRender)
 	{
-		if (astroMesh)
-		{
-			if (playerTransform)
-			{
-				if (BlockGrid* bg = blockGridToRender)
-				{
-					RenderCommand cmd;
-					cmd.mesh = cachedPoolData.poolMesh;
-					cmd.material = chunkMaterial;
-					cmd.transform = bg->getTransform();
-					cmd.viewportId = getViewportId();
-					cmd.counts = cachedPoolData.sizes.data();
-					cmd.indices = cachedPoolData.offsets.data();
-					cmd.multiDrawCount = cachedPoolData.drawCount;
+		RenderCommand cmd;
+		cmd.mesh = cachedPoolData.poolMesh;
+		cmd.material = chunkMaterial;
+		cmd.transform = bg->getTransform();
+		cmd.viewportId = getViewportId();
+		cmd.counts = cachedPoolData.sizes.data();
+		cmd.indices = cachedPoolData.offsets.data();
+		cmd.multiDrawCount = cachedPoolData.drawCount;
 
-					renderer->pushRender(cmd, CoordinateSystem::Planetary);
-				}
-
-				if (!astroMesh->getCelestialBody()->getHierarchicalParent() ||
-					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getHierarchicalParent() ||
-					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody()->getOrbitalParent() ||
-					(playerTransform->getPrimaryBody() && playerTransform->getPrimaryBody()->getHierarchicalParent() == astroMesh->getCelestialBody()->getHierarchicalParent()) ||
-					playerTransform->getPrimaryBody() == astroMesh->getCelestialBody())
-				{
-					RenderCommand cmd2;
-					cmd2.mesh = astroMesh->getModel()->getMesh();
-					cmd2.material = astroMesh->getModel()->getMaterial();
-					cmd2.transform = astroMesh->getCelestialBody()->getTransform();
-					cmd2.viewportId = getViewportId();
-					cmd2.cullFaces = false;
-
-					CoordinateSystem cs = CoordinateSystem::Planetary;
-
-					if (dynamic_cast<Star*>(astroMesh->getCelestialBody()))
-					{
-						cs = CoordinateSystem::Interstellar;
-					}
-					else if (dynamic_cast<Planet*>(astroMesh->getCelestialBody()))
-					{
-						cs = CoordinateSystem::Interplanetary;
-					}
-
-					renderer->pushRender(cmd2, cs);
-				}
-			}
-		}
+		renderer->pushRender(cmd, CoordinateSystem::Planetary);
 	}
 }
 
